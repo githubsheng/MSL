@@ -1,0 +1,14 @@
+#!/bin/bash
+
+rm *.tokens
+rm -rf generated
+mkdir generated
+
+java -jar /usr/local/lib/antlr-4.7-complete.jar -o generated TestLexer.g4
+java -jar /usr/local/lib/antlr-4.7-complete.jar -o generated TestParser.g4
+
+cp generated/*.tokens .
+
+javac generated/*.java
+#java -cp ./generated org.antlr.v4.gui.TestRig Test root -tokens test.txt
+

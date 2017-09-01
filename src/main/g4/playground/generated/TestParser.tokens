@@ -5,6 +5,7 @@ ColStart=4
 WS=5
 Name=6
 Close=7
+TextChar=8
 '[Row'=3
 '[Column'=4
 ']'=7
