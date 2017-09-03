@@ -16,7 +16,8 @@ public class TestParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		TextArea=1, Ends=2, RowStart=3, ColStart=4, WS=5, Name=6, Close=7, TextChar=8;
+		Placehoder=1, OutterMostRule=2, SomethingElse=3, InnerRule=4, Normal=5, 
+		Special=6, Placeholder=7;
 	public static final int
 		RULE_root = 0;
 	public static final String[] ruleNames = {
@@ -24,11 +25,11 @@ public class TestParser extends Parser {
 	};
 
 	private static final String[] _LITERAL_NAMES = {
-		null, null, null, "'[Row'", "'[Column'", null, null, "']'"
+		null, "'PlaceHolder'", null, "'SomethingElse'", "'Inner'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
-		null, "TextArea", "Ends", "RowStart", "ColStart", "WS", "Name", "Close", 
-		"TextChar"
+		null, "Placehoder", "OutterMostRule", "SomethingElse", "InnerRule", "Normal", 
+		"Special", "Placeholder"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -80,7 +81,7 @@ public class TestParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 	public static class RootContext extends ParserRuleContext {
-		public TerminalNode TextChar() { return getToken(TestParser.TextChar, 0); }
+		public TerminalNode Placeholder() { return getToken(TestParser.Placeholder, 0); }
 		public RootContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -102,7 +103,7 @@ public class TestParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(2);
-			match(TextChar);
+			match(Placeholder);
 			}
 		}
 		catch (RecognitionException re) {
@@ -117,8 +118,8 @@ public class TestParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\n\7\4\2\t\2\3\2\3"+
-		"\2\3\2\2\2\3\2\2\2\2\5\2\4\3\2\2\2\4\5\7\n\2\2\5\3\3\2\2\2\2";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\t\7\4\2\t\2\3\2\3"+
+		"\2\3\2\2\2\3\2\2\2\2\5\2\4\3\2\2\2\4\5\7\t\2\2\5\3\3\2\2\2\2";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

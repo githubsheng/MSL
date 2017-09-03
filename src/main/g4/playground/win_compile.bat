@@ -9,4 +9,4 @@ cp generated/*.tokens .
 
 javac ./generated/*.java
 
-rem java -cp ./generated org.antlr.v4.gui.TestRig HTML htmlDocument -tokens reddit.txt
+rem java -cp ./generated org.antlr.v4.gui.TestRig TestLexer tokens -tokens test.txt

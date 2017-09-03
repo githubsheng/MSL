@@ -86,6 +86,9 @@ Close
 : ']' -> popMode
 ;
 
+RowStart: '[Row';
+ColStart: '[Col';
+
 mode TextAreaMode;
 
 Return:
@@ -93,22 +96,34 @@ Return:
 -> skip
 ;
 
-RowStart
+TextArea: .+? TextAreaEnd {
+     int offSet = 0;
+     if(matched.endsWith("[Row")) {
+        offSet = 4;
+        pushMode(TagMode);
+     }
+     if(matched.endsWith("[Column")) {
+        offSet = 7;
+        pushMode(TagMode);
+     }
+     if(matched.endsWith("[Submit") {
+        offSet = 7;
+        popMode();
+        pushMode(ScriptMode);
+     }
+     int idx = _input.index();
+     _input.seek(idx - offSet);
+};
+
+TextAreaEnd
 : '[Row'
--> pushMode(TagMode)
-;
-
-ColStart
-: '[Col'
--> pushMode(TagMode)
-;
-
-Submit
-: '[Submit]'
--> popMode, pushMode(ScriptMode)
+| '[Column'
+| '[Submit'
 ;
 
 mode ScriptMode;
+
+SubmitButton: '[Submit]';
 
 ScriptModeWS: WS;
 

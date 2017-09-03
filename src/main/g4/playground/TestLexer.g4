@@ -1,29 +1,16 @@
 lexer grammar TestLexer;
 
-TextArea: .+? Ends {
-     System.out.println("match!!!");
-     String matched = getText();
-     int offSet = 0;
-     if(matched.endsWith("Row")) offSet = 4;
-     if(matched.endsWith("Column")) offSet = 7;
-     pushMode(TagMode);
-     int idx = _input.index();
-     _input.seek(idx - offSet);
-};
+Placehoder: 'PlaceHolder';
 
-Ends
-: '[Row'
-| '[Column'
-;
+OutterMostRule
+: SomethingElse InnerRule;
 
-mode TagMode;
-RowStart: '[Row';
-ColStart: '[Column';
-WS: [ ]+ -> skip;
-Name: [a-zA-Z]+;
-Close: ']' -> popMode;
+SomethingElse: 'SomethingElse';
+InnerRule: 'Inner' -> pushMode(MyMode); //if this command is executed, Special in MyMode will match
+Normal: 'Sheng';
 
-
+mode MyMode;
+Special: 'Sheng';
 
 
 
