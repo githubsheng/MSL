@@ -1,0 +1,15 @@
+[Page]
+
+myName yourName
+
+[SingleChoice id="qa" someAttribute={ myName yourName}] some question text
+[Row id="r1"]row one
+[Row id="r2"]row two
+
+[SingleChoice id="qa" someAttribute="value"] some question text
+
+
+
+[Submit]
+
+[PageEnd]

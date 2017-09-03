@@ -1,4 +1,4 @@
-lexer grammar DLS_Lexer;
+lexer grammar DLSLexer;
 
 WS
 : [ \t\n\r]+
@@ -19,11 +19,20 @@ EndPageGroup: 'EndPageGroup]';
 
 mode TagMode;
 
-TagModeWS: WS;
+TagModeWS
+: WS
+-> skip;
+
 Name: NameStartChar NameChar*;
 fragment NameStartChar: [a-zA-Z];
 fragment NameChar: [a-zA-Z0-9];
 String: '"'DoubleStringCharacter*'"';
+
+BindingOpen
+: '{'
+-> pushMode(ScriptMode)
+;
+
 Equals: '=';
 
 /*
@@ -91,13 +100,9 @@ ColStart: '[Col';
 
 mode TextAreaMode;
 
-Return:
-[\n\r]+
--> skip
-;
-
 TextArea: .+? TextAreaEnd {
      int offSet = 0;
+     String matched = getText();
      if(matched.endsWith("[Row")) {
         offSet = 4;
         pushMode(TagMode);
@@ -106,8 +111,13 @@ TextArea: .+? TextAreaEnd {
         offSet = 7;
         pushMode(TagMode);
      }
-     if(matched.endsWith("[Submit") {
+     if(matched.endsWith("[Submit")) {
         offSet = 7;
+        popMode();
+        pushMode(ScriptMode);
+     }
+     if(matched.endsWith("[SingleChoice")) {
+        offSet = 13;
         popMode();
         pushMode(ScriptMode);
      }
@@ -119,13 +129,22 @@ TextAreaEnd
 : '[Row'
 | '[Column'
 | '[Submit'
+| SingleChoiceStart
 ;
 
 mode ScriptMode;
 
 SubmitButton: '[Submit]';
 
-ScriptModeWS: WS;
+ScriptModeWS
+: WS
+-> skip
+;
+
+BindingClose
+: '}'
+-> popMode
+;
 
 SingleChoiceStart
 : '[SingleChoice'
@@ -143,9 +162,11 @@ SingleChoiceMatrixStart
 ;
 
 EndPage
-: '[EndPage]'
+: '[PageEnd]'
 -> popMode
 ;
+
+Token: [a-zA-Z]+;
 
 
 

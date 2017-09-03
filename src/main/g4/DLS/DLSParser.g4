@@ -1,6 +1,6 @@
-parser grammar DLS_Parser;
+parser grammar DLSParser;
 
-options { tokenVocab=DLS_Lexer; }
+options { tokenVocab=DLSLexer; }
 
 //dummy
 file: SubmitButton;
