@@ -1,3 +1,5 @@
 target
 .idea
 MSL.iml
+src/main/g4/DLS/generated
+src/main/g4/playground/generated
