@@ -15,7 +15,7 @@ PageStart
 -> pushMode(ScriptMode), pushMode(TagMode)
 ;
 
-EndPageGroup: 'EndPageGroup]';
+PageGroupEnd: '[PageGroupEnd]';
 
 mode TagMode;
 
@@ -26,6 +26,7 @@ TagModeWS
 Name: NameStartChar NameChar*;
 fragment NameStartChar: [a-zA-Z];
 fragment NameChar: [a-zA-Z0-9];
+
 String: '"'DoubleStringCharacter*'"';
 
 BindingOpen
@@ -33,7 +34,7 @@ BindingOpen
 -> pushMode(ScriptMode)
 ;
 
-Equals: '=';
+AttributeAssign: '=';
 
 /*
 Our code will eventually mac_compile to JS code.
@@ -137,9 +138,110 @@ mode ScriptMode;
 SubmitButton: '[Submit]';
 
 ScriptModeWS
-: WS
+: [ \t]
 -> skip
 ;
+/*
+Some keywords
+If new line does not serve statement termination (like ; in Java),
+then we should skip them in the lexer phase. The best way here to skip
+them is to merge them into the preceding token.
+*/
+If: 'if' NewLine*;
+Then: NewLine* 'then' NewLine*;
+End: 'end';
+Def: 'def';
+
+//array related
+Each: 'each' NewLine+;
+Map: 'map' NewLine+;
+Filter: 'filter' NewLine+;
+
+//chance related
+Chance: 'chance' NewLine+;
+Colon: ':' NewLine*;
+Percentage: DecimalIntegerLiteral '%';
+
+//function related
+Func: 'function';
+Return: 'return';
+
+//punctutations
+LeftBracket: '(';
+RightBracket: ')';
+Comma: ',';
+Dot: '.';
+NewLine
+: '\r\n'+
+| '\n'+
+;
+
+//built in commands
+GoTo: 'goTo';
+Terminate: 'terminate';
+Select: 'select';
+Rank: 'rank';
+
+//operators
+Assign: '=';
+Not: '!';
+Plus: '+';
+Minus: '-';
+Multiply: '*';
+Divide: '/';
+Modulus: '%';
+LessThan: '<';
+MoreThan: '>';
+LessThanEquals: '<=';
+MoreThanEquals: '>=';
+Equals: '==';
+NotEquals: '!=';
+And: 'and';
+Or: 'or';
+
+//numbers
+fragment DecimalDigit
+: [0-9]
+;
+
+fragment DecimalIntegerLiteral
+: '0'
+| [1-9] DecimalDigit*
+;
+
+DecimalLiteral
+: DecimalIntegerLiteral '.' DecimalDigit*   //example: 12.38
+| DecimalIntegerLiteral                     //example: 12
+;
+
+//time related
+Time: 'time';
+Seconds: DecimalIntegerLiteral 's';
+Minutes: DecimalIntegerLiteral 'm';
+Hours: DecimalIntegerLiteral 'h';
+
+Clock: 'clock';
+ClockUnit
+: '12am'        //00:00
+| [1-9] 'am'    //01:00 ~ 09:00
+| '10am'        //10:00
+| '11am'        //11:00
+| '12pm'        //12:00
+| [1-9]'pm'     //13:00 ~ 21:00
+| '10pm'        //22:00
+| '11pm'        //23:00
+;
+
+//booleans
+BooleanLiteral
+: 'true'
+| 'false'
+;
+
+StringLiteral: String;
+
+//identifier
+Identifier: Name;
 
 BindingClose
 : '}'
@@ -161,12 +263,10 @@ SingleChoiceMatrixStart
 -> popMode, pushMode(TextAreaMode), pushMode(TagMode)
 ;
 
-EndPage
+PageEnd
 : '[PageEnd]'
 -> popMode
 ;
-
-Token: [a-zA-Z]+;
 
 
 

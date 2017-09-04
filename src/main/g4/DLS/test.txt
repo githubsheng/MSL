@@ -1,15 +1,23 @@
+[PageGroup]
+
 [Page]
 
-myName yourName
+def a = 1
 
-[SingleChoice id="qa" someAttribute={ myName yourName}] some question text
+function myFunction()
+    def b = 2
+    a + b
+end
+
+[SingleChoice id="qa" randomize] some question text
 [Row id="r1"]row one
 [Row id="r2"]row two
 
-[SingleChoice id="qa" someAttribute="value"] some question text
-
-
+[SingleChoice id="qa" rotate] some question text
+[Row id="r1"]row one
+[Row id="r2"]row two
 
 [Submit]
-
 [PageEnd]
+
+[PageGroupEnd]
