@@ -6,14 +6,20 @@ def a = 1
 
 function myFunction()
     def b = 2
-    a + b
+    b = a + b
+    if ( b > 2 ) and ( b > 4 ) then
+        b = (2+5) * 16 - 7
+        return
+    end
+    if
+        b > 10
+    then
+        def ccc = 100
+        return ccc
+    end
 end
 
 [SingleChoice id="qa" randomize] some question text
-[Row id="r1"]row one
-[Row id="r2"]row two
-
-[SingleChoice id="qa" rotate] some question text
 [Row id="r1"]row one
 [Row id="r2"]row two
 

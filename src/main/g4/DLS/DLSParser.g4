@@ -33,15 +33,17 @@ statement
 : variableStatement
 | emptyStatement
 | expressionStatement
-//todo: if statement
+| ifStatement
 //todo: iteration / map /filter statement
-//todo: return statement
+| returnStatement
 //todo: chance statement
 ;
 
 variableStatement: Def Identifier initialiser? eos;
 
 initialiser: Assign expression;
+
+emptyStatement: eos+;
 
 expressionStatement: expression eos;
 
@@ -55,8 +57,11 @@ expression
 | expression ( LessThan | MoreThan | LessThanEquals | MoreThanEquals ) expression
 | expression And expression
 | expression Or expression
+| expression Assign expression
 | Identifier
 | literal
+| //todo: array literal
+| LeftBracket expression RightBracket
 ;
 
 literal
@@ -65,7 +70,15 @@ literal
 | StringLiteral
 ;
 
-emptyStatement: eos+;
+ifStatement: If NewLine? expression NewLine? Then NewLine thenBody End eos;
+
+thenBody: statement*;
+
+returnStatement
+: Return eos
+| Return expression eos
+;
+
 
 //todo: add parameter list.
 functionDeclaration: Func Identifier LeftBracket RightBracket eos functionBody End;

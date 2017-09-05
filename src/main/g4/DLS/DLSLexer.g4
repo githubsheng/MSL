@@ -147,19 +147,19 @@ If new line does not serve statement termination (like ; in Java),
 then we should skip them in the lexer phase. The best way here to skip
 them is to merge them into the preceding token.
 */
-If: 'if' NewLine*;
-Then: NewLine* 'then' NewLine*;
+If: 'if';
+Then: 'then';
 End: 'end';
 Def: 'def';
 
 //array related
-Each: 'each' NewLine+;
-Map: 'map' NewLine+;
-Filter: 'filter' NewLine+;
+Each: 'each';
+Map: 'map';
+Filter: 'filter';
 
 //chance related
-Chance: 'chance' NewLine+;
-Colon: ':' NewLine*;
+Chance: 'chance';
+Colon: ':';
 Percentage: DecimalIntegerLiteral '%';
 
 //function related
