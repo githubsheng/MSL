@@ -60,8 +60,10 @@ expression
 | expression Assign expression
 | Identifier
 | literal
-| //todo: array literal
-| LeftBracket expression RightBracket
+| listLiteral
+| rowLiteral
+| colLiteral
+| LeftParen expression RightParen
 ;
 
 literal
@@ -69,6 +71,14 @@ literal
 | BooleanLiteral
 | StringLiteral
 ;
+
+listLiteral: List LeftParen listElements RightParen;
+
+listElements: expression (Comma expression)*;
+
+rowLiteral: LeftParen LeftBracket Row attributes RightBracket StringLiteral RightParen;
+
+colLiteral: LeftParen LeftBracket Col attributes RightBracket StringLiteral RightParen;
 
 ifStatement: If NewLine? expression NewLine? Then NewLine thenBody End eos;
 
@@ -81,7 +91,7 @@ returnStatement
 
 
 //todo: add parameter list.
-functionDeclaration: Func Identifier LeftBracket RightBracket eos functionBody End;
+functionDeclaration: Func Identifier LeftParen RightParen eos functionBody End;
 
 //in our script you cannot declare a function inside another function. This removes the need for user
 //to understand closure.

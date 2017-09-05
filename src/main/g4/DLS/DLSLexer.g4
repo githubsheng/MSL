@@ -153,6 +153,7 @@ End: 'end';
 Def: 'def';
 
 //array related
+List: 'list';
 Each: 'each';
 Map: 'map';
 Filter: 'filter';
@@ -167,10 +168,17 @@ Func: 'function';
 Return: 'return';
 
 //punctutations
-LeftBracket: '(';
-RightBracket: ')';
+LeftParen: '(';
+RightParen: ')';
+LeftBracket: '[';
+RightBracket: ']';
 Comma: ',';
 Dot: '.';
+
+//option related
+Row: 'Row';
+Col: 'Col';
+
 NewLine
 : '\r\n'+
 | '\n'+
