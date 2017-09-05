@@ -19,6 +19,9 @@ function myFunction()
     end
 end
 
+def myRow = [Row]hello there world[end]
+def myRow = [Row]ok there[end]
+
 [SingleChoice id="qa" randomize] some question text
 [Row id="r1"]row one
 [Row id="r2"]row two

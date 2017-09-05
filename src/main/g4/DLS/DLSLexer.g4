@@ -176,8 +176,17 @@ Comma: ',';
 Dot: '.';
 
 //option related
-Row: 'Row';
-Col: 'Col';
+ScriptModeRowStart
+: '[Row'
+-> pushMode(ScriptTextAreaMode), pushMode(TagMode)
+;
+
+ScriptModeColStart
+: '[Col'
+-> pushMode(ScriptTextAreaMode), pushMode(TagMode)
+;
+
+ScriptModeInLineTagClose: '[end]';
 
 NewLine
 : '\r\n'+
@@ -275,6 +284,15 @@ PageEnd
 : '[PageEnd]'
 -> popMode
 ;
+
+mode ScriptTextAreaMode;
+
+ScriptTextAreaLastChar
+: ~[\r\n]
+{_input.LA(1) == '[' && _input.LA(2) == 'e' && _input.LA(3) == 'n' && _input.LA(4) == 'd' && _input.LA(5) == ']'}?
+-> popMode;
+
+ScriptTextAreaChar: ~[\r\n];
 
 
 

@@ -76,9 +76,11 @@ listLiteral: List LeftParen listElements RightParen;
 
 listElements: expression (Comma expression)*;
 
-rowLiteral: LeftParen LeftBracket Row attributes RightBracket StringLiteral RightParen;
+rowLiteral: ScriptModeRowStart attributes Close scriptTextArea ScriptModeInLineTagClose;
 
-colLiteral: LeftParen LeftBracket Col attributes RightBracket StringLiteral RightParen;
+colLiteral: ScriptModeColStart attributes Close scriptTextArea ScriptModeInLineTagClose;
+
+scriptTextArea: ScriptTextAreaChar* ScriptTextAreaLastChar;
 
 ifStatement: If NewLine? expression NewLine? Then NewLine thenBody End eos;
 
