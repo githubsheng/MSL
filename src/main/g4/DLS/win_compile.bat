@@ -1,7 +1,7 @@
 rm *.tokens
 rm -rf generated
-
 mkdir generated
+
 java org.antlr.v4.Tool DLSLexer.g4 -o generated
 java org.antlr.v4.Tool DLSParser.g4 -o generated
 
