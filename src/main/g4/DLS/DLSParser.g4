@@ -40,7 +40,10 @@ statement
 ;
 
 //todo: add global variable definition
-variableStatement: Def Identifier initialiser? eos;
+variableStatement
+: Def Identifier initialiser? eos
+| Def Global Identifier initialiser? eos
+;
 
 initialiser: Assign expression;
 

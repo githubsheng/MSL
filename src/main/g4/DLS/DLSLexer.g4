@@ -152,7 +152,7 @@ Then: 'then';
 Else: 'else';
 End: 'end';
 Def: 'def';
-//todo: add global
+Global: 'global';
 
 //array related
 List: 'list';
