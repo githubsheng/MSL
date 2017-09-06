@@ -149,6 +149,7 @@ them is to merge them into the preceding token.
 */
 If: 'if';
 Then: 'then';
+Else: 'else';
 //todo: add else
 //todo: add if else
 End: 'end';

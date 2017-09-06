@@ -2,6 +2,27 @@
 
 [Page]
 
+if a > b then
+    a = c
+else
+    a = b
+end
+
+
+
+def myRow = [Row]hello there world[end]
+def myRow = [Row]ok there[end]
+
+[SingleChoice id="qa" randomize] some question text
+[Row id="r1"]row one
+[Row id="r2"]row two
+
+[Submit]
+
+
+
+def bbb = "hello world"
+
 def a = 1
 
 function myFunction()
@@ -18,23 +39,6 @@ function myFunction()
         return ccc
     end
 end
-
-def myRow = [Row]hello there world[end]
-def myRow = [Row]ok there[end]
-
-[SingleChoice id="qa" randomize] some question text
-[Row id="r1"]row one
-[Row id="r2"]row two
-
-[Submit]
-
-if a == b then
-    a = 1
-else if a == c then
-    a = 2
-end
-
-def global bbb = "hello world"
 
 [PageEnd]
 

@@ -84,9 +84,11 @@ colLiteral: ScriptModeColStart attributes Close scriptTextArea ScriptModeInLineT
 scriptTextArea: ScriptTextAreaChar* ScriptTextAreaLastChar;
 
 //todo: add else and if else
-ifStatement: If NewLine? expression NewLine? Then NewLine thenBody End eos;
+ifStatement: If NewLine? expression NewLine? Then NewLine thenBody elseStatement? End eos;
 
 thenBody: statement*;
+
+elseStatement: Else NewLine thenBody;
 
 returnStatement
 : Return eos
