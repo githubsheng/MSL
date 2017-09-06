@@ -2,7 +2,7 @@
 
 [Page]
 
-if a > b then
+if a == b then
     a = c
 else
     a = b

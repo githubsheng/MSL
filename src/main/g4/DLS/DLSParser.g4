@@ -56,6 +56,7 @@ expression
 | expression ( Multiply | Divide | Modulus ) expression
 | expression ( Plus | Minus ) expression
 | expression ( LessThan | MoreThan | LessThanEquals | MoreThanEquals ) expression
+| expression Equals expression
 | expression And expression
 | expression Or expression
 | expression Assign expression
