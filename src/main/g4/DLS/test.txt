@@ -8,6 +8,14 @@ else
     a = b
 end
 
+if a == b then
+    a = c
+else if a ==c then
+    a = b
+else
+    a = 1
+end
+
 
 
 def myRow = [Row]hello there world[end]
