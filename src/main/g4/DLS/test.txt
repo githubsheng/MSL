@@ -27,6 +27,15 @@ def myRow = [Row]ok there[end]
 [Row id="r2"]row two
 
 [Submit]
+
+if a == b then
+    a = 1
+else if a == c then
+    a = 2
+end
+
+def global bbb = "hello world"
+
 [PageEnd]
 
 [PageGroupEnd]

@@ -39,6 +39,7 @@ statement
 //todo: chance statement
 ;
 
+//todo: add global variable definition
 variableStatement: Def Identifier initialiser? eos;
 
 initialiser: Assign expression;
@@ -82,6 +83,7 @@ colLiteral: ScriptModeColStart attributes Close scriptTextArea ScriptModeInLineT
 
 scriptTextArea: ScriptTextAreaChar* ScriptTextAreaLastChar;
 
+//todo: add else and if else
 ifStatement: If NewLine? expression NewLine? Then NewLine thenBody End eos;
 
 thenBody: statement*;
