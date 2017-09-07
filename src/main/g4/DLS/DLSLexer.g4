@@ -217,6 +217,7 @@ Equals: '==';
 NotEquals: '!=';
 And: 'and';
 Or: 'or';
+RankOrder: '->';
 
 //numbers
 fragment DecimalDigit
@@ -260,7 +261,10 @@ BooleanLiteral
 StringLiteral: String;
 
 //identifier
-Identifier: Name;
+Identifier
+: Name
+| '$' Name
+;
 
 BindingClose
 : '}'
