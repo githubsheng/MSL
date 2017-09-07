@@ -40,7 +40,6 @@ statement
 | builtInCommandStatement
 ;
 
-//todo: add global variable definition
 variableStatement
 : Def Identifier initialiser? eos
 | Def Global Identifier initialiser? eos
@@ -52,24 +51,24 @@ emptyStatement: eos+;
 
 expressionStatement: expression eos;
 
-//todo: review this and add other expressions if need it, for instance, List literal.
 //todo: Notice that some expression in JS grammars are actually statements.
 expression
-: expression Dot Identifier
-| Not expression
-| expression ( Multiply | Divide | Modulus ) expression
-| expression ( Plus | Minus ) expression
-| expression ( LessThan | MoreThan | LessThanEquals | MoreThanEquals ) expression
-| expression Equals expression
-| expression And expression
-| expression Or expression
-| expression Assign expression
-| Identifier
-| literal
-| listLiteral
-| rowLiteral
-| colLiteral
-| LeftParen expression RightParen
+: expression Dot Identifier                                                         #MemberExpression
+| Identifier argumentList                                                           #FunctionCallExpression
+| Not expression                                                                    #NotExpression
+| expression ( Multiply | Divide | Modulus ) expression                             #MultiplicativeExpression
+| expression ( Plus | Minus ) expression                                            #AdditiveExpression
+| expression ( LessThan | MoreThan | LessThanEquals | MoreThanEquals ) expression   #RelationalExpression
+| expression Equals expression                                                      #EqualityExpression
+| expression And expression                                                         #LogicalAndExpression
+| expression Or expression                                                          #LogicalOrExpression
+| expression Assign expression                                                      #AssignmentExpression
+| Identifier                                                                        #IdentifierExpression
+| literal                                                                           #LiteralExpression
+| listLiteral                                                                       #ListLiteralExpression
+| rowLiteral                                                                        #RowLiteralExpression
+| colLiteral                                                                        #ColumnLiteralExpression
+| LeftParen expression RightParen                                                   #ParenthesizedExpression
 ;
 
 literal
@@ -105,9 +104,9 @@ returnStatement
 ;
 
 listOperationStatement
-: Each Identifier NewLine statements End
-| Map Identifier NewLine statements End
-| Filter Identifier NewLine statements End
+: Each Identifier NewLine statements End        #EachStatement
+| Map Identifier NewLine statements End         #MapStatement
+| Filter Identifier NewLine statements End      #FilterStatement
 ;
 
 chanceStatement: Chance NewLine possibility+ End;
@@ -115,17 +114,20 @@ chanceStatement: Chance NewLine possibility+ End;
 possibility: Percentage Colon NewLine? statements;
 
 builtInCommandStatement
-: GoTo Identifier
-| Terminate
-| Select expression
-| Rank rankOrders
+: GoTo Identifier                               #GoToCommand
+| Terminate                                     #TerminateCommand
+| Select expression                             #SelectCommand
+| Rank rankOrders                               #RankCommand
 ;
 
 rankOrders: expression (RankOrder expression)+;
 
+functionDeclaration: Func Identifier argumentList NewLine functionBody End;
 
-//todo: add parameter list.
-functionDeclaration: Func Identifier LeftParen RightParen eos functionBody End;
+argumentList
+: LeftParen RightParen
+| LeftParen expression (Comma expression)* RightParen
+;
 
 //in our script you cannot declare a function inside another function. This removes the need for user
 //to understand closure.

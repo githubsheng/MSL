@@ -2,16 +2,17 @@
 
 [Page]
 
-rank row1 -> row2 -> row3
-
-goTo questionOne
-
-select question3.row1
-
-each myList
-    $index
-    $element
+function myFunc()
+    terminate
 end
+
+function yourFunc(a, b)
+    terminate
+end
+
+myFunc()
+
+yourFunc(1, 2)
 
 def a = 1
 
