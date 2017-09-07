@@ -34,9 +34,10 @@ statement
 | emptyStatement
 | expressionStatement
 | ifStatement
-//todo: iteration / map /filter statement
+| listOperationStatement
 | returnStatement
-//todo: chance statement
+| chanceStatement
+| builtInCommandStatement
 ;
 
 //todo: add global variable definition
@@ -89,12 +90,12 @@ scriptTextArea: ScriptTextAreaChar* ScriptTextAreaLastChar;
 
 ifStatement: noEndingIfStatement End eos;
 
-noEndingIfStatement: If NewLine? expression NewLine? Then NewLine thenBody elseStatement?;
+noEndingIfStatement: If NewLine? expression NewLine? Then NewLine statements elseStatement?;
 
-thenBody: statement*;
+statements: statement*;
 
 elseStatement
-: Else NewLine thenBody
+: Else NewLine statements
 | Else noEndingIfStatement
 ;
 
@@ -102,6 +103,25 @@ returnStatement
 : Return eos
 | Return expression eos
 ;
+
+listOperationStatement
+: Each Identifier NewLine statements End
+| Map Identifier NewLine statements End
+| Filter Identifier NewLine statements End
+;
+
+chanceStatement: Chance NewLine possibility+ End;
+
+possibility: Percentage Colon NewLine? statements;
+
+builtInCommandStatement
+: GoTo Identifier
+| Terminate
+| Select expression
+| Rank rankOrders
+;
+
+rankOrders: expression (RankOrder expression)+;
 
 
 //todo: add parameter list.

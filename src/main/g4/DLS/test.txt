@@ -2,24 +2,26 @@
 
 [Page]
 
-if a == b then
-    a = c
-else
-    a = b
+rank row1 -> row2 -> row3
+
+goTo questionOne
+
+select question3.row1
+
+each myList
+    $index
+    $element
 end
 
-if a == b then
-    a = c
-else if a ==c then
-    a = b
-else
-    a = 1
+def a = 1
+
+chance
+    10%: a = 2
+    20%: b = 3
+    40%:
+        a = b
+        terminate
 end
-
-
-
-def myRow = [Row]hello there world[end]
-def myRow = [Row]ok there[end]
 
 [SingleChoice id="qa" randomize] some question text
 [Row id="r1"]row one
