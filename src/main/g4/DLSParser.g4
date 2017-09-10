@@ -28,7 +28,6 @@ script: ( statement | functionDeclaration )*;
 
 eos: NewLine; //end of statement
 
-//todo: more kinds of statements
 statement
 : variableStatement
 | emptyStatement
@@ -51,7 +50,7 @@ emptyStatement: eos+;
 
 expressionStatement: expression eos;
 
-//todo: Notice that some expression in JS grammars are actually statements.
+//Notice that some expression in JS grammars are actually statements.
 expression
 : expression Dot Identifier                                                         #MemberExpression
 | Identifier argumentList                                                           #FunctionCallExpression
