@@ -4,14 +4,14 @@ rm *.tokens
 rm -rf generated
 mkdir generated
 
-java -jar /usr/local/lib/antlr-4.7-complete.jar -o ../java/DLS/generated DLSLexer.g4
-java -jar /usr/local/lib/antlr-4.7-complete.jar -o ../java/DLS/generated DLSParser.g4
+java -jar /usr/local/lib/antlr-4.7-complete.jar -o ../java/DLS/generated -package DLS.generated DLSLexer.g4
+java -jar /usr/local/lib/antlr-4.7-complete.jar -o ../java/DLS/generated -package DLS.generated -visitor DLSParser.g4
 
 cp ../java/DLS/generated/*.tokens .
 
 javac ../java/DLS/generated/*.java
 
-export CLASSPATH="../java/DLS/generated:$CLASSPATH"
-java org.antlr.v4.gui.TestRig DLS file -gui test.txt
-#java org.antlr.v4.gui.TestRig DLSLexer tokens -tokens input.txt
+export CLASSPATH="../java:$CLASSPATH"
+java org.antlr.v4.gui.TestRig DLS.generated.DLS file -gui input.txt
+#java org.antlr.v4.gui.TestRig DLS.generated.DLSLexer tokens -tokens input.txt
 

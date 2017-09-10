@@ -2,4 +2,4 @@ target
 .idea
 MSL.iml
 src/main/java/DLS/generated
-src/test/playground/generated
+src/playground/generated
