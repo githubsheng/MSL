@@ -1,8 +1,8 @@
 #!/bin/bash
 
 rm *.tokens
-rm -rf generated
-mkdir generated
+rm -rf ../java/DLS/generated
+mkdir ../java/DLS/generated
 
 java -jar /usr/local/lib/antlr-4.7-complete.jar -o ../java/DLS/generated -package DLS.generated DLSLexer.g4
 java -jar /usr/local/lib/antlr-4.7-complete.jar -o ../java/DLS/generated -package DLS.generated -visitor DLSParser.g4

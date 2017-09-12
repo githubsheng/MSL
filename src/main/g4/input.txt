@@ -56,3 +56,9 @@ end
 [PageEnd]
 
 [PageGroupEnd]
+
+[Page]
+[SingleChoice] some question text
+[Row]row one
+[Submit]
+[PageEnd]

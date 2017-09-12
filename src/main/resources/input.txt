@@ -1,10 +1,5 @@
 [PageGroup]
-
 [Page]
-
-a = b + c
-
-
 [SingleChoice] some question text
 [Row]row one
 [Submit]

@@ -2,9 +2,11 @@ parser grammar DLSParser;
 
 options { tokenVocab=DLSLexer; }
 
-file
-: page*
-| pageGroup*
+file: element*;
+
+element
+: page
+| pageGroup
 ;
 
 pageGroup
