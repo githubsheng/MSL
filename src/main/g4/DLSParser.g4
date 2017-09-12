@@ -53,7 +53,7 @@ expressionStatement: expression eos;
 //Notice that some expression in JS grammars are actually statements.
 expression
 : expression Dot Identifier                                                         #MemberExpression
-| Identifier argumentList                                                           #FunctionCallExpression
+| expression argumentList                                                           #CallExpression
 | Not expression                                                                    #NotExpression
 | expression ( Multiply | Divide | Modulus ) expression                             #MultiplicativeExpression
 | expression ( Plus | Minus ) expression                                            #AdditiveExpression
