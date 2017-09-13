@@ -9,13 +9,15 @@ import java.util.List;
  */
 public class FileNode extends Node {
 
-    //page is interpreted as functions
-    //lets not worry about page group first...
+    public final List<Node> nodes;
 
-    public final List<FuncDefNode> pagesAsFunctions;
-
-    public FileNode(List<FuncDefNode> pagesAsFunctions) {
-        this.pagesAsFunctions = pagesAsFunctions;
+    /**
+     *
+     * @param nodes A list of nodes. A node can only be PageNode or a PageGroupNode
+     */
+    public FileNode(List<Node> nodes) {
+        //todo: validation of the node type here.
+        this.nodes = nodes;
     }
 
 }

@@ -1,0 +1,56 @@
+[PageGroup]
+
+[Page]
+
+function myFunc()
+    terminate
+end
+
+function yourFunc(a, b)
+    terminate
+end
+
+myFunc()
+
+yourFunc(1, 2)
+
+def a = 1
+
+chance
+    10%: a = 2
+    20%: b = 3
+    40%:
+        a = b
+        terminate
+end
+
+[SingleChoice id="qa" randomize] some question text
+[Row id="r1"]row one
+[Row id="r2"]row two
+
+[Submit]
+
+
+
+def bbb = "hello world"
+
+def a = 1
+
+function myFunction()
+    def b = 2
+    b = a + b
+    if ( b > 2 ) and ( b > 4 ) then
+        b = (2+5) * 16 - 7
+        return
+    end
+    if
+        b > 10
+    then
+        def ccc = 100
+        return ccc
+    end
+end
+
+[PageEnd]
+
+[PageGroupEnd]

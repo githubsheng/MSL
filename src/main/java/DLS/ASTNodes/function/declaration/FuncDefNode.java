@@ -9,19 +9,21 @@ import java.util.List;
 /**
  * Created by wangsheng on 12/9/17.
  */
-public class FuncDefNode extends Node {
+public class FuncDefNode extends StatementNode {
 
-    public final IdentifierNode name;
-    public final List<StatementNode> statements;
-
-    public FuncDefNode(List<StatementNode> statements) {
-        //todo: for anonymous functions we would give a random name identifier instead.
-        this.name = null;
-        this.statements = statements;
-    }
+    private final IdentifierNode name;
+    private final List<StatementNode> statements;
 
     public FuncDefNode(IdentifierNode name, List<StatementNode> statements) {
         this.name = name;
         this.statements = statements;
+    }
+
+    public IdentifierNode getName() {
+        return name;
+    }
+
+    public List<StatementNode> getStatements() {
+        return statements;
     }
 }
