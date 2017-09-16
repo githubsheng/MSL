@@ -156,7 +156,7 @@ sourceElement
 /// Statement :
 ///     Block
 ///     VariableStatement
-///     EmptyStatement
+///     EmptyNode
 ///     ExpressionStatement
 ///     IfStatement
 ///     IterationStatement
@@ -225,7 +225,7 @@ initialiser
  : '=' singleExpression
  ;
 
-/// EmptyStatement :
+/// EmptyNode :
 ///     ;
 emptyStatement
  : SemiColon

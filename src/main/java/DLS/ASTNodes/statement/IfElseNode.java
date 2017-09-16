@@ -1,7 +1,5 @@
 package DLS.ASTNodes.statement;
 
-import DLS.ASTNodes.statement.expression.ExpressionNode;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -22,11 +20,11 @@ public class IfElseNode extends StatementNode {
         this.branches = branches;
     }
 
-    static final class Branch {
-        final ExpressionNode condition;
-        final List<StatementNode> statements;
+    public static final class Branch {
+        public final ExpressionNode condition;
+        public final List<StatementNode> statements;
 
-        Branch(ExpressionNode condition, List<StatementNode> statements) {
+        public Branch(ExpressionNode condition, List<StatementNode> statements) {
             this.condition = condition;
             this.statements = statements;
         }

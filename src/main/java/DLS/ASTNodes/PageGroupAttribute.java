@@ -1,4 +1,4 @@
-package DLS;
+package DLS.ASTNodes;
 
 //todo: come up with all attributes
 public enum PageGroupAttribute {
@@ -10,8 +10,7 @@ public enum PageGroupAttribute {
         this.attribIdentifierName = "_" + attribNameInTag;
     }
 
-    @Override
-    public String toString() {
-        return attribIdentifierName;
+    public String toIdentifierName(){
+        return this.attribIdentifierName;
     }
 }

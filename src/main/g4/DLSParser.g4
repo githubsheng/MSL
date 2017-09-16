@@ -22,8 +22,9 @@ attributes
 ;
 
 attribute
-: Name
-| Name AttributeAssign String
+: Name                                                          #AttributeWithDefaultValue
+| Name AttributeAssign String                                   #AttributeWithAssignedStringValue
+| Name AttributeAssign '{' expression '}'                       #AttributeWithAssignedExpression
 ;
 
 script: ( statement | functionDeclaration )*;
@@ -73,9 +74,9 @@ expression
 ;
 
 literal
-: DecimalLiteral
-| BooleanLiteral
-| StringLiteral
+: DecimalLiteral        #DecimalLiteral
+| BooleanLiteral        #BooleanLiteral
+| StringLiteral         #StringLiteral
 ;
 
 listLiteral: List LeftParen listElements RightParen;

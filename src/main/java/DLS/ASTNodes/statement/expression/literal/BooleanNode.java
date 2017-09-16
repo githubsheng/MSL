@@ -1,9 +1,11 @@
 package DLS.ASTNodes.statement.expression.literal;
 
+import DLS.ASTNodes.statement.ExpressionNode;
+
 /**
  * Created by sheng.wang on 2017/09/13.
  */
-public class BooleanNode {
+public class BooleanNode extends ExpressionNode {
 
     private final boolean isTrue;
 
