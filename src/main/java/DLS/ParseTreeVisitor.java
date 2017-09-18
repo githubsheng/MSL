@@ -5,11 +5,20 @@ import DLS.ASTNodes.function.declaration.FuncDefNode;
 import DLS.ASTNodes.statement.*;
 import DLS.ASTNodes.statement.expression.AssignNode;
 import DLS.ASTNodes.statement.expression.CallNode;
+import DLS.ASTNodes.statement.expression.DotNode;
 import DLS.ASTNodes.statement.expression.IdentifierNode;
-import DLS.ASTNodes.statement.expression.literal.BooleanNode;
-import DLS.ASTNodes.statement.expression.literal.ListLiteralNode;
-import DLS.ASTNodes.statement.expression.literal.StringNode;
-import DLS.ASTNodes.statement.expression.logical.BinaryLogicalNode;
+import DLS.ASTNodes.statement.expression.literal.*;
+import DLS.ASTNodes.statement.expression.logical.AndNode;
+import DLS.ASTNodes.statement.expression.logical.EqualsNode;
+import DLS.ASTNodes.statement.expression.logical.NotNode;
+import DLS.ASTNodes.statement.expression.logical.OrNode;
+import DLS.ASTNodes.statement.expression.math.AddNode;
+import DLS.ASTNodes.statement.expression.math.MinusNode;
+import DLS.ASTNodes.statement.expression.math.MultiplyNode;
+import DLS.ASTNodes.statement.expression.relational.LessThanEqualsNode;
+import DLS.ASTNodes.statement.expression.relational.LessThanNode;
+import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
+import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
 import DLS.generated.DLSParser;
 import DLS.generated.DLSParserBaseVisitor;
 
@@ -19,13 +28,23 @@ import java.util.stream.Collectors;
 public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     //todo: define these as enums later
-    public final static String ID = "id";
-    public final static String BUILT_IN_LIST_METHOD = "randomize";
+    private final static String ID = "id";
+    private final static String BUILT_IN_LIST_METHOD = "randomize";
+    private final Map<String, String> rowImplicitValues = new HashMap<>();
+    private final Map<String, String> colImplicitValues = new HashMap<>();
+    private final Map<String, String> questionImplicitValues = new HashMap<>();
+    //the keys of pageGroupImplicitValues and pageImplicitValues use the identifier forms.
+    private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
+    private final Map<String, String> pageImplicitValues = new HashMap<>();
+    //todo: init these implicit values.
 
     private int randomIdentifierNameCounter = 1;
-    private String generateRandomIdentifierName(){
+
+    private String generateRandomIdentifierName() {
         return "_generatedIdentifierName" + (++randomIdentifierNameCounter);
     }
+
+
 
     @Override
     public Node visitFile(DLSParser.FileContext ctx) {
@@ -50,7 +69,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         //todo: semantic checking: warn invalid attribute name
         //todo: method getAttributeStatements should also take a attribute name -> default value mapping
         //page group attributes
-        List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), PageGroupNode.implicitValues);
+        List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
         statements.addAll(attribStats);
 
         List<Node> pageNodes = ctx.page()
@@ -59,7 +78,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .collect(Collectors.toList());
 
         List<FuncDefNode> pageDefFuncs = pageNodes.stream().map(node -> {
-            PageNode pageNode = (PageNode)node;
+            PageNode pageNode = (PageNode) node;
             return pageNode.pageFuncDef;
         }).collect(Collectors.toList());
 
@@ -90,10 +109,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         IdentifierNode _randomize = new IdentifierNode(PageGroupAttribute.RANDOMIZE.toIdentifierName());
         //todo: this condition should be refactored....
         //equals to true
-        BinaryLogicalNode isTrue = new BinaryLogicalNode(BinaryLogicalNode.OperatorType.EQUALS, _randomize, new BooleanNode(true));
+        EqualsNode isTrue = new EqualsNode(_randomize, new BooleanNode(true));
         //equals to "true"
-        BinaryLogicalNode isTrueStr = new BinaryLogicalNode(BinaryLogicalNode.OperatorType.EQUALS, _randomize, new StringNode("true"));
-        BinaryLogicalNode either = new BinaryLogicalNode(BinaryLogicalNode.OperatorType.OR, isTrue, isTrueStr);
+        EqualsNode isTrueStr = new EqualsNode(_randomize, new StringNode("true"));
+        OrNode either = new OrNode(isTrue, isTrueStr);
 
         IfElseNode maybeRandomize = new IfElseNode(either, randomizeCall);
         statements.add(maybeRandomize);
@@ -115,13 +134,14 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         List<StatementNode> attributeStatements = new ArrayList<>();
 
-        for(DLSParser.AttributeContext ac : attrCtxs.attribute()) {
-            if(ac instanceof DLSParser.AttributeWithAssignedStringValueContext) {
-                attributeStatements.addAll(getAttributeStatements((DLSParser.AttributeWithAssignedStringValueContext)ac));
+        for (DLSParser.AttributeContext ac : attrCtxs.attribute()) {
+            if (ac instanceof DLSParser.AttributeWithAssignedStringValueContext) {
+                attributeStatements.addAll(getAttributeStatements((DLSParser.AttributeWithAssignedStringValueContext) ac));
             } else if (ac instanceof DLSParser.AttributeWithAssignedExpressionContext) {
-                attributeStatements.addAll(getAttributeStatements((DLSParser.AttributeWithAssignedExpressionContext)ac));
+                attributeStatements.addAll(getAttributeStatements((DLSParser.AttributeWithAssignedExpressionContext) ac));
             } else {
-                attributeStatements.addAll(getAttributeStatements((DLSParser.AttributeWithDefaultValueContext)ac, attribImplicitValues));            }
+                attributeStatements.addAll(getAttributeStatements((DLSParser.AttributeWithDefaultValueContext) ac, attribImplicitValues));
+            }
         }
         return attributeStatements;
     }
@@ -153,7 +173,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
             ColumnLiteralNode todo: define this node
          */
         ExpressionNode expNode = visitExpression(ac.expression());
-        if(expNode instanceof AssignNode) throw new RuntimeException("attribute expression cannot be an assignment");
+        if (expNode instanceof AssignNode) throw new RuntimeException("attribute expression cannot be an assignment");
 
         AssignNode assign = new AssignNode(identifier, expNode);
 
@@ -196,7 +216,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         statementNodes.addAll(getScriptStatements(preScript));
         List<StatementNode> questionStatements = ctx.question()
                 .stream()
-                .map(this::getQuestionStatement)
+                .map(this::getQuestionStatements)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
         statementNodes.addAll(questionStatements);
@@ -218,17 +238,44 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return new PageNode(pageFuncDef, pageFuncCall);
     }
 
-    private List<StatementNode> getQuestionStatement(DLSParser.QuestionContext questionCtx) {
+    private List<StatementNode> getQuestionStatements(DLSParser.QuestionContext questionCtx) {
+        if(questionCtx.singleChoiceQuestion() != null) {
+            DLSParser.SingleChoiceQuestionContext sc = questionCtx.singleChoiceQuestion();
+
+        } else {
+            DLSParser.MultipleChoiceQuestionContext mc = questionCtx.multipleChoiceQuestion();
+        }
+        //todo:
+        return null;
+    }
+
+    //todo: review
+    private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc){
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
+        List<ObjectLiteralNode> rowLiterals = sc.rows().row().stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
+        ListLiteralNode rowLiteralList = new ListLiteralNode(rowLiterals);
+        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rowLiteralList);
+        fields.add(rowsField);
+        IdentifierNode tmpIdentifier = new IdentifierNode(generateRandomIdentifierName());
+        return new DefNode(tmpIdentifier, new ObjectLiteralNode(fields));
+    }
+
+    private ObjectLiteralNode getRowObjectLiteralFromRowTag(DLSParser.RowContext rc) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(rc.attributes(), rowImplicitValues);
+        return new ObjectLiteralNode(fields);
+    }
+
+    private List<StatementNode> getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
         //todo:
         return null;
     }
 
     @Override
     public Node visitStatement(DLSParser.StatementContext ctx) {
-        if(ctx.variableStatement() != null) return visitVariableStatement(ctx.variableStatement());
-        if(ctx.emptyStatement() != null) return new EmptyNode();
-        if(ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
-        if(ctx.ifStatement() != null) return visitIfStatement(ctx.ifStatement());
+        if (ctx.variableStatement() != null) return visitVariableStatement(ctx.variableStatement());
+        if (ctx.emptyStatement() != null) return new EmptyNode();
+        if (ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
+        if (ctx.ifStatement() != null) return visitIfStatement(ctx.ifStatement());
         return null;
     }
 
@@ -244,9 +291,212 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return visitExpression(ctx.expression());
     }
 
-    //todo:
-    private ExpressionNode visitExpression(DLSParser.ExpressionContext expCtx) {
-        return null;
+    private ExpressionNode visitExpression(DLSParser.ExpressionContext ctx) {
+        if (ctx instanceof DLSParser.MemberExpressionContext) {
+            return (ExpressionNode) visitMemberExpression((DLSParser.MemberExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.CallExpressionContext) {
+            return (ExpressionNode) visitCallExpression((DLSParser.CallExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.NotExpressionContext) {
+            return (ExpressionNode) visitNotExpression((DLSParser.NotExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.MultiplicativeExpressionContext) {
+            return (ExpressionNode) visitMultiplicativeExpression((DLSParser.MultiplicativeExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.AdditiveExpressionContext) {
+            return (ExpressionNode) visitAdditiveExpression((DLSParser.AdditiveExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.RelationalExpressionContext) {
+            return (ExpressionNode) visitRelationalExpression((DLSParser.RelationalExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.EqualityExpressionContext) {
+            return (ExpressionNode) visitEqualityExpression((DLSParser.EqualityExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.LogicalAndExpressionContext) {
+            return (ExpressionNode) visitLogicalAndExpression((DLSParser.LogicalAndExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.LogicalOrExpressionContext) {
+            return (ExpressionNode) visitLogicalOrExpression((DLSParser.LogicalOrExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.AssignmentExpressionContext) {
+            return (ExpressionNode) visitAssignmentExpression((DLSParser.AssignmentExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.IdentifierExpressionContext) {
+            return (ExpressionNode) visitIdentifierExpression((DLSParser.IdentifierExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.LiteralExpressionContext) {
+            return (ExpressionNode) visitLiteralExpression((DLSParser.LiteralExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.ListLiteralExpressionContext) {
+            return (ExpressionNode) visitListLiteralExpression((DLSParser.ListLiteralExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.RowLiteralExpressionContext) {
+            return (ExpressionNode) visitRowLiteralExpression((DLSParser.RowLiteralExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.ColumnLiteralExpressionContext) {
+            return (ExpressionNode) visitColumnLiteralExpression((DLSParser.ColumnLiteralExpressionContext) ctx);
+        } else {
+            //must be instance ParenthesizedExpression
+            return (ExpressionNode) visitParenthesizedExpression((DLSParser.ParenthesizedExpressionContext) ctx);
+        }
+    }
+
+    @Override
+    public Node visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
+        return visitExpression(ctx.expression());
+    }
+
+    @Override
+    public Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
+        return new ObjectLiteralNode(fields);
+    }
+
+    @Override
+    public Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
+        return new ObjectLiteralNode(fields);
+    }
+
+    private List<ObjectLiteralNode.Field> getObjectLiteralFieldsFromAttributes(DLSParser.AttributesContext ac, Map<String, String> implicitValues) {
+        return ac.attribute().stream().map(attrb -> {
+            if(attrb instanceof DLSParser.AttributeWithAssignedStringValueContext) {
+                DLSParser.AttributeWithAssignedStringValueContext c = (DLSParser.AttributeWithAssignedStringValueContext)attrb;
+                String fieldName = c.Name().getText();
+                String val = c.String().getText();
+                return new ObjectLiteralNode.Field(fieldName, new StringNode(val));
+            } else if(attrb instanceof DLSParser.AttributeWithAssignedExpressionContext) {
+                DLSParser.AttributeWithAssignedExpressionContext c = (DLSParser.AttributeWithAssignedExpressionContext)attrb;
+                String fieldName = c.Name().getText();
+                ExpressionNode exp = visitExpression(c.expression());
+                return new ObjectLiteralNode.Field(fieldName, exp);
+            } else {
+                DLSParser.AttributeWithDefaultValueContext c = (DLSParser.AttributeWithDefaultValueContext)attrb;
+                String fieldName = c.Name().getText();
+                String val = implicitValues.get(fieldName);
+                return new ObjectLiteralNode.Field(fieldName, new StringNode(val));
+            }
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Node visitAdditiveExpression(DLSParser.AdditiveExpressionContext ctx) {
+        ExpressionNode left = visitExpression(ctx.expression(0));
+        ExpressionNode right = visitExpression(ctx.expression(1));
+        if (ctx.Minus() != null) {
+            return new MinusNode(left, right);
+        } else {
+            return new AddNode(left, right);
+        }
+    }
+
+    @Override
+    public Node visitRelationalExpression(DLSParser.RelationalExpressionContext ctx) {
+        ExpressionNode left = visitExpression(ctx.expression(0));
+        ExpressionNode right = visitExpression(ctx.expression(1));
+
+        if (ctx.LessThan() != null) {
+            return new LessThanNode(left, right);
+        } else if (ctx.MoreThan() != null) {
+            return new MoreThanNode(left, right);
+        } else if (ctx.LessThanEquals() != null) {
+            return new LessThanEqualsNode(left, right);
+        } else {
+            return new MoreThanEqualsNode(left, right);
+        }
+    }
+
+    @Override
+    public Node visitLogicalAndExpression(DLSParser.LogicalAndExpressionContext ctx) {
+        ExpressionNode left = visitExpression(ctx.expression(0));
+        ExpressionNode right = visitExpression(ctx.expression(1));
+        return new AndNode(left, right);
+    }
+
+    @Override
+    public Node visitLiteralExpression(DLSParser.LiteralExpressionContext ctx) {
+        //here we do not have object literal cos user cannot define objects.
+        DLSParser.LiteralContext lctx = ctx.literal();
+        if (lctx instanceof DLSParser.DecimalLiteralContext) {
+            double d = Double.valueOf(lctx.getText());
+            return new NumberNode(d);
+        } else if (lctx instanceof DLSParser.BooleanLiteralContext) {
+            String isTrue = lctx.getText();
+            return new BooleanNode(Boolean.valueOf(isTrue));
+        } else {
+            String str = lctx.getText();
+            return new StringNode(str);
+        }
+    }
+
+    @Override
+    public Node visitListLiteralExpression(DLSParser.ListLiteralExpressionContext ctx) {
+        List<ExpressionNode> elements = convertExpressionContextsToExpressionNodes(
+                ctx.listLiteral()
+                        .listElements()
+                        .expression()
+        );
+        return new ListLiteralNode(elements);
+    }
+
+    private List<ExpressionNode> convertExpressionContextsToExpressionNodes(Collection<DLSParser.ExpressionContext> ctxs) {
+        return ctxs.stream()
+                .map(this::visitExpression)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Node visitLogicalOrExpression(DLSParser.LogicalOrExpressionContext ctx) {
+        ExpressionNode left = visitExpression(ctx.expression(0));
+        ExpressionNode right = visitExpression(ctx.expression(1));
+        return new OrNode(left, right);
+    }
+
+    @Override
+    public Node visitNotExpression(DLSParser.NotExpressionContext ctx) {
+        ExpressionNode target = visitExpression(ctx.expression());
+        return new NotNode(target);
+    }
+
+    @Override
+    public Node visitIdentifierExpression(DLSParser.IdentifierExpressionContext ctx) {
+        return new IdentifierNode(ctx.getText());
+    }
+
+    @Override
+    public Node visitMemberExpression(DLSParser.MemberExpressionContext ctx) {
+        ExpressionNode left = visitExpression(ctx.expression());
+        IdentifierNode right = new IdentifierNode(ctx.Identifier().getText());
+        return new DotNode(left, right);
+    }
+
+    @Override
+    public Node visitAssignmentExpression(DLSParser.AssignmentExpressionContext ctx) {
+        ExpressionNode target = visitExpression(ctx.expression(0));
+        ExpressionNode value = visitExpression(ctx.expression(1));
+        return new AssignNode(target, value);
+    }
+
+    @Override
+    public Node visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
+        ExpressionNode left = visitExpression(ctx.expression(0));
+        ExpressionNode right = visitExpression(ctx.expression(1));
+        return new EqualsNode(left, right);
+    }
+
+    @Override
+    public Node visitMultiplicativeExpression(DLSParser.MultiplicativeExpressionContext ctx) {
+        ExpressionNode left = visitExpression(ctx.expression(0));
+        ExpressionNode right = visitExpression(ctx.expression(1));
+        return new MultiplyNode(left, right);
+    }
+
+    @Override
+    public Node visitCallExpression(DLSParser.CallExpressionContext ctx) {
+        DLSParser.ExpressionContext e = ctx.expression();
+        List<ExpressionNode> args;
+        if(ctx.argumentList().expression() != null ) {
+            args = convertExpressionContextsToExpressionNodes(ctx.argumentList().expression());
+        } else {
+            args = Collections.emptyList();
+        }
+
+        if (e instanceof DLSParser.MemberExpressionContext) {
+            //invokes a method
+            DotNode methodInvoke = (DotNode) visitExpression(e);
+            return new CallNode(methodInvoke.getLeft(), methodInvoke.getRight(), args);
+        } else {
+            //calls a first class function
+            IdentifierNode funcName = (IdentifierNode) visitExpression(e);
+            return new CallNode(funcName, args);
+        }
     }
 
     @Override
@@ -263,7 +513,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         IfElseNode.Branch branch = new IfElseNode.Branch(condition, statements);
         branches.add(branch);
 
-        if(ctx.elseStatement().noEndingIfStatement() != null) {
+        if (ctx.elseStatement().noEndingIfStatement() != null) {
             createBranchFromNoEndingIfStatement(ctx.elseStatement().noEndingIfStatement(), branches);
         } else {
             //create the catch all "else statement" in the end.
@@ -278,7 +528,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return ctx.statement()
                 .stream()
                 .map(this::visitStatement)
-                .map(node -> (StatementNode)node)
+                .map(node -> (StatementNode) node)
                 .collect(Collectors.toList());
     }
 }

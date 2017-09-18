@@ -1,16 +1,16 @@
-package DLS.ASTNodes.statement.expression.relational;
+package DLS.ASTNodes.statement.expression;
 
 import DLS.ASTNodes.statement.ExpressionNode;
 
 /**
- * Created by wangsheng on 12/9/17.
+ * Created by wangsheng on 17/9/17.
  */
-public class EqualsNode extends ExpressionNode {
+public class BinaryNode extends ExpressionNode {
 
     private final ExpressionNode left;
     private final ExpressionNode right;
 
-    public EqualsNode(ExpressionNode left, ExpressionNode right) {
+    public BinaryNode(ExpressionNode left, ExpressionNode right) {
         this.left = left;
         this.right = right;
     }

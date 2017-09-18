@@ -8,9 +8,9 @@ import DLS.ASTNodes.statement.ExpressionNode;
 public class DotNode extends ExpressionNode {
 
     private final ExpressionNode left;
-    private final ExpressionNode right;
+    private final IdentifierNode right;
 
-    public DotNode(ExpressionNode left, ExpressionNode right) {
+    public DotNode(ExpressionNode left, IdentifierNode right) {
         this.left = left;
         this.right = right;
     }
@@ -19,7 +19,7 @@ public class DotNode extends ExpressionNode {
         return left;
     }
 
-    public ExpressionNode getRight() {
+    public IdentifierNode getRight() {
         return right;
     }
 }

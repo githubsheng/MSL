@@ -15,23 +15,23 @@ import java.util.List;
 public class CallNode extends ExpressionNode {
 
     private final ExpressionNode thisArg;
-    private final ExpressionNode funcName;
+    private final IdentifierNode funcName;
     private final List<ExpressionNode> arguments;
 
 
-    public CallNode(ExpressionNode funcName) {
+    public CallNode(IdentifierNode funcName) {
         this(funcName, Collections.emptyList());
     }
 
-    public CallNode(ExpressionNode funcName, List<ExpressionNode> arguments) {
+    public CallNode(IdentifierNode funcName, List<ExpressionNode> arguments) {
         this(null, funcName, arguments);
     }
 
-    public CallNode(ExpressionNode thisArg, ExpressionNode funcName) {
+    public CallNode(ExpressionNode thisArg, IdentifierNode funcName) {
         this(thisArg, funcName, Collections.emptyList());
     }
 
-    public CallNode(ExpressionNode thisArg, ExpressionNode funcName, List<ExpressionNode> arguments) {
+    public CallNode(ExpressionNode thisArg, IdentifierNode funcName, List<ExpressionNode> arguments) {
         this.thisArg = thisArg;
         this.funcName = funcName;
         this.arguments = arguments;
