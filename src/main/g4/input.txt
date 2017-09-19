@@ -26,7 +26,7 @@ chance
         terminate
 end
 
-[SingleChoice id="qa" randomize = {a + b}] some question text
+[SingleChoice id="qa" randomize={a + b}] some question text
 [Row id="r1"]row one
 [Row id="r2"]row two
 

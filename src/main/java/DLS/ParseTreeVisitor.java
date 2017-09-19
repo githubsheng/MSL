@@ -165,15 +165,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         DefNode def = new DefNode(identifier);
 
-        //todo: here we need to check this expression and make sure it is not an assignment.
-        /*
-            expression type that are not allowed:
-            AssignNode
-            RowLiteralNode todo: define this node
-            ColumnLiteralNode todo: define this node
-         */
         ExpressionNode expNode = visitExpression(ac.expression());
         if (expNode instanceof AssignNode) throw new RuntimeException("attribute expression cannot be an assignment");
+        //user cannot define objects. So objects must be either row literals or col literals.
+        if (expNode instanceof ObjectLiteralNode) throw new RuntimeException("attribute expression cannot be row / column literal");
 
         AssignNode assign = new AssignNode(identifier, expNode);
 
@@ -217,7 +212,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         List<StatementNode> questionStatements = ctx.question()
                 .stream()
                 .map(this::getQuestionStatements)
-                .flatMap(List::stream)
                 .collect(Collectors.toList());
         statementNodes.addAll(questionStatements);
         statementNodes.addAll(getScriptStatements(postScript));
@@ -238,21 +232,21 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return new PageNode(pageFuncDef, pageFuncCall);
     }
 
-    private List<StatementNode> getQuestionStatements(DLSParser.QuestionContext questionCtx) {
+    private StatementNode getQuestionStatements(DLSParser.QuestionContext questionCtx) {
+        //todo: add other question types.
         if(questionCtx.singleChoiceQuestion() != null) {
             DLSParser.SingleChoiceQuestionContext sc = questionCtx.singleChoiceQuestion();
-
+            return getSingleQuestionStatements(sc);
         } else {
             DLSParser.MultipleChoiceQuestionContext mc = questionCtx.multipleChoiceQuestion();
+            return getMultipleQuestionStatements(mc);
         }
-        //todo:
-        return null;
     }
 
     //todo: review
     private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc){
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
-        List<ObjectLiteralNode> rowLiterals = sc.rows().row().stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
+        List<ObjectLiteralNode> rowLiterals = sc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
         ListLiteralNode rowLiteralList = new ListLiteralNode(rowLiterals);
         ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rowLiteralList);
         fields.add(rowsField);
@@ -265,9 +259,27 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return new ObjectLiteralNode(fields);
     }
 
-    private List<StatementNode> getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
-        //todo:
-        return null;
+    private StatementNode getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
+        List<ObjectLiteralNode> rowLiterals = mc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
+        List<ObjectLiteralNode> colLiterals = mc.cols.stream().map(this::getColObjectLiteralFromColTag).collect(Collectors.toList());
+
+        ListLiteralNode rowLiteralList = new ListLiteralNode(rowLiterals);
+        ListLiteralNode colLiteralList = new ListLiteralNode(colLiterals);
+
+        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rowLiteralList);
+        ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field("cols", colLiteralList);
+
+        fields.add(rowsField);
+        fields.add(colsField);
+
+        IdentifierNode tmpIdentifier = new IdentifierNode(generateRandomIdentifierName());
+        return new DefNode(tmpIdentifier, new ObjectLiteralNode(fields));
+    }
+
+    private ObjectLiteralNode getColObjectLiteralFromColTag(DLSParser.ColContext cc) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(cc.attributes(), colImplicitValues);
+        return new ObjectLiteralNode(fields);
     }
 
     @Override

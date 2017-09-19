@@ -141,17 +141,18 @@ question
 ;
 
 singleChoiceQuestion
-: SingleChoiceStart attributes Close TextArea rows
+: SingleChoiceStart attributes Close TextArea rows+=row+
 ;
 
 multipleChoiceQuestion
-: MultipleChoiceStart attributes Close TextArea rows
-;
-
-rows
-: row+
+: MultipleChoiceStart attributes Close TextArea rows+=row+ cols+=col+
 ;
 
 row
 : RowStart attributes Close TextArea
 ;
+
+col
+: ColStart attributes Close TextArea
+;
+
