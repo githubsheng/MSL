@@ -27,16 +27,103 @@ import java.util.stream.Collectors;
 
 public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
-    //todo: define these as enums later
-    private final static String ID = "id";
-    private final static String BUILT_IN_LIST_METHOD = "randomize";
     private final Map<String, String> rowImplicitValues = new HashMap<>();
     private final Map<String, String> colImplicitValues = new HashMap<>();
     private final Map<String, String> questionImplicitValues = new HashMap<>();
     //the keys of pageGroupImplicitValues and pageImplicitValues use the identifier forms.
     private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
     private final Map<String, String> pageImplicitValues = new HashMap<>();
-    //todo: init these implicit values.
+
+
+    enum RowAttributes {
+
+        ID("id"), HIDE("hide"), FIXED("fixed"), XOR("xor"), TEXTBOX("textbox");
+
+        private String name;
+        RowAttributes(String name) {
+            this.name = name;
+        }
+
+        public String getName(){
+            return this.name;
+        }
+    }
+
+    enum ColAttributes {
+
+        ID("id"), HIDE("hide"), FIXED("fixed"), XOR("xor"), TEXTBOX("textbox");
+
+        private String name;
+        ColAttributes(String name) {
+            this.name = name;
+        }
+
+        public String getName(){
+            return this.name;
+        }
+    }
+
+    enum QuestionAttributes {
+
+        ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate"), REQUIRED("true");
+
+        private String name;
+        QuestionAttributes(String name) {
+            this.name = name;
+        }
+
+        public String getName(){
+            return this.name;
+        }
+    }
+
+    enum PageAttributes {
+
+        ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate");
+
+        private String name;
+        PageAttributes(String name) {
+            this.name = name;
+        }
+
+        public String getName(){
+            return this.name;
+        }
+    }
+
+    enum ListMethods {
+        RANDOMIZE("randomize"), ROTATE("rotate");
+
+        private String name;
+        ListMethods(String name) {
+            this.name = name;
+        }
+
+        public String getName(){
+            return this.name;
+        }
+    }
+
+    public ParseTreeVisitor(){
+        super();
+        //row implicit attributes
+        rowImplicitValues.put(RowAttributes.HIDE.getName(), "true");
+        rowImplicitValues.put(RowAttributes.FIXED.getName(), "true");
+        rowImplicitValues.put(RowAttributes.XOR.getName(), "true");
+        rowImplicitValues.put(RowAttributes.TEXTBOX.getName(), "true");
+
+        //column implicit attributes
+        colImplicitValues.put(ColAttributes.HIDE.getName(), "true");
+        colImplicitValues.put(ColAttributes.FIXED.getName(), "true");
+        colImplicitValues.put(ColAttributes.XOR.getName(), "true");
+        colImplicitValues.put(ColAttributes.TEXTBOX.getName(), "true");
+
+        //question implicit attributes
+        questionImplicitValues.put(QuestionAttributes.HIDE.getName(), "true");
+        questionImplicitValues.put(QuestionAttributes.RANDOMIZE.getName(), "true");
+        questionImplicitValues.put(QuestionAttributes.ROTATE.getName(), "true");
+        questionImplicitValues.put(QuestionAttributes.REQUIRED.getName(), "true");
+    }
 
     private int randomIdentifierNameCounter = 1;
 
@@ -67,7 +154,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         List<StatementNode> statements = new ArrayList<>();
 
         //todo: semantic checking: warn invalid attribute name
-        //todo: method getAttributeStatements should also take a attribute name -> default value mapping
         //page group attributes
         List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
         statements.addAll(attribStats);
@@ -92,30 +178,35 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         //define a list of list to hold all page functions
         IdentifierNode callOrderListIdentifier = new IdentifierNode(this.generateRandomIdentifierName());
-        DefNode defCallOrders = new DefNode(callOrderListIdentifier);
-
         //initialise the list by putting all page function identifier into it.
-        ListLiteralNode callOrders = new ListLiteralNode(funcIdentifiers);
-        AssignNode listAssign = new AssignNode(callOrderListIdentifier, callOrders);
+        ListLiteralNode pageFuncNameList = new ListLiteralNode(funcIdentifiers);
+        DefNode defCallOrders = new DefNode(callOrderListIdentifier, pageFuncNameList);
 
         statements.add(defCallOrders);
-        statements.add(listAssign);
 
-
-        //todo: add support for rotate as well
         //call list.randomize if page group attribute "randomize" evaluates to true.
-        CallNode randomizeCall = new CallNode(callOrderListIdentifier, new IdentifierNode(BUILT_IN_LIST_METHOD));
-
+        CallNode randomizeCall = new CallNode(callOrderListIdentifier, new IdentifierNode(ListMethods.RANDOMIZE.getName()));
+        //previously we should have already declared and initialized a local variable with the name "_randomize", now we need to read its value
         IdentifierNode _randomize = new IdentifierNode(PageGroupAttribute.RANDOMIZE.toIdentifierName());
-        //todo: this condition should be refactored....
         //equals to true
         EqualsNode isTrue = new EqualsNode(_randomize, new BooleanNode(true));
         //equals to "true"
         EqualsNode isTrueStr = new EqualsNode(_randomize, new StringNode("true"));
         OrNode either = new OrNode(isTrue, isTrueStr);
-
         IfElseNode maybeRandomize = new IfElseNode(either, randomizeCall);
         statements.add(maybeRandomize);
+
+        //call list.randomize if page group attribute "rotate" evaluates to true.
+        CallNode rotateCall = new CallNode(callOrderListIdentifier, new IdentifierNode(ListMethods.ROTATE.getName()));
+        //previously we should have already declared and initialized a local variable with the name "_rotate", now we need to read its value
+        IdentifierNode _rotate = new IdentifierNode(PageGroupAttribute.ROTATE.toIdentifierName());
+        //equals to true
+        EqualsNode isTrue1 = new EqualsNode(_rotate, new BooleanNode(true));
+        //equals to "true"
+        EqualsNode isTrueStr1 = new EqualsNode(_rotate, new StringNode("true"));
+        OrNode either1 = new OrNode(isTrue1, isTrueStr1);
+        IfElseNode maybeRotate = new IfElseNode(either1, rotateCall);
+        statements.add(maybeRotate);
 
         //loop the list, get the page functions and call them one by one.
         ListOptNode loop = new ListOptNode(ListOptNode.ListOptType.LOOP, callOrderListIdentifier, Collections.singletonList(new CallNode(ListOptNode.$element)));
@@ -178,6 +269,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return statements;
     }
 
+    //more preciously, here the name should be "AttributeWithImplicitValue" rather than "AttributeWithDefaultValue"
     private List<StatementNode> getAttributeStatements(DLSParser.AttributeWithDefaultValueContext ac, Map<String, String> attribImplicitValues) {
         IdentifierNode identifier = convertAttributeNameToIdentifier(ac.Name().getText());
         DefNode def = new DefNode(identifier);
@@ -216,12 +308,11 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         statementNodes.addAll(questionStatements);
         statementNodes.addAll(getScriptStatements(postScript));
 
-        //todo: here we should use get attributes function instead...
         Optional<String> maybeId = ctx.attributes()
                 .attribute()
                 .stream()
                 .map(DLSParser.AttributeContext::getText)
-                .filter(text -> text.equals(ID))
+                .filter(text -> text.equals(PageAttributes.ID.getName()))
                 .findFirst();
         String funcName = maybeId.orElse(this.generateRandomIdentifierName());
         IdentifierNode funcNameNode = new IdentifierNode(funcName);

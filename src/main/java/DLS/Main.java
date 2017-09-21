@@ -22,7 +22,6 @@ public class Main {
         ClassLoader classLoader = Main.class.getClassLoader();
         File file = new File(classLoader.getResource("input.txt").getFile());
 
-        //todo: rewrite the parse tree into a abstract syntax tree
         // create a CharStream that reads from standard input
         ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(file));
 
