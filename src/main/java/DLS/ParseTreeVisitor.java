@@ -3,6 +3,8 @@ package DLS;
 import DLS.ASTNodes.*;
 import DLS.ASTNodes.function.declaration.FuncDefNode;
 import DLS.ASTNodes.statement.*;
+import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
+import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
 import DLS.ASTNodes.statement.expression.AssignNode;
 import DLS.ASTNodes.statement.expression.CallNode;
 import DLS.ASTNodes.statement.expression.DotNode;
@@ -158,6 +160,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
         statements.addAll(attribStats);
 
+        //todo: review why we need pageNodes....
         List<Node> pageNodes = ctx.page()
                 .stream()
                 .map(this::visitPage)
@@ -169,6 +172,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         }).collect(Collectors.toList());
 
         //define all page functions
+        //todo: check why only one page def function was added?
         statements.addAll(pageDefFuncs);
 
         //all page function identifiers
@@ -301,11 +305,23 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         List<StatementNode> statementNodes = new ArrayList<>();
         statementNodes.addAll(getScriptStatements(preScript));
+        //a list of DefNode
         List<StatementNode> questionStatements = ctx.question()
                 .stream()
                 .map(this::getQuestionStatements)
                 .collect(Collectors.toList());
         statementNodes.addAll(questionStatements);
+
+        List<IdentifierNode> questionIdentifiers = questionStatements.stream()
+                .map(sn -> (DefNode)sn)
+                .map(DefNode::getIdentifier)
+                .collect(Collectors.toList());
+
+        SendDataNode sdn = new SendDataNode(questionIdentifiers);
+        statementNodes.add(sdn);
+        ReceiveDataBlockingNode rdbn = new ReceiveDataBlockingNode();
+        statementNodes.add(rdbn);
+
         statementNodes.addAll(getScriptStatements(postScript));
 
         Optional<String> maybeId = ctx.attributes()
@@ -336,6 +352,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     //todo: review
     private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc){
+        //todo: include question text as fields....
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
         List<ObjectLiteralNode> rowLiterals = sc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
         ListLiteralNode rowLiteralList = new ListLiteralNode(rowLiterals);
@@ -346,11 +363,13 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     private ObjectLiteralNode getRowObjectLiteralFromRowTag(DLSParser.RowContext rc) {
+        //todo: get row text as fields...
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(rc.attributes(), rowImplicitValues);
         return new ObjectLiteralNode(fields);
     }
 
     private StatementNode getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
+        //todo: get question text as field....
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
         List<ObjectLiteralNode> rowLiterals = mc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
         List<ObjectLiteralNode> colLiterals = mc.cols.stream().map(this::getColObjectLiteralFromColTag).collect(Collectors.toList());
@@ -369,6 +388,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     private ObjectLiteralNode getColObjectLiteralFromColTag(DLSParser.ColContext cc) {
+        //todo: get column text as field....
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(cc.attributes(), colImplicitValues);
         return new ObjectLiteralNode(fields);
     }
@@ -379,6 +399,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         if (ctx.emptyStatement() != null) return new EmptyNode();
         if (ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
         if (ctx.ifStatement() != null) return visitIfStatement(ctx.ifStatement());
+        //todo: supports listOperationStatement
+        //todo: supports return statement
+        //todo: chance statement
+        //todo: built in command statement
         return null;
     }
 

@@ -116,8 +116,7 @@ chanceStatement: Chance NewLine possibility+ End;
 possibility: Percentage Colon NewLine? statements;
 
 builtInCommandStatement
-: GoTo Identifier                               #GoToCommand
-| Terminate                                     #TerminateCommand
+: Terminate                                     #TerminateCommand
 | Select expression                             #SelectCommand
 | Rank rankOrders                               #RankCommand
 ;

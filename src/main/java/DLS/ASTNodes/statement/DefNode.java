@@ -14,8 +14,8 @@ import java.util.Optional;
  */
 public class DefNode extends StatementNode {
 
-    public final IdentifierNode identifier;
-    public final Optional<ExpressionNode> initializer;
+    private final IdentifierNode identifier;
+    private final Optional<ExpressionNode> initializer;
 
     public DefNode(IdentifierNode identifier) {
         this.identifier = identifier;
@@ -27,4 +27,11 @@ public class DefNode extends StatementNode {
         this.initializer = Optional.of(initializer);
     }
 
+    public IdentifierNode getIdentifier() {
+        return identifier;
+    }
+
+    public Optional<ExpressionNode> getInitializer() {
+        return initializer;
+    }
 }

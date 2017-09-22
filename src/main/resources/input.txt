@@ -1,7 +1,16 @@
 [PageGroup]
+
 [Page]
+
 [SingleChoice] some question text
 [Row]row one
+[Row]row two
+
+[MultipleChoice] some question text
+[Row]row one
+[Row]row two
+
 [Submit]
 [PageEnd]
+
 [PageGroupEnd]

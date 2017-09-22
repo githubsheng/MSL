@@ -3,17 +3,14 @@ package DLS.ASTNodes;
 import DLS.ASTNodes.function.declaration.FuncDefNode;
 import DLS.ASTNodes.statement.expression.CallNode;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class PageGroupNode extends Node {
 
-    public final FuncDefNode pageFuncDef;
-    public final CallNode pageFuncCall;
+    public final FuncDefNode pageGroupFuncDef;
+    public final CallNode pageGroupFuncCall;
 
-    public PageGroupNode(FuncDefNode funcDefNode, CallNode callNode) {
-        this.pageFuncDef = funcDefNode;
-        this.pageFuncCall = callNode;
+    public PageGroupNode(FuncDefNode funcGroupDefNode, CallNode callNode) {
+        this.pageGroupFuncDef = funcGroupDefNode;
+        this.pageGroupFuncCall = callNode;
 
     }
 
