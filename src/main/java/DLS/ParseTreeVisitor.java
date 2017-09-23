@@ -292,7 +292,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         Optional<String> maybeId = getIdStrVal(sc.attributes());
         String identifierName = maybeId.orElse(generateRandomIdentifierName());
         IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
-        return new DefNode(questionIdentifier, new ObjectLiteralNode(fields));
+        return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
     }
 
     @SuppressWarnings("Duplicates")
@@ -336,10 +336,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         fields.add(rowsField);
         fields.add(colsField);
 
-        //todo: the identifier needs to be the id of the question, if id attribute exists
-        //todo: the identifier needs to be global in the above case
-        IdentifierNode tmpIdentifier = new IdentifierNode(generateRandomIdentifierName());
-        return new DefNode(tmpIdentifier, new ObjectLiteralNode(fields));
+        Optional<String> maybeId = getIdStrVal(mc.attributes());
+        String identifierName = maybeId.orElse(generateRandomIdentifierName());
+        IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
+        return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
     }
 
     @Override
