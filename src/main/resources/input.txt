@@ -1,6 +1,6 @@
 [PageGroup randomize]
 
-[Page]
+[Page id="myPage" randomize]
 
 [SingleChoice] some question text
 [Row]row one
@@ -22,7 +22,5 @@
 
 [Submit]
 [PageEnd]
-
-
 
 [PageGroupEnd]

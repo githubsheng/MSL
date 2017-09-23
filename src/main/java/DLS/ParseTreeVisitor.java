@@ -39,7 +39,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
     private final Map<String, String> pageImplicitValues = new HashMap<>();
 
-    public ParseTreeVisitor(){
+    public ParseTreeVisitor() {
         super();
         //row implicit attribute values
         rowImplicitValues.put(RowAttributes.HIDE.getName(), "true");
@@ -75,7 +75,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
 
-
     @Override
     public Node visitFile(DLSParser.FileContext ctx) {
         //we sees pages as functions ( has its own local variable scope )
@@ -88,7 +87,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     private Node getPageNodeOrPageGroupNode(DLSParser.ElementContext ctx) {
-
         return ctx.page() != null ? visitPage(ctx.page()) : visitPageGroup(ctx.pageGroup());
     }
 
@@ -184,48 +182,29 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     private List<StatementNode> getAttributeStatements(DLSParser.AttributeWithAssignedStringValueContext ac) {
         IdentifierNode identifier = convertAttributeNameToIdentifier(ac.Name().getText());
-
-        DefNode def = new DefNode(identifier);
-
-        StringNode str = new StringNode(ac.String().getText());
-        AssignNode assign = new AssignNode(identifier, str);
-
-        List<StatementNode> statements = new ArrayList<>(2);
-        statements.add(def);
-        statements.add(assign);
-        return statements;
+        String strVal = removeDoubleQuotes(ac.String().getText());
+        DefNode def = new DefNode(identifier, new StringNode(strVal));
+        return Collections.singletonList(def);
     }
 
     private List<StatementNode> getAttributeStatements(DLSParser.AttributeWithAssignedExpressionContext ac) {
-        IdentifierNode identifier = convertAttributeNameToIdentifier(ac.Name().getText());
-
-        DefNode def = new DefNode(identifier);
-
         ExpressionNode expNode = visitExpression(ac.expression());
         if (expNode instanceof AssignNode) throw new RuntimeException("attribute expression cannot be an assignment");
         //user cannot define objects. So objects must be either row literals or col literals.
         if (expNode instanceof ObjectLiteralNode) throw new RuntimeException("attribute expression cannot be row / column literal");
 
-        AssignNode assign = new AssignNode(identifier, expNode);
+        IdentifierNode identifier = convertAttributeNameToIdentifier(ac.Name().getText());
+        DefNode def = new DefNode(identifier, expNode);
 
-        List<StatementNode> statements = new ArrayList<>(2);
-        statements.add(def);
-        statements.add(assign);
-        return statements;
+        return Collections.singletonList(def);
     }
 
     //more preciously, here the name should be "AttributeWithImplicitValue" rather than "AttributeWithDefaultValue"
     private List<StatementNode> getAttributeStatements(DLSParser.AttributeWithDefaultValueContext ac, Map<String, String> attribImplicitValues) {
         IdentifierNode identifier = convertAttributeNameToIdentifier(ac.Name().getText());
-        DefNode def = new DefNode(identifier);
-
         StringNode str = new StringNode(attribImplicitValues.get(identifier.name));
-        AssignNode assign = new AssignNode(identifier, str);
-
-        List<StatementNode> statements = new ArrayList<>(2);
-        statements.add(def);
-        statements.add(assign);
-        return statements;
+        DefNode def = new DefNode(identifier, str);
+        return Collections.singletonList(def);
     }
 
     private IdentifierNode convertAttributeNameToIdentifier(String attributeName) {
@@ -247,8 +226,9 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         List<StatementNode> statementNodes = new ArrayList<>();
         statementNodes.addAll(getScriptStatements(preScript));
 
-        System.out.println(ctx.question().size());
-        System.out.println(ctx.question().get(0).singleChoiceQuestion().row().size());
+        //get page attributes
+        List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageImplicitValues);
+        statementNodes.addAll(attribStats);
 
         //a list of DefNode
         List<StatementNode> questionStatements = ctx.question()
@@ -258,7 +238,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         statementNodes.addAll(questionStatements);
 
         List<IdentifierNode> questionIdentifiers = questionStatements.stream()
-                .map(sn -> (DefNode)sn)
+                .map(sn -> (DefNode) sn)
                 .map(DefNode::getIdentifier)
                 .collect(Collectors.toList());
 
@@ -269,12 +249,11 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         statementNodes.addAll(getScriptStatements(postScript));
 
-        Optional<String> maybeId = ctx.attributes()
-                .attribute()
-                .stream()
-                .map(DLSParser.AttributeContext::getText)
-                .filter(text -> text.equals(PageAttributes.ID.getName()))
-                .findFirst();
+        //todo: question identifier should be its id attribute if there is
+        //todo: id attributes can only be strings
+        //todo: verify the expressions....
+        Optional<String> maybeId = getIdStrVal(ctx.attributes());
+
         String funcName = maybeId.orElse(this.generateRandomIdentifierName());
         IdentifierNode funcNameNode = new IdentifierNode(funcName);
 
@@ -286,7 +265,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     private StatementNode getQuestionStatements(DLSParser.QuestionContext questionCtx) {
         //todo: add other question types.
-        if(questionCtx.singleChoiceQuestion() != null) {
+        if (questionCtx.singleChoiceQuestion() != null) {
             DLSParser.SingleChoiceQuestionContext sc = questionCtx.singleChoiceQuestion();
             return getSingleQuestionStatements(sc);
         } else {
@@ -296,7 +275,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     //todo: review
-    private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc){
+    private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
 
         String questionText = sc.TextArea().getText();
@@ -308,8 +287,12 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rowLiteralList);
         fields.add(rowsField);
 
-        IdentifierNode tmpIdentifier = new IdentifierNode(generateRandomIdentifierName());
-        return new DefNode(tmpIdentifier, new ObjectLiteralNode(fields));
+        //todo: the identifier needs to be the id of the question, if id attribute exists
+        //todo: the identifier needs to be global in the above case
+        Optional<String> maybeId = getIdStrVal(sc.attributes());
+        String identifierName = maybeId.orElse(generateRandomIdentifierName());
+        IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
+        return new DefNode(questionIdentifier, new ObjectLiteralNode(fields));
     }
 
     @SuppressWarnings("Duplicates")
@@ -353,6 +336,8 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         fields.add(rowsField);
         fields.add(colsField);
 
+        //todo: the identifier needs to be the id of the question, if id attribute exists
+        //todo: the identifier needs to be global in the above case
         IdentifierNode tmpIdentifier = new IdentifierNode(generateRandomIdentifierName());
         return new DefNode(tmpIdentifier, new ObjectLiteralNode(fields));
     }
@@ -438,18 +423,18 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     private List<ObjectLiteralNode.Field> getObjectLiteralFieldsFromAttributes(DLSParser.AttributesContext ac, Map<String, String> implicitValues) {
         return ac.attribute().stream().map(attrb -> {
-            if(attrb instanceof DLSParser.AttributeWithAssignedStringValueContext) {
-                DLSParser.AttributeWithAssignedStringValueContext c = (DLSParser.AttributeWithAssignedStringValueContext)attrb;
+            if (attrb instanceof DLSParser.AttributeWithAssignedStringValueContext) {
+                DLSParser.AttributeWithAssignedStringValueContext c = (DLSParser.AttributeWithAssignedStringValueContext) attrb;
                 String fieldName = c.Name().getText();
-                String val = c.String().getText();
+                String val = removeDoubleQuotes(c.String().getText());
                 return new ObjectLiteralNode.Field(fieldName, new StringNode(val));
-            } else if(attrb instanceof DLSParser.AttributeWithAssignedExpressionContext) {
-                DLSParser.AttributeWithAssignedExpressionContext c = (DLSParser.AttributeWithAssignedExpressionContext)attrb;
+            } else if (attrb instanceof DLSParser.AttributeWithAssignedExpressionContext) {
+                DLSParser.AttributeWithAssignedExpressionContext c = (DLSParser.AttributeWithAssignedExpressionContext) attrb;
                 String fieldName = c.Name().getText();
                 ExpressionNode exp = visitExpression(c.expression());
                 return new ObjectLiteralNode.Field(fieldName, exp);
             } else {
-                DLSParser.AttributeWithDefaultValueContext c = (DLSParser.AttributeWithDefaultValueContext)attrb;
+                DLSParser.AttributeWithDefaultValueContext c = (DLSParser.AttributeWithDefaultValueContext) attrb;
                 String fieldName = c.Name().getText();
                 String val = implicitValues.get(fieldName);
                 return new ObjectLiteralNode.Field(fieldName, new StringNode(val));
@@ -573,7 +558,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     public Node visitCallExpression(DLSParser.CallExpressionContext ctx) {
         DLSParser.ExpressionContext e = ctx.expression();
         List<ExpressionNode> args;
-        if(ctx.argumentList().expression() != null ) {
+        if (ctx.argumentList().expression() != null) {
             args = convertExpressionContextsToExpressionNodes(ctx.argumentList().expression());
         } else {
             args = Collections.emptyList();
@@ -621,5 +606,24 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .map(this::visitStatement)
                 .map(node -> (StatementNode) node)
                 .collect(Collectors.toList());
+    }
+
+    private String removeDoubleQuotes(String str) {
+        if (str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"') {
+            return str.substring(1, str.length() - 1);
+        } else {
+            return str;
+        }
+    }
+
+    private Optional<String> getIdStrVal(DLSParser.AttributesContext ctx) {
+        return ctx.attribute()
+                .stream()
+                .filter(attributeContext -> attributeContext instanceof DLSParser.AttributeWithAssignedStringValueContext)
+                .map(attributeContext -> (DLSParser.AttributeWithAssignedStringValueContext) attributeContext)
+                .filter(strValAttr -> strValAttr.Name().getText().equals(PageAttributes.ID.getName()))
+                .map(strValAttr -> strValAttr.String().getText())
+                .map(this::removeDoubleQuotes)
+                .findFirst();
     }
 }
