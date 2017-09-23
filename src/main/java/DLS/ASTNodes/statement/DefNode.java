@@ -14,17 +14,26 @@ import java.util.Optional;
  */
 public class DefNode extends StatementNode {
 
+    private final boolean global;
     private final IdentifierNode identifier;
     private final Optional<ExpressionNode> initializer;
 
     public DefNode(IdentifierNode identifier) {
-        this.identifier = identifier;
-        this.initializer = Optional.empty();
+        this(identifier, null);
+    }
+
+    public DefNode(boolean global, IdentifierNode identifier) {
+        this(global, identifier, null);
     }
 
     public DefNode(IdentifierNode identifier, ExpressionNode initializer) {
+        this(false, identifier, initializer);
+    }
+
+    public DefNode(boolean global, IdentifierNode identifier, ExpressionNode initializer) {
+        this.global = global;
         this.identifier = identifier;
-        this.initializer = Optional.of(initializer);
+        this.initializer = Optional.ofNullable(initializer);
     }
 
     public IdentifierNode getIdentifier() {
@@ -33,5 +42,9 @@ public class DefNode extends StatementNode {
 
     public Optional<ExpressionNode> getInitializer() {
         return initializer;
+    }
+
+    public boolean isGlobal() {
+        return global;
     }
 }
