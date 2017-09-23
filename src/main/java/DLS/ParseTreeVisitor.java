@@ -282,17 +282,30 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
         fields.add(questionTextField);
 
-        List<ObjectLiteralNode> rowLiterals = sc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
-        ListLiteralNode rowLiteralList = new ListLiteralNode(rowLiterals);
-        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rowLiteralList);
+        List<ObjectLiteralNode.Field> rowLiteralsAsFields = sc.rows.stream().map(rc -> {
+            ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
+            String referenceName = getIdStrVal(rc.attributes()).orElse(generateRandomIdentifierName());
+            return new ObjectLiteralNode.Field(referenceName, rowLiteral);
+        }).collect(Collectors.toList());
+
+        ObjectLiteralNode rows = new ObjectLiteralNode(rowLiteralsAsFields);
+        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
         fields.add(rowsField);
 
-        //todo: the identifier needs to be the id of the question, if id attribute exists
-        //todo: the identifier needs to be global in the above case
         Optional<String> maybeId = getIdStrVal(sc.attributes());
         String identifierName = maybeId.orElse(generateRandomIdentifierName());
         IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
         return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
+    }
+
+    private List<ObjectLiteralNode.Field> getRowLiteralsAsFields(List<ObjectLiteralNode> rowLiterals) {
+        rowLiterals.stream().map(rowLiteral -> {
+
+
+
+
+        });
+        return null;
     }
 
     @SuppressWarnings("Duplicates")
