@@ -282,13 +282,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
         fields.add(questionTextField);
 
-        List<ObjectLiteralNode.Field> rowLiteralsAsFields = sc.rows.stream().map(rc -> {
-            ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
-            String referenceName = getIdStrVal(rc.attributes()).orElse(generateRandomIdentifierName());
-            return new ObjectLiteralNode.Field(referenceName, rowLiteral);
-        }).collect(Collectors.toList());
-
-        ObjectLiteralNode rows = new ObjectLiteralNode(rowLiteralsAsFields);
+        ObjectLiteralNode rows = getQuestionRowsField(sc.rows);
         ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
         fields.add(rowsField);
 
@@ -298,14 +292,48 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
     }
 
-    private List<ObjectLiteralNode.Field> getRowLiteralsAsFields(List<ObjectLiteralNode> rowLiterals) {
-        rowLiterals.stream().map(rowLiteral -> {
+    private StatementNode getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
+
+        String questionText = mc.TextArea().getText();
+        ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
+        fields.add(questionTextField);
 
 
+        ObjectLiteralNode rows = getQuestionRowsField(mc.rows);
+        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
 
+        ObjectLiteralNode cols = getQuestionColumnsField(mc.cols);
+        ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field("cols", cols);
 
-        });
-        return null;
+        fields.add(rowsField);
+        fields.add(colsField);
+
+        Optional<String> maybeId = getIdStrVal(mc.attributes());
+        String identifierName = maybeId.orElse(generateRandomIdentifierName());
+        IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
+        return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
+    }
+
+    private ObjectLiteralNode getQuestionRowsField(List<DLSParser.RowContext> rows) {
+        List<ObjectLiteralNode.Field> rowLiteralsAsFields = rows.stream().map(rc -> {
+            ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
+            String referenceName = getIdStrVal(rc.attributes()).orElse(generateRandomIdentifierName());
+            return new ObjectLiteralNode.Field(referenceName, rowLiteral);
+        }).collect(Collectors.toList());
+
+        return new ObjectLiteralNode(rowLiteralsAsFields);
+    }
+
+    private ObjectLiteralNode getQuestionColumnsField(List<DLSParser.ColContext> cols) {
+        List<ObjectLiteralNode.Field> colLiteralsAsFields = cols.stream().map(cc -> {
+            ObjectLiteralNode colLiteral = getColObjectLiteralFromColTag(cc);
+            String referenceName = getIdStrVal(cc.attributes()).orElse(generateRandomIdentifierName());
+            return new ObjectLiteralNode.Field(referenceName, colLiteral);
+        }).collect(Collectors.toList());
+
+        return new ObjectLiteralNode(colLiteralsAsFields);
+
     }
 
     @SuppressWarnings("Duplicates")
@@ -328,31 +356,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         fields.add(colTextField);
 
         return new ObjectLiteralNode(fields);
-    }
-
-    private StatementNode getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
-        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
-
-        String questionText = mc.TextArea().getText();
-        ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
-        fields.add(questionTextField);
-
-        List<ObjectLiteralNode> rowLiterals = mc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
-        List<ObjectLiteralNode> colLiterals = mc.cols.stream().map(this::getColObjectLiteralFromColTag).collect(Collectors.toList());
-
-        ListLiteralNode rowLiteralList = new ListLiteralNode(rowLiterals);
-        ListLiteralNode colLiteralList = new ListLiteralNode(colLiterals);
-
-        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rowLiteralList);
-        ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field("cols", colLiteralList);
-
-        fields.add(rowsField);
-        fields.add(colsField);
-
-        Optional<String> maybeId = getIdStrVal(mc.attributes());
-        String identifierName = maybeId.orElse(generateRandomIdentifierName());
-        IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
-        return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
     }
 
     @Override

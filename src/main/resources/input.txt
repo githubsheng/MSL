@@ -3,7 +3,7 @@
 [Page id="myPage" randomize]
 
 [SingleChoice] some question text
-[Row]row one
+[Row id="row1"]row one
 [Row]row two
 
 [MultipleChoice id="myMC" randomize] some question text
