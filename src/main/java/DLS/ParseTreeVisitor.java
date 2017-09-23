@@ -62,6 +62,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         //page group implicit attribute values
         pageGroupImplicitValues.put(PageGroupAttribute.RANDOMIZE.toIdentifierName(), "true");
         pageGroupImplicitValues.put(PageGroupAttribute.ROTATE.toIdentifierName(), "true");
+
+        //page implicit attribute values
+        pageImplicitValues.put(PageAttributes.RANDOMIZE.toIdentifierName(), "true");
+        pageImplicitValues.put(PageAttributes.ROTATE.toIdentifierName(), "true");
     }
 
     private int randomIdentifierNameCounter = 1;
