@@ -160,7 +160,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
         statements.addAll(attribStats);
 
-        //todo: review why we need pageNodes....
         List<Node> pageNodes = ctx.page()
                 .stream()
                 .map(this::visitPage)
@@ -352,25 +351,50 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     //todo: review
     private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc){
-        //todo: include question text as fields....
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
+
+        String questionText = sc.TextArea().getText();
+        ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
+        fields.add(questionTextField);
+
         List<ObjectLiteralNode> rowLiterals = sc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
         ListLiteralNode rowLiteralList = new ListLiteralNode(rowLiterals);
         ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rowLiteralList);
         fields.add(rowsField);
+
         IdentifierNode tmpIdentifier = new IdentifierNode(generateRandomIdentifierName());
         return new DefNode(tmpIdentifier, new ObjectLiteralNode(fields));
     }
 
+    @SuppressWarnings("Duplicates")
     private ObjectLiteralNode getRowObjectLiteralFromRowTag(DLSParser.RowContext rc) {
-        //todo: get row text as fields...
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(rc.attributes(), rowImplicitValues);
+
+        String rowText = rc.TextArea().getText();
+        ObjectLiteralNode.Field rowTextField = new ObjectLiteralNode.Field("text", new StringNode(rowText));
+        fields.add(rowTextField);
+
+        return new ObjectLiteralNode(fields);
+    }
+
+    @SuppressWarnings("Duplicates")
+    private ObjectLiteralNode getColObjectLiteralFromColTag(DLSParser.ColContext cc) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(cc.attributes(), colImplicitValues);
+
+        String colText = cc.TextArea().getText();
+        ObjectLiteralNode.Field colTextField = new ObjectLiteralNode.Field("text", new StringNode(colText));
+        fields.add(colTextField);
+
         return new ObjectLiteralNode(fields);
     }
 
     private StatementNode getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
-        //todo: get question text as field....
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
+
+        String questionText = mc.TextArea().getText();
+        ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
+        fields.add(questionTextField);
+
         List<ObjectLiteralNode> rowLiterals = mc.rows.stream().map(this::getRowObjectLiteralFromRowTag).collect(Collectors.toList());
         List<ObjectLiteralNode> colLiterals = mc.cols.stream().map(this::getColObjectLiteralFromColTag).collect(Collectors.toList());
 
@@ -385,12 +409,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         IdentifierNode tmpIdentifier = new IdentifierNode(generateRandomIdentifierName());
         return new DefNode(tmpIdentifier, new ObjectLiteralNode(fields));
-    }
-
-    private ObjectLiteralNode getColObjectLiteralFromColTag(DLSParser.ColContext cc) {
-        //todo: get column text as field....
-        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(cc.attributes(), colImplicitValues);
-        return new ObjectLiteralNode(fields);
     }
 
     @Override
