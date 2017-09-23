@@ -39,7 +39,7 @@ public class Main {
 
         ParseTreeVisitor ptv = new ParseTreeVisitor();
         Node node = ptv.visit(tree);
-        System.out.println(1);
+        System.out.println("end");
 
 
     }

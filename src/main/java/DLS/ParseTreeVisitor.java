@@ -147,6 +147,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     private Node getPageNodeOrPageGroupNode(DLSParser.ElementContext ctx) {
+
         return ctx.page() != null ? visitPage(ctx.page()) : visitPageGroup(ctx.pageGroup());
     }
 
@@ -304,6 +305,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         List<StatementNode> statementNodes = new ArrayList<>();
         statementNodes.addAll(getScriptStatements(preScript));
+
+        System.out.println(ctx.question().size());
+        System.out.println(ctx.question().get(0).singleChoiceQuestion().row().size());
+
         //a list of DefNode
         List<StatementNode> questionStatements = ctx.question()
                 .stream()

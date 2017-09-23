@@ -108,8 +108,8 @@ TextArea: .+? TextAreaEnd {
         offSet = 4;
         pushMode(TagMode);
      }
-     if(matched.endsWith("[Column")) {
-        offSet = 7;
+     if(matched.endsWith("[Col")) {
+        offSet = 4;
         pushMode(TagMode);
      }
      if(matched.endsWith("[Submit")) {
@@ -122,15 +122,21 @@ TextArea: .+? TextAreaEnd {
         popMode();
         pushMode(ScriptMode);
      }
+     if(matched.endsWith("[MultipleChoice")) {
+        offSet = 15;
+        popMode();
+        pushMode(ScriptMode);
+     }
      int idx = _input.index();
      _input.seek(idx - offSet);
 };
 
 TextAreaEnd
 : '[Row'
-| '[Column'
+| '[Col'
 | '[Submit'
 | SingleChoiceStart
+| MultipleChoiceStart
 ;
 
 mode ScriptMode;
