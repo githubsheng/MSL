@@ -4,12 +4,20 @@ public enum PageAttributes {
 
     ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate");
 
-    private String name;
-    PageAttributes(String name) {
-        this.name = name;
+    private final String name;
+    private final String attribIdentifierName;
+
+    private PageAttributes(String attribNameInTag){
+        this.name = attribNameInTag;
+        this.attribIdentifierName = "_" + attribNameInTag;
     }
 
-    public String getName(){
+    public String toIdentifierName(){
+        return this.attribIdentifierName;
+    }
+
+    public String getName() {
         return this.name;
     }
+
 }
