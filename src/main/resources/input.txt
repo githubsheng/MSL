@@ -1,4 +1,4 @@
-[PageGroup]
+[PageGroup randomize]
 
 [Page]
 
@@ -6,11 +6,23 @@
 [Row]row one
 [Row]row two
 
-[MultipleChoice] some question text
-[Row]row one
+[MultipleChoice id="myMC" randomize] some question text
+[Row id="row1"]row one
 [Row]row two
+[Col]col one
+[Col]col two
 
 [Submit]
 [PageEnd]
+
+[Page]
+[SingleChoice] some question text
+[Row] aa
+[Row] bb
+
+[Submit]
+[PageEnd]
+
+
 
 [PageGroupEnd]

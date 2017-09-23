@@ -1,4 +1,4 @@
-package DLS.ASTNodes;
+package DLS.ASTNodes.enums.attributes;
 
 //todo: come up with all attributes
 public enum PageGroupAttribute {

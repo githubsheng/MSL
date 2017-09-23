@@ -1,7 +1,10 @@
 package DLS;
 
 import DLS.ASTNodes.*;
+import DLS.ASTNodes.enums.attributes.PageGroupAttribute;
 import DLS.ASTNodes.function.declaration.FuncDefNode;
+import DLS.ASTNodes.enums.attributes.*;
+import DLS.ASTNodes.enums.methods.*;
 import DLS.ASTNodes.statement.*;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
@@ -36,95 +39,29 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
     private final Map<String, String> pageImplicitValues = new HashMap<>();
 
-
-    enum RowAttributes {
-
-        ID("id"), HIDE("hide"), FIXED("fixed"), XOR("xor"), TEXTBOX("textbox");
-
-        private String name;
-        RowAttributes(String name) {
-            this.name = name;
-        }
-
-        public String getName(){
-            return this.name;
-        }
-    }
-
-    enum ColAttributes {
-
-        ID("id"), HIDE("hide"), FIXED("fixed"), XOR("xor"), TEXTBOX("textbox");
-
-        private String name;
-        ColAttributes(String name) {
-            this.name = name;
-        }
-
-        public String getName(){
-            return this.name;
-        }
-    }
-
-    enum QuestionAttributes {
-
-        ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate"), REQUIRED("true");
-
-        private String name;
-        QuestionAttributes(String name) {
-            this.name = name;
-        }
-
-        public String getName(){
-            return this.name;
-        }
-    }
-
-    enum PageAttributes {
-
-        ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate");
-
-        private String name;
-        PageAttributes(String name) {
-            this.name = name;
-        }
-
-        public String getName(){
-            return this.name;
-        }
-    }
-
-    enum ListMethods {
-        RANDOMIZE("randomize"), ROTATE("rotate");
-
-        private String name;
-        ListMethods(String name) {
-            this.name = name;
-        }
-
-        public String getName(){
-            return this.name;
-        }
-    }
-
     public ParseTreeVisitor(){
         super();
-        //row implicit attributes
+        //row implicit attribute values
         rowImplicitValues.put(RowAttributes.HIDE.getName(), "true");
         rowImplicitValues.put(RowAttributes.FIXED.getName(), "true");
         rowImplicitValues.put(RowAttributes.XOR.getName(), "true");
         rowImplicitValues.put(RowAttributes.TEXTBOX.getName(), "true");
 
-        //column implicit attributes
+        //column implicit attribute values
         colImplicitValues.put(ColAttributes.HIDE.getName(), "true");
         colImplicitValues.put(ColAttributes.FIXED.getName(), "true");
         colImplicitValues.put(ColAttributes.XOR.getName(), "true");
         colImplicitValues.put(ColAttributes.TEXTBOX.getName(), "true");
 
-        //question implicit attributes
+        //question implicit attribute values
         questionImplicitValues.put(QuestionAttributes.HIDE.getName(), "true");
         questionImplicitValues.put(QuestionAttributes.RANDOMIZE.getName(), "true");
         questionImplicitValues.put(QuestionAttributes.ROTATE.getName(), "true");
         questionImplicitValues.put(QuestionAttributes.REQUIRED.getName(), "true");
+
+        //page group implicit attribute values
+        pageGroupImplicitValues.put(PageGroupAttribute.RANDOMIZE.toIdentifierName(), "true");
+        pageGroupImplicitValues.put(PageGroupAttribute.ROTATE.toIdentifierName(), "true");
     }
 
     private int randomIdentifierNameCounter = 1;
