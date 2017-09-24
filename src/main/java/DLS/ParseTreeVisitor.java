@@ -364,16 +364,23 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     private List<StatementNode> getStatementNodes(DLSParser.StatementContext ctx) {
         //try get single statement node
-        Node node = getSingleStatementNode(ctx);
+        Node node = tryGetSingleStatementNode(ctx);
         if(node != null) return Collections.singletonList((StatementNode)node);
+        List<StatementNode> nodes = tryGetMultipleStatementNodes(ctx);
+        if(nodes != null) return nodes;
         //try get multiple statement node
-        if (ctx.chanceStatement() != null) {
-            return getChanceStatementNodes(ctx.chanceStatement());
-        }
         throw new RuntimeException("unsupported statement type");
     }
 
-    private Node getSingleStatementNode(DLSParser.StatementContext ctx) {
+    /**
+     * this is supposed to be used only by `getStatementNodes` methods.
+     * tries to get a single statement node from the provided statement context.
+     * The statement context can also result in multiple statement nodes. so this method
+     * should be followed by a call of `tryGetMultipleStatementNodes`.
+     * @param ctx statement context
+     * @return a single statement node
+     */
+    private Node tryGetSingleStatementNode(DLSParser.StatementContext ctx) {
         if (ctx.variableStatement() != null) return visitVariableStatement(ctx.variableStatement());
         if (ctx.emptyStatement() != null) return new EmptyNode();
         if (ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
@@ -381,10 +388,20 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         if (ctx.functionDeclaration() != null) return visitFunctionDeclaration(ctx.functionDeclaration());
         if (ctx.returnStatement() != null) return visitReturnStatement(ctx.returnStatement());
         if (ctx.listOperationStatement() != null) return visitListOperationStatement(ctx.listOperationStatement());
-        if (ctx.builtInCommandStatement() != null) return visitBuiltInCommandStatement(ctx.builtInCommandStatement());
         return null;
     }
 
+    /**
+     * this is supposed to be used only by `getStatementNodes` methods.
+     * see `tryGetSingleStatementNode` for more details
+     * @param ctx statement context
+     * @return a list of statement nodes.
+     */
+    private List<StatementNode> tryGetMultipleStatementNodes(DLSParser.StatementContext ctx) {
+        if (ctx.chanceStatement() != null) return getChanceStatementNodes(ctx.chanceStatement());
+        if (ctx.builtInCommandStatement() != null) return visitBuiltInCommandStatement(ctx.builtInCommandStatement());
+        return null;
+    }
 
     private List<StatementNode> getStatementNodes(DLSParser.StatementsContext ctx) {
         return ctx.statement().stream()
@@ -734,7 +751,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return statements;
     }
 
-    private Node visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
+    private List<StatementNode> visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
         //todo:
         return null;
     }
