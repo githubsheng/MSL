@@ -31,6 +31,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames.GetRandomNumber;
+
 public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     private final Map<String, String> rowImplicitValues = new HashMap<>();
@@ -105,12 +107,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .stream()
                 .map(this::visitPage)
                 .collect(Collectors.toList());
-
-//        List<FuncDefNode> pageDefFuncs = pageNodes.stream()
-//                .map(node -> {
-//            PageNode pageNode = (PageNode) node;
-//            return pageNode.pageFuncDef;
-//        }).collect(Collectors.toList());
 
         List<FuncDefNode> pageDefFuncs = pageNodes.stream()
                 .map(PageNode.class::cast)
@@ -220,7 +216,8 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     private List<StatementNode> getScriptStatements(DLSParser.ScriptContext scriptCtx) {
         return scriptCtx.statement().stream()
-                .map(this::visitStatement)
+                .map(this::getStatementNodes)
+                .flatMap(List::stream)
                 .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
     }
@@ -365,8 +362,18 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return new ObjectLiteralNode(fields);
     }
 
-    @Override
-    public Node visitStatement(DLSParser.StatementContext ctx) {
+    private List<StatementNode> getStatementNodes(DLSParser.StatementContext ctx) {
+        //try get single statement node
+        Node node = getSingleStatementNode(ctx);
+        if(node != null) return Collections.singletonList((StatementNode)node);
+        //try get multiple statement node
+        if (ctx.chanceStatement() != null) {
+            return getChanceStatementNodes(ctx.chanceStatement());
+        }
+        throw new RuntimeException("unsupported statement type");
+    }
+
+    private Node getSingleStatementNode(DLSParser.StatementContext ctx) {
         if (ctx.variableStatement() != null) return visitVariableStatement(ctx.variableStatement());
         if (ctx.emptyStatement() != null) return new EmptyNode();
         if (ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
@@ -374,9 +381,17 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         if (ctx.functionDeclaration() != null) return visitFunctionDeclaration(ctx.functionDeclaration());
         if (ctx.returnStatement() != null) return visitReturnStatement(ctx.returnStatement());
         if (ctx.listOperationStatement() != null) return visitListOperationStatement(ctx.listOperationStatement());
-        if (ctx.chanceStatement() != null) return visitChanceStatement(ctx.chanceStatement());
         if (ctx.builtInCommandStatement() != null) return visitBuiltInCommandStatement(ctx.builtInCommandStatement());
-        throw new RuntimeException("unsupported statement type");
+        return null;
+    }
+
+
+    private List<StatementNode> getStatementNodes(DLSParser.StatementsContext ctx) {
+        return ctx.statement().stream()
+                .map(this::getStatementNodes)
+                .flatMap(List::stream)
+                .map(StatementNode.class::cast)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -629,7 +644,8 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     private List<StatementNode> createListOfStatementNodes(DLSParser.StatementsContext ctx) {
         return ctx.statement()
                 .stream()
-                .map(this::visitStatement)
+                .map(this::getStatementNodes)
+                .flatMap(List::stream)
                 .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
     }
@@ -643,7 +659,8 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .map(TerminalNode::getText)
                 .collect(Collectors.toList());
         List<StatementNode> statements = ctx.functionBody().statement().stream()
-                .map(this::visitStatement)
+                .map(this::getStatementNodes)
+                .flatMap(List::stream)
                 .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
         return new FuncDefNode(funcIdentifier, argNames, statements);
@@ -674,10 +691,47 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return new ListOptNode(optType, identifier, statements);
     }
 
-    @Override
-    public Node visitChanceStatement(DLSParser.ChanceStatementContext ctx) {
-        //todo:
-        return super.visitChanceStatement(ctx);
+    private List<StatementNode> getChanceStatementNodes(DLSParser.ChanceStatementContext ctx) {
+        //todo: semantic checking, all percentages sum needs to be smaller than 100
+        List<StatementNode> statements = new LinkedList<>();
+
+        //get a random number
+        //inclusive
+        NumberNode randomNumberLowerBound = new NumberNode(1);
+        //exclusive
+        NumberNode randomNumberHigherBound = new NumberNode(101);
+        List<ExpressionNode> getRandomNumberArguments = new LinkedList<>();
+        getRandomNumberArguments.add(randomNumberLowerBound);
+        getRandomNumberArguments.add(randomNumberHigherBound);
+        CallNode getRandomNumberCall = new CallNode(
+                new IdentifierNode(GetRandomNumber.getFuncName()),
+                getRandomNumberArguments);
+
+        IdentifierNode randomNumberIdentifier = new IdentifierNode(generateRandomIdentifierName());
+        DefNode defRandomNumber = new DefNode(randomNumberIdentifier, getRandomNumberCall);
+
+        statements.add(defRandomNumber);
+
+        List<IfElseNode.Branch> branches = new LinkedList<>();
+        int i = 0;
+        for(DLSParser.PossibilityContext possibility : ctx.possibility()) {
+            int p = getPercentageVal(possibility.Percentage().getText());
+            //inclusive
+            int lowBound = i + 1;
+            //inclusive
+            int highBound = i + p;
+            i = highBound;
+            MoreThanEqualsNode t1 = new MoreThanEqualsNode(randomNumberIdentifier, new NumberNode(lowBound));
+            LessThanEqualsNode t2 = new LessThanEqualsNode(randomNumberIdentifier, new NumberNode(highBound));
+            AndNode t3 = new AndNode(t1, t2);
+            List<StatementNode> branchStatements = getStatementNodes(possibility.statements());
+            branches.add(new IfElseNode.Branch(t3, branchStatements));
+        }
+
+        IfElseNode ifElseNode =  new IfElseNode(branches);
+        statements.add(ifElseNode);
+
+        return statements;
     }
 
     private Node visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
@@ -685,6 +739,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return null;
     }
 
+    private int getPercentageVal(String str) {
+        //remove the suffix symbol %.
+        return Integer.valueOf(str.substring(0, str.length() - 1));
+    }
 
     private String removeDoubleQuotes(String str) {
         if (str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"') {
@@ -703,9 +761,5 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .map(strValAttr -> strValAttr.String().getText())
                 .map(this::removeDoubleQuotes)
                 .findFirst();
-    }
-
-    private List<StatementNode> getStatementNodes(DLSParser.StatementsContext ctx) {
-        return ctx.statement().stream().map(this::visitStatement).map(StatementNode.class::cast).collect(Collectors.toList());
     }
 }

@@ -18,12 +18,13 @@ public class DefNode extends StatementNode {
     private final IdentifierNode identifier;
     private final Optional<ExpressionNode> initializer;
 
-    public DefNode(IdentifierNode identifier) {
-        this(identifier, null);
+
+    public DefNode(String identifierName, ExpressionNode initializer) {
+        this(false, new IdentifierNode(identifierName), initializer);
     }
 
-    public DefNode(boolean global, IdentifierNode identifier) {
-        this(global, identifier, null);
+    public DefNode(boolean global, String identifierName, ExpressionNode initializer) {
+        this(global, new IdentifierNode(identifierName), initializer);
     }
 
     public DefNode(IdentifierNode identifier, ExpressionNode initializer) {
