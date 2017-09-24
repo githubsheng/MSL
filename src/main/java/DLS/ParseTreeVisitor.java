@@ -106,10 +106,16 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .map(this::visitPage)
                 .collect(Collectors.toList());
 
-        List<FuncDefNode> pageDefFuncs = pageNodes.stream().map(node -> {
-            PageNode pageNode = (PageNode) node;
-            return pageNode.pageFuncDef;
-        }).collect(Collectors.toList());
+//        List<FuncDefNode> pageDefFuncs = pageNodes.stream()
+//                .map(node -> {
+//            PageNode pageNode = (PageNode) node;
+//            return pageNode.pageFuncDef;
+//        }).collect(Collectors.toList());
+
+        List<FuncDefNode> pageDefFuncs = pageNodes.stream()
+                .map(PageNode.class::cast)
+                .map(PageNode::getPageFuncDef)
+                .collect(Collectors.toList());
 
         //define all page functions
         //todo: check why only one page def function was added?
@@ -213,10 +219,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     private List<StatementNode> getScriptStatements(DLSParser.ScriptContext scriptCtx) {
-        return scriptCtx.statement().stream().map(statementCtx -> {
-            Node node = visitStatement(statementCtx);
-            return (StatementNode) node;
-        }).collect(Collectors.toList());
+        return scriptCtx.statement().stream()
+                .map(this::visitStatement)
+                .map(StatementNode.class::cast)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -239,7 +245,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         statementNodes.addAll(questionStatements);
 
         List<IdentifierNode> questionIdentifiers = questionStatements.stream()
-                .map(sn -> (DefNode) sn)
+                .map(DefNode.class::cast)
                 .map(DefNode::getIdentifier)
                 .collect(Collectors.toList());
 
@@ -624,7 +630,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return ctx.statement()
                 .stream()
                 .map(this::visitStatement)
-                .map(node -> (StatementNode) node)
+                .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
     }
 
@@ -632,23 +638,40 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     public Node visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
         String functionName = ctx.Identifier().getText();
         IdentifierNode funcIdentifier = new IdentifierNode(functionName);
-        List<String> argNames = ctx.formalArgumentList().Identifier().stream().map(TerminalNode::getText).collect(Collectors.toList());
+        List<String> argNames = ctx.formalArgumentList().Identifier()
+                .stream()
+                .map(TerminalNode::getText)
+                .collect(Collectors.toList());
         List<StatementNode> statements = ctx.functionBody().statement().stream()
                 .map(this::visitStatement)
-                .map(node -> (StatementNode)node)
+                .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
         return new FuncDefNode(funcIdentifier, argNames, statements);
     }
 
     @Override
     public Node visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
-        //todo:
-        return super.visitReturnStatement(ctx);
+        Optional<ExpressionNode> maybeRetVal = Optional.ofNullable(ctx.expression()).map(this::visitExpression);
+        return new ReturnNode(maybeRetVal.orElse(null));
     }
 
-    private Node visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
-        //todo:
-        return null;
+    @Override
+    public Node visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
+        ListOptNode.ListOptType optType;
+        if(ctx.Each() != null) {
+            optType = ListOptNode.ListOptType.LOOP;
+        } else if (ctx.Map() != null) {
+            optType = ListOptNode.ListOptType.MAP;
+        } else if (ctx.Filter() != null) {
+            optType = ListOptNode.ListOptType.FILTER;
+        } else {
+            throw new RuntimeException("unsupported list operation");
+        }
+
+        IdentifierNode identifier = new IdentifierNode(ctx.Identifier().getText());
+
+        List<StatementNode> statements = getStatementNodes(ctx.statements());
+        return new ListOptNode(optType, identifier, statements);
     }
 
     @Override
@@ -674,11 +697,15 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     private Optional<String> getIdStrVal(DLSParser.AttributesContext ctx) {
         return ctx.attribute()
                 .stream()
-                .filter(attributeContext -> attributeContext instanceof DLSParser.AttributeWithAssignedStringValueContext)
-                .map(attributeContext -> (DLSParser.AttributeWithAssignedStringValueContext) attributeContext)
+                .filter(DLSParser.AttributeWithAssignedStringValueContext.class::isInstance)
+                .map(DLSParser.AttributeWithAssignedStringValueContext.class::cast)
                 .filter(strValAttr -> strValAttr.Name().getText().equals(PageAttributes.ID.getName()))
                 .map(strValAttr -> strValAttr.String().getText())
                 .map(this::removeDoubleQuotes)
                 .findFirst();
+    }
+
+    private List<StatementNode> getStatementNodes(DLSParser.StatementsContext ctx) {
+        return ctx.statement().stream().map(this::visitStatement).map(StatementNode.class::cast).collect(Collectors.toList());
     }
 }

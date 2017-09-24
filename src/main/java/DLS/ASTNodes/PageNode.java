@@ -15,4 +15,12 @@ public class PageNode extends Node {
         this.pageFuncDef = funcDefNode;
         this.pageFuncCall = callNode;
     }
+
+    public FuncDefNode getPageFuncDef() {
+        return pageFuncDef;
+    }
+
+    public CallNode getPageFuncCall() {
+        return pageFuncCall;
+    }
 }

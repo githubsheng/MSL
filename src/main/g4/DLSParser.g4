@@ -108,9 +108,7 @@ returnStatement
 ;
 
 listOperationStatement
-: Each Identifier NewLine statements End        #EachStatement
-| Map Identifier NewLine statements End         #MapStatement
-| Filter Identifier NewLine statements End      #FilterStatement
+: (Each | Map | Filter) Identifier NewLine statements End
 ;
 
 chanceStatement: Chance NewLine possibility+ End;
