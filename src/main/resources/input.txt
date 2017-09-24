@@ -1,26 +1,15 @@
-[PageGroup randomize]
-
-[Page id="myPage" randomize]
-
-[SingleChoice] some question text
-[Row id="row1"]row one
-[Row]row two
-
-[MultipleChoice id="myMC" randomize] some question text
-[Row id="row1"]row one
-[Row]row two
-[Col]col one
-[Col]col two
-
-[Submit]
-[PageEnd]
-
 [Page]
-[SingleChoice] some question text
+function a()
+def a = 1
+end
+
+[SingleChoice id="q3" randomize={q3Randomize}] some question text
 [Row] aa
 [Row] bb
 
+[MultipleChoice id="q4"] some question text
+[Row] aa
+[Col] bb
+
 [Submit]
 [PageEnd]
-
-[PageGroupEnd]

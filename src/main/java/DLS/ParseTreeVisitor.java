@@ -26,6 +26,7 @@ import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
 import DLS.generated.DLSParser;
 import DLS.generated.DLSParserBaseVisitor;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -364,11 +365,12 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         if (ctx.emptyStatement() != null) return new EmptyNode();
         if (ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
         if (ctx.ifStatement() != null) return visitIfStatement(ctx.ifStatement());
-        //todo: supports listOperationStatement
-        //todo: supports return statement
-        //todo: chance statement
-        //todo: built in command statement
-        return null;
+        if (ctx.functionDeclaration() != null) return visitFunctionDeclaration(ctx.functionDeclaration());
+        if (ctx.returnStatement() != null) return visitReturnStatement(ctx.returnStatement());
+        if (ctx.listOperationStatement() != null) return visitListOperationStatement(ctx.listOperationStatement());
+        if (ctx.chanceStatement() != null) return visitChanceStatement(ctx.chanceStatement());
+        if (ctx.builtInCommandStatement() != null) return visitBuiltInCommandStatement(ctx.builtInCommandStatement());
+        throw new RuntimeException("unsupported statement type");
     }
 
     @Override
@@ -605,6 +607,8 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         IfElseNode.Branch branch = new IfElseNode.Branch(condition, statements);
         branches.add(branch);
 
+        if (ctx.elseStatement() == null) return;
+
         if (ctx.elseStatement().noEndingIfStatement() != null) {
             createBranchFromNoEndingIfStatement(ctx.elseStatement().noEndingIfStatement(), branches);
         } else {
@@ -623,6 +627,41 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .map(node -> (StatementNode) node)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Node visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
+        String functionName = ctx.Identifier().getText();
+        IdentifierNode funcIdentifier = new IdentifierNode(functionName);
+        List<String> argNames = ctx.formalArgumentList().Identifier().stream().map(TerminalNode::getText).collect(Collectors.toList());
+        List<StatementNode> statements = ctx.functionBody().statement().stream()
+                .map(this::visitStatement)
+                .map(node -> (StatementNode)node)
+                .collect(Collectors.toList());
+        return new FuncDefNode(funcIdentifier, argNames, statements);
+    }
+
+    @Override
+    public Node visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
+        //todo:
+        return super.visitReturnStatement(ctx);
+    }
+
+    private Node visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
+        //todo:
+        return null;
+    }
+
+    @Override
+    public Node visitChanceStatement(DLSParser.ChanceStatementContext ctx) {
+        //todo:
+        return super.visitChanceStatement(ctx);
+    }
+
+    private Node visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
+        //todo:
+        return null;
+    }
+
 
     private String removeDoubleQuotes(String str) {
         if (str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"') {

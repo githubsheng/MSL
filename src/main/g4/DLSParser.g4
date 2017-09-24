@@ -27,12 +27,14 @@ attribute
 | Name AttributeAssign '{' expression '}'                       #AttributeWithAssignedExpression
 ;
 
-script: ( statement | functionDeclaration )*;
+//todo: move the function declaration into statements....
+script: statement*;
 
 eos: NewLine; //end of statement
 
 statement
-: variableStatement
+: functionDeclaration
+| variableStatement
 | emptyStatement
 | expressionStatement
 | ifStatement
@@ -123,7 +125,12 @@ builtInCommandStatement
 
 rankOrders: expression (RankOrder expression)+;
 
-functionDeclaration: Func Identifier argumentList NewLine functionBody End;
+functionDeclaration: Func Identifier formalArgumentList NewLine functionBody End;
+
+formalArgumentList
+: LeftParen RightParen
+| LeftParen Identifier (Comma Identifier)* RightParen
+;
 
 argumentList
 : LeftParen RightParen
