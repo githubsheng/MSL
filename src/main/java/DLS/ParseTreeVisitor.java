@@ -753,7 +753,14 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
     private List<StatementNode> visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
         //todo:
-        return null;
+        if(ctx instanceof DLSParser.TerminateCommandContext) {
+
+        } else if (ctx instanceof DLSParser.SelectCommandContext) {
+
+        } else if (ctx instanceof DLSParser.RankCommandContext) {
+
+        }
+        throw new RuntimeException("unsupported built in command");
     }
 
     private int getPercentageVal(String str) {
