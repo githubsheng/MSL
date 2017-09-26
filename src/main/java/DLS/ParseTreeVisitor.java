@@ -28,7 +28,6 @@ import DLS.ASTNodes.statement.expression.relational.LessThanNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
 import DLS.generated.DLSParser;
-import DLS.generated.DLSParserBaseVisitor;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.*;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
 
 import static DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames.GetRandomNumber;
 
-public class ParseTreeVisitor {
+class ParseTreeVisitor {
 
     private final Map<String, String> rowImplicitValues = new HashMap<>();
     private final Map<String, String> colImplicitValues = new HashMap<>();
@@ -45,7 +44,7 @@ public class ParseTreeVisitor {
     private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
     private final Map<String, String> pageImplicitValues = new HashMap<>();
 
-    public ParseTreeVisitor() {
+    private ParseTreeVisitor() {
         super();
         //row implicit attribute values
         rowImplicitValues.put(RowAttributes.HIDE.getName(), "true");
@@ -84,7 +83,7 @@ public class ParseTreeVisitor {
         return "_" + prefix + "_gn" + (++randomIdentifierNameCounter);
     }
     
-    public Node visitFile(DLSParser.FileContext ctx) {
+    Node visitFile(DLSParser.FileContext ctx) {
         //we sees pages as functions ( has its own local variable scope )
         //we sees a page group as a function that contains functions (pages)
         List<StatementNode> statements = ctx.element()
@@ -291,11 +290,19 @@ public class ParseTreeVisitor {
 
 
     private ObjectLiteralNode.Field getQuestionTypeField(DLSParser.SingleChoiceQuestionContext sc) {
-        return new ObjectLiteralNode.Field("type", new StringNode("single-choice"));
+        return new ObjectLiteralNode.Field("_type", new StringNode("single-choice"));
     }
 
     private ObjectLiteralNode.Field getQuestionTypeField(DLSParser.MultipleChoiceQuestionContext mc) {
-        return new ObjectLiteralNode.Field("type", new StringNode("multiple-choice"));
+        return new ObjectLiteralNode.Field("_type", new StringNode("multiple-choice"));
+    }
+
+    private ObjectLiteralNode.Field getRowTypeField() {
+        return new ObjectLiteralNode.Field("_type", new StringNode("row"));
+    }
+
+    private ObjectLiteralNode.Field getColTypeField() {
+        return new ObjectLiteralNode.Field("_type", new StringNode("col"));
     }
 
     //todo: review
@@ -350,6 +357,8 @@ public class ParseTreeVisitor {
             return new ObjectLiteralNode.Field(referenceName, rowLiteral);
         }).collect(Collectors.toList());
 
+        rowLiteralsAsFields.add(getRowTypeField());
+
         return new ObjectLiteralNode(rowLiteralsAsFields);
     }
 
@@ -359,6 +368,8 @@ public class ParseTreeVisitor {
             String referenceName = getIdStrVal(cc.attributes()).orElse(generateRandomIdentifierName());
             return new ObjectLiteralNode.Field(referenceName, colLiteral);
         }).collect(Collectors.toList());
+
+        colLiteralsAsFields.add(getColTypeField());
 
         return new ObjectLiteralNode(colLiteralsAsFields);
 
@@ -484,19 +495,21 @@ public class ParseTreeVisitor {
     }
 
     
-    public Node visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
+    private Node visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
         return visitExpression(ctx.expression());
     }
 
-    
-    public Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
+
+    private Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
+        fields.add(getRowTypeField());
         return new ObjectLiteralNode(fields);
     }
 
-    
-    public Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
+
+    private Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
+        fields.add(getColTypeField());
         return new ObjectLiteralNode(fields);
     }
 
@@ -522,7 +535,7 @@ public class ParseTreeVisitor {
     }
 
     
-    public Node visitAdditiveExpression(DLSParser.AdditiveExpressionContext ctx) {
+    private Node visitAdditiveExpression(DLSParser.AdditiveExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         if (ctx.Minus() != null) {
@@ -532,8 +545,8 @@ public class ParseTreeVisitor {
         }
     }
 
-    
-    public Node visitRelationalExpression(DLSParser.RelationalExpressionContext ctx) {
+
+    private Node visitRelationalExpression(DLSParser.RelationalExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
 
@@ -548,15 +561,15 @@ public class ParseTreeVisitor {
         }
     }
 
-    
-    public Node visitLogicalAndExpression(DLSParser.LogicalAndExpressionContext ctx) {
+
+    private Node visitLogicalAndExpression(DLSParser.LogicalAndExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new AndNode(left, right);
     }
 
-    
-    public Node visitLiteralExpression(DLSParser.LiteralExpressionContext ctx) {
+
+    private Node visitLiteralExpression(DLSParser.LiteralExpressionContext ctx) {
         //here we do not have object literal cos user cannot define objects.
         DLSParser.LiteralContext lctx = ctx.literal();
         if (lctx instanceof DLSParser.DecimalLiteralContext) {
@@ -578,54 +591,54 @@ public class ParseTreeVisitor {
                 .collect(Collectors.toList());
     }
 
-    
-    public Node visitLogicalOrExpression(DLSParser.LogicalOrExpressionContext ctx) {
+
+    private Node visitLogicalOrExpression(DLSParser.LogicalOrExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new OrNode(left, right);
     }
 
-    
-    public Node visitNotExpression(DLSParser.NotExpressionContext ctx) {
+
+    private Node visitNotExpression(DLSParser.NotExpressionContext ctx) {
         ExpressionNode target = visitExpression(ctx.expression());
         return new NotNode(target);
     }
 
-    
-    public Node visitIdentifierExpression(DLSParser.IdentifierExpressionContext ctx) {
+
+    private Node visitIdentifierExpression(DLSParser.IdentifierExpressionContext ctx) {
         return new IdentifierNode(ctx.getText());
     }
 
-    
-    public Node visitMemberExpression(DLSParser.MemberExpressionContext ctx) {
+
+    private Node visitMemberExpression(DLSParser.MemberExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression());
         IdentifierNode right = new IdentifierNode(ctx.Identifier().getText());
         return new DotNode(left, right);
     }
 
     
-    public Node visitAssignmentExpression(DLSParser.AssignmentExpressionContext ctx) {
+    private Node visitAssignmentExpression(DLSParser.AssignmentExpressionContext ctx) {
         ExpressionNode target = visitExpression(ctx.expression(0));
         ExpressionNode value = visitExpression(ctx.expression(1));
         return new AssignNode(target, value);
     }
 
     
-    public Node visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
+    private Node visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new EqualsNode(left, right);
     }
 
     
-    public Node visitMultiplicativeExpression(DLSParser.MultiplicativeExpressionContext ctx) {
+    private Node visitMultiplicativeExpression(DLSParser.MultiplicativeExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new MultiplyNode(left, right);
     }
 
     
-    public Node visitCallExpression(DLSParser.CallExpressionContext ctx) {
+    private Node visitCallExpression(DLSParser.CallExpressionContext ctx) {
         DLSParser.ExpressionContext e = ctx.expression();
         List<ExpressionNode> args;
         if (ctx.argumentList().expression() != null) {
@@ -646,7 +659,7 @@ public class ParseTreeVisitor {
     }
 
     
-    public Node visitIfStatement(DLSParser.IfStatementContext ctx) {
+    private Node visitIfStatement(DLSParser.IfStatementContext ctx) {
         List<IfElseNode.Branch> branches = new ArrayList<>();
         createBranchFromNoEndingIfStatement(ctx.noEndingIfStatement(), branches);
         return new IfElseNode(branches);
@@ -682,7 +695,7 @@ public class ParseTreeVisitor {
     }
 
     
-    public Node visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
+    private Node visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
         String functionName = ctx.Identifier().getText();
         IdentifierNode funcIdentifier = new IdentifierNode(functionName);
         List<String> argNames = ctx.formalArgumentList().Identifier()
@@ -698,13 +711,13 @@ public class ParseTreeVisitor {
     }
 
     
-    public Node visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
+    private Node visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
         Optional<ExpressionNode> maybeRetVal = Optional.ofNullable(ctx.expression()).map(this::visitExpression);
         return new ReturnNode(maybeRetVal.orElse(null));
     }
 
     
-    public Node visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
+    private Node visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
         ListOptNode.ListOptType optType;
         if(ctx.Each() != null) {
             optType = ListOptNode.ListOptType.LOOP;

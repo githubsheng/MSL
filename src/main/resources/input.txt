@@ -23,6 +23,7 @@ myList = [Row id="myRow"] hello world how are you here [End]
 
 [SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa
+[Row use={myRow}]
 [Row] bb
 [Submit]
 
