@@ -2,10 +2,12 @@ package DLS;
 
 import DLS.ASTNodes.*;
 import DLS.ASTNodes.enums.attributes.PageGroupAttribute;
+import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
 import DLS.ASTNodes.function.declaration.FuncDefNode;
 import DLS.ASTNodes.enums.attributes.*;
 import DLS.ASTNodes.enums.methods.*;
 import DLS.ASTNodes.statement.*;
+import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
 import DLS.ASTNodes.statement.expression.AssignNode;
@@ -752,13 +754,26 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     private List<StatementNode> visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
-        //todo:
         if(ctx instanceof DLSParser.TerminateCommandContext) {
-
+            return Collections.singletonList(new EndSurveyNode());
         } else if (ctx instanceof DLSParser.SelectCommandContext) {
-
+            DLSParser.SelectCommandContext scc = (DLSParser.SelectCommandContext)ctx;
+            ExpressionNode left = visitExpression(scc.expression());
+            DotNode answerIsSelected = new DotNode(left, AnswerFields.IsSelected.getName());
+            AssignNode setAnswerToBeSelected = new AssignNode(answerIsSelected, new BooleanNode(true));
+            return Collections.singletonList(setAnswerToBeSelected);
         } else if (ctx instanceof DLSParser.RankCommandContext) {
-
+            DLSParser.RankCommandContext rcc = (DLSParser.RankCommandContext)ctx;
+            List<DLSParser.ExpressionContext> ecs = rcc.rankOrders().expression();
+            int rank = 1;
+            List<StatementNode> statementNodes = new LinkedList<>();
+            for(DLSParser.ExpressionContext ec : ecs) {
+                ExpressionNode left = visitExpression(ec);
+                DotNode answerRank = new DotNode(left, AnswerFields.Rank.getName());
+                AssignNode setAnswerRank = new AssignNode(answerRank, new NumberNode(rank++));
+                statementNodes.add(setAnswerRank);
+            }
+            return statementNodes;
         }
         throw new RuntimeException("unsupported built in command");
     }

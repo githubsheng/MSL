@@ -1,15 +1,13 @@
 [Page]
-function a()
-def a = 1
-end
 
 [SingleChoice id="q3" randomize={q3Randomize}] some question text
 [Row] aa
 [Row] bb
-
-[MultipleChoice id="q4"] some question text
-[Row] aa
-[Col] bb
-
 [Submit]
+
+select q3.a
+select q3.b
+rank q3.a -> q3.b -> q3.c
+terminate
+
 [PageEnd]

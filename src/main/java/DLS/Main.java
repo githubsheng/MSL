@@ -11,9 +11,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-/**
- * Created by wangsheng on 10/9/17.
- */
 public class Main {
 
     public static void main(String[] args) throws IOException {
