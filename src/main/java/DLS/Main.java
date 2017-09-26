@@ -5,7 +5,6 @@ import DLS.generated.DLSLexer;
 import DLS.generated.DLSParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.File;
 import java.io.FileInputStream;

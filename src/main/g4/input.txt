@@ -18,7 +18,11 @@ function myFunc (left, right)
 end
 
 def row1 = [Row id="myRow"] hello world how are you here [End]
-def listOfRows = List(row1,[Row id="yourRow"]some text here[End])
+def listOfRows = List(
+    [Row id="shared1"]some text here[End],
+    [Row id="shared2"]some text here[End],
+    [Row id="shared3"]some text here[End]
+    )
 
 [SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa

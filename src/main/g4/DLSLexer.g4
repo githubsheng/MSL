@@ -1,5 +1,9 @@
 lexer grammar DLSLexer;
 
+@members {
+    private int opened = 0;
+}
+
 WS
 : [ \t\n\r]+
 -> skip
@@ -177,8 +181,8 @@ Func: 'function';
 Return: 'return';
 
 //punctutations
-LeftParen: '(';
-RightParen: ')';
+LeftParen: '(' {opened++;};
+RightParen: ')' {opened--;};
 LeftBracket: '[';
 RightBracket: ']';
 Comma: ',';
@@ -200,10 +204,12 @@ ScriptModeInLineTagClose: '[End]';
 NewLine
 : '\r\n'+
 | '\n'+
+{
+    if(opened > 0) skip();
+}
 ;
 
 //built in commands
-GoTo: 'goTo';
 Terminate: 'terminate';
 Select: 'select';
 Rank: 'rank';
@@ -306,6 +312,5 @@ ScriptTextAreaLastChar
 -> popMode;
 
 ScriptTextAreaChar: ~[\r\n];
-
 
 
