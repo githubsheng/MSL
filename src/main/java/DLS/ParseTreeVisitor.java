@@ -282,9 +282,20 @@ public class ParseTreeVisitor {
         }
     }
 
+
+    private ObjectLiteralNode.Field getQuestionTypeField(DLSParser.SingleChoiceQuestionContext sc) {
+        return new ObjectLiteralNode.Field("type", new StringNode("single-choice"));
+    }
+
+    private ObjectLiteralNode.Field getQuestionTypeField(DLSParser.MultipleChoiceQuestionContext mc) {
+        return new ObjectLiteralNode.Field("type", new StringNode("multiple-choice"));
+    }
+
     //todo: review
     private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
+
+        fields.add(getQuestionTypeField(sc));
 
         String questionText = sc.TextArea().getText();
         ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
@@ -302,6 +313,8 @@ public class ParseTreeVisitor {
 
     private StatementNode getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
+
+        fields.add(getQuestionTypeField(mc));
 
         String questionText = mc.TextArea().getText();
         ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
