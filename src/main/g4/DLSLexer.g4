@@ -4,22 +4,23 @@ lexer grammar DLSLexer;
     private int opened = 0;
 }
 
-WS
-: [ \t\n\r]+
--> skip
-;
-
 PageGroupStart
 : '[PageGroup'
 -> pushMode(TagMode)
 ;
+
+PageGroupEnd: '[PageGroupEnd]';
 
 PageStart
 : '[Page'
 -> pushMode(ScriptMode), pushMode(TagMode)
 ;
 
-PageGroupEnd: '[PageGroupEnd]';
+
+WS
+: [ \t\n\r]+
+-> skip
+;
 
 mode TagMode;
 
