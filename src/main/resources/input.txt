@@ -1,6 +1,23 @@
 [Page]
 
-[SingleChoice id="q3" randomize={q3Randomize}] some question text
+def a = 1
+def global b = 2
+
+if a > b and b > 3 then
+    b = false
+end
+
+chance
+80%: b = true
+20%: b = false
+end
+
+function (left, right)
+    def temp = left + right
+    return temp
+end
+
+[SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa
 [Row] bb
 [Submit]

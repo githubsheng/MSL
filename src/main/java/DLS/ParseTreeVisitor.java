@@ -78,6 +78,10 @@ public class ParseTreeVisitor {
     private String generateRandomIdentifierName() {
         return "_generatedIdentifierName" + (++randomIdentifierNameCounter);
     }
+
+    private String generateRandomIdentifierName(String prefix) {
+        return "_" + prefix + "_gn" + (++randomIdentifierNameCounter);
+    }
     
     public Node visitFile(DLSParser.FileContext ctx) {
         //we sees pages as functions ( has its own local variable scope )
@@ -156,7 +160,7 @@ public class ParseTreeVisitor {
         statements.add(loop);
 
         //page group func def
-        IdentifierNode pageGroupFuncName = new IdentifierNode(generateRandomIdentifierName());
+        IdentifierNode pageGroupFuncName = new IdentifierNode(generateRandomIdentifierName("pageGroup"));
         FuncDefNode pageGroupFuncDef = new FuncDefNode(pageGroupFuncName, statements);
 
         //page group func call
@@ -259,7 +263,7 @@ public class ParseTreeVisitor {
         //todo: verify the expressions....
         Optional<String> maybeId = getIdStrVal(ctx.attributes());
 
-        String funcName = maybeId.orElse(this.generateRandomIdentifierName());
+        String funcName = maybeId.orElse(this.generateRandomIdentifierName("page"));
         IdentifierNode funcNameNode = new IdentifierNode(funcName);
 
         FuncDefNode pageFuncDef = new FuncDefNode(funcNameNode, statementNodes);
@@ -429,14 +433,15 @@ public class ParseTreeVisitor {
     }
 
     
-    public Node visitVariableStatement(DLSParser.VariableStatementContext ctx) {
+    private Node visitVariableStatement(DLSParser.VariableStatementContext ctx) {
         IdentifierNode name = new IdentifierNode(ctx.Identifier().getText());
         ExpressionNode initializer = visitExpression(ctx.initialiser().expression());
-        return new DefNode(name, initializer);
+        boolean isGlobal = ctx.Global() == null;
+        return new DefNode(isGlobal, name, initializer);
     }
 
     
-    public Node visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
+    private Node visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
         return visitExpression(ctx.expression());
     }
 
