@@ -19,7 +19,9 @@ end
 
 def myList = List(a, b, a > b, 1+1)
 
-myList = [Row id="myRow"] hello world how are you here [End]
+def row1 = [Row id="myRow"] hello world how are you here [End]
+def listOfRows = List(row1, [Row id="yourRow"]some text here[End])
+
 
 [SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa

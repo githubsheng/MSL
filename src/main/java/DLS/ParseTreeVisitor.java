@@ -44,7 +44,7 @@ class ParseTreeVisitor {
     private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
     private final Map<String, String> pageImplicitValues = new HashMap<>();
 
-    private ParseTreeVisitor() {
+    ParseTreeVisitor() {
         super();
         //row implicit attribute values
         rowImplicitValues.put(RowAttributes.HIDE.getName(), "true");
@@ -502,14 +502,14 @@ class ParseTreeVisitor {
 
     private Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
-        fields.add(getRowTypeField());
+        fields.add(getColTypeField());
         return new ObjectLiteralNode(fields);
     }
 
 
     private Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
-        fields.add(getColTypeField());
+        fields.add(getRowTypeField());
         return new ObjectLiteralNode(fields);
     }
 
