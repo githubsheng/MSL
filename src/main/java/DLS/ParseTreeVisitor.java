@@ -365,6 +365,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     }
 
     private List<StatementNode> getStatementNodes(DLSParser.StatementContext ctx) {
+        if(ctx.emptyStatement() != null) return Collections.emptyList();
         //try get single statement node
         Node node = tryGetSingleStatementNode(ctx);
         if(node != null) return Collections.singletonList((StatementNode)node);
@@ -384,7 +385,6 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
      */
     private Node tryGetSingleStatementNode(DLSParser.StatementContext ctx) {
         if (ctx.variableStatement() != null) return visitVariableStatement(ctx.variableStatement());
-        if (ctx.emptyStatement() != null) return new EmptyNode();
         if (ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
         if (ctx.ifStatement() != null) return visitIfStatement(ctx.ifStatement());
         if (ctx.functionDeclaration() != null) return visitFunctionDeclaration(ctx.functionDeclaration());
