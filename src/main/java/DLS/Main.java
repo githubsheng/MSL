@@ -30,12 +30,12 @@ public class Main {
 
         // create a parser that feeds off the tokens buffer
         DLSParser parser = new DLSParser(tokens);
+//        parser.setBuildParseTree(true);
 
-
-        ParseTree tree = parser.file(); // begin parsing at init rule
+        DLSParser.FileContext fileContext = parser.file(); // begin parsing at init rule
 
         ParseTreeVisitor ptv = new ParseTreeVisitor();
-        Node node = ptv.visit(tree);
+        Node node = ptv.visitFile(fileContext);
         System.out.println("end");
 
 

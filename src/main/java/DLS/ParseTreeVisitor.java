@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 import static DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames.GetRandomNumber;
 
-public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
+public class ParseTreeVisitor {
 
     private final Map<String, String> rowImplicitValues = new HashMap<>();
     private final Map<String, String> colImplicitValues = new HashMap<>();
@@ -78,25 +78,24 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
     private String generateRandomIdentifierName() {
         return "_generatedIdentifierName" + (++randomIdentifierNameCounter);
     }
-
-
-    @Override
+    
     public Node visitFile(DLSParser.FileContext ctx) {
         //we sees pages as functions ( has its own local variable scope )
         //we sees a page group as a function that contains functions (pages)
-        List<Node> nodes = ctx.element()
+        List<StatementNode> statements = ctx.element()
                 .stream()
                 .map(this::getPageNodeOrPageGroupNode)
+                .flatMap(List::stream)
                 .collect(Collectors.toList());
-        return new FileNode(nodes);
+        return new FileNode(statements);
     }
 
-    private Node getPageNodeOrPageGroupNode(DLSParser.ElementContext ctx) {
+    private List<StatementNode> getPageNodeOrPageGroupNode(DLSParser.ElementContext ctx) {
         return ctx.page() != null ? visitPage(ctx.page()) : visitPageGroup(ctx.pageGroup());
     }
 
-    @Override
-    public Node visitPageGroup(DLSParser.PageGroupContext ctx) {
+    
+    private List<StatementNode> visitPageGroup(DLSParser.PageGroupContext ctx) {
         //page group function statements
         List<StatementNode> statements = new ArrayList<>();
 
@@ -105,18 +104,14 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
         statements.addAll(attribStats);
 
-        List<Node> pageNodes = ctx.page()
-                .stream()
+        List<FuncDefNode> pageDefFuncs = ctx.page().stream()
                 .map(this::visitPage)
-                .collect(Collectors.toList());
-
-        List<FuncDefNode> pageDefFuncs = pageNodes.stream()
-                .map(PageNode.class::cast)
-                .map(PageNode::getPageFuncDef)
+                .flatMap(List::stream)
+                .filter(FuncDefNode.class::isInstance)
+                .map(FuncDefNode.class::cast)
                 .collect(Collectors.toList());
 
         //define all page functions
-        //todo: check why only one page def function was added?
         statements.addAll(pageDefFuncs);
 
         //all page function identifiers
@@ -166,7 +161,11 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
 
         //page group func call
         CallNode pageGroupFuncCall = new CallNode(pageGroupFuncName);
-        return new PageGroupNode(pageGroupFuncDef, pageGroupFuncCall);
+
+        List<StatementNode> statementNodes = new LinkedList<>();
+        statementNodes.add(pageGroupFuncDef);
+        statementNodes.add(pageGroupFuncCall);
+        return statementNodes;
     }
 
     private List<StatementNode> getAttributeStatements(DLSParser.AttributesContext attrCtxs, Map<String, String> attribImplicitValues) {
@@ -224,8 +223,8 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public Node visitPage(DLSParser.PageContext ctx) {
+    
+    private List<StatementNode> visitPage(DLSParser.PageContext ctx) {
         DLSParser.ScriptContext preScript = ctx.script(0);
         DLSParser.ScriptContext postScript = ctx.script(1);
 
@@ -266,7 +265,10 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         FuncDefNode pageFuncDef = new FuncDefNode(funcNameNode, statementNodes);
         CallNode pageFuncCall = new CallNode(funcNameNode);
 
-        return new PageNode(pageFuncDef, pageFuncCall);
+        List<StatementNode> statements = new LinkedList<>();
+        statements.add(pageFuncDef);
+        statements.add(pageFuncCall);
+        return statements;
     }
 
     private StatementNode getQuestionStatements(DLSParser.QuestionContext questionCtx) {
@@ -413,14 +415,14 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .collect(Collectors.toList());
     }
 
-    @Override
+    
     public Node visitVariableStatement(DLSParser.VariableStatementContext ctx) {
         IdentifierNode name = new IdentifierNode(ctx.Identifier().getText());
         ExpressionNode initializer = visitExpression(ctx.initialiser().expression());
         return new DefNode(name, initializer);
     }
 
-    @Override
+    
     public Node visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
         return visitExpression(ctx.expression());
     }
@@ -462,18 +464,18 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         }
     }
 
-    @Override
+    
     public Node visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
         return visitExpression(ctx.expression());
     }
 
-    @Override
+    
     public Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
         return new ObjectLiteralNode(fields);
     }
 
-    @Override
+    
     public Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
         return new ObjectLiteralNode(fields);
@@ -500,7 +502,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         }).collect(Collectors.toList());
     }
 
-    @Override
+    
     public Node visitAdditiveExpression(DLSParser.AdditiveExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
@@ -511,7 +513,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         }
     }
 
-    @Override
+    
     public Node visitRelationalExpression(DLSParser.RelationalExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
@@ -527,14 +529,14 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         }
     }
 
-    @Override
+    
     public Node visitLogicalAndExpression(DLSParser.LogicalAndExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new AndNode(left, right);
     }
 
-    @Override
+    
     public Node visitLiteralExpression(DLSParser.LiteralExpressionContext ctx) {
         //here we do not have object literal cos user cannot define objects.
         DLSParser.LiteralContext lctx = ctx.literal();
@@ -550,7 +552,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         }
     }
 
-    @Override
+    
     public Node visitListLiteralExpression(DLSParser.ListLiteralExpressionContext ctx) {
         List<ExpressionNode> elements = convertExpressionContextsToExpressionNodes(
                 ctx.listLiteral()
@@ -566,53 +568,53 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .collect(Collectors.toList());
     }
 
-    @Override
+    
     public Node visitLogicalOrExpression(DLSParser.LogicalOrExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new OrNode(left, right);
     }
 
-    @Override
+    
     public Node visitNotExpression(DLSParser.NotExpressionContext ctx) {
         ExpressionNode target = visitExpression(ctx.expression());
         return new NotNode(target);
     }
 
-    @Override
+    
     public Node visitIdentifierExpression(DLSParser.IdentifierExpressionContext ctx) {
         return new IdentifierNode(ctx.getText());
     }
 
-    @Override
+    
     public Node visitMemberExpression(DLSParser.MemberExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression());
         IdentifierNode right = new IdentifierNode(ctx.Identifier().getText());
         return new DotNode(left, right);
     }
 
-    @Override
+    
     public Node visitAssignmentExpression(DLSParser.AssignmentExpressionContext ctx) {
         ExpressionNode target = visitExpression(ctx.expression(0));
         ExpressionNode value = visitExpression(ctx.expression(1));
         return new AssignNode(target, value);
     }
 
-    @Override
+    
     public Node visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new EqualsNode(left, right);
     }
 
-    @Override
+    
     public Node visitMultiplicativeExpression(DLSParser.MultiplicativeExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new MultiplyNode(left, right);
     }
 
-    @Override
+    
     public Node visitCallExpression(DLSParser.CallExpressionContext ctx) {
         DLSParser.ExpressionContext e = ctx.expression();
         List<ExpressionNode> args;
@@ -633,7 +635,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         }
     }
 
-    @Override
+    
     public Node visitIfStatement(DLSParser.IfStatementContext ctx) {
         List<IfElseNode.Branch> branches = new ArrayList<>();
         createBranchFromNoEndingIfStatement(ctx.noEndingIfStatement(), branches);
@@ -669,7 +671,7 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
                 .collect(Collectors.toList());
     }
 
-    @Override
+    
     public Node visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
         String functionName = ctx.Identifier().getText();
         IdentifierNode funcIdentifier = new IdentifierNode(functionName);
@@ -685,13 +687,13 @@ public class ParseTreeVisitor extends DLSParserBaseVisitor<Node> {
         return new FuncDefNode(funcIdentifier, argNames, statements);
     }
 
-    @Override
+    
     public Node visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
         Optional<ExpressionNode> maybeRetVal = Optional.ofNullable(ctx.expression()).map(this::visitExpression);
         return new ReturnNode(maybeRetVal.orElse(null));
     }
 
-    @Override
+    
     public Node visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
         ListOptNode.ListOptType optType;
         if(ctx.Each() != null) {
