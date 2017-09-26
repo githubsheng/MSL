@@ -436,7 +436,7 @@ public class ParseTreeVisitor {
     private Node visitVariableStatement(DLSParser.VariableStatementContext ctx) {
         IdentifierNode name = new IdentifierNode(ctx.Identifier().getText());
         ExpressionNode initializer = visitExpression(ctx.initialiser().expression());
-        boolean isGlobal = ctx.Global() == null;
+        boolean isGlobal = ctx.Global() != null;
         return new DefNode(isGlobal, name, initializer);
     }
 
