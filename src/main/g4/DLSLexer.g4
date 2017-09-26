@@ -163,7 +163,6 @@ Def: 'def';
 Global: 'global';
 
 //array related
-List: 'list';
 Each: 'each';
 Map: 'map';
 Filter: 'filter';
@@ -196,7 +195,7 @@ ScriptModeColStart
 -> pushMode(ScriptTextAreaMode), pushMode(TagMode)
 ;
 
-ScriptModeInLineTagClose: '[end]';
+ScriptModeInLineTagClose: '[End]';
 
 NewLine
 : '\r\n'+
@@ -303,7 +302,7 @@ mode ScriptTextAreaMode;
 
 ScriptTextAreaLastChar
 : ~[\r\n]
-{_input.LA(1) == '[' && _input.LA(2) == 'e' && _input.LA(3) == 'n' && _input.LA(4) == 'd' && _input.LA(5) == ']'}?
+{_input.LA(1) == '[' && _input.LA(2) == 'E' && _input.LA(3) == 'n' && _input.LA(4) == 'd' && _input.LA(5) == ']'}?
 -> popMode;
 
 ScriptTextAreaChar: ~[\r\n];

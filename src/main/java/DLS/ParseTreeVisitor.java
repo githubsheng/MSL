@@ -3,6 +3,7 @@ package DLS;
 import DLS.ASTNodes.*;
 import DLS.ASTNodes.enums.attributes.PageGroupAttribute;
 import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
+import DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames;
 import DLS.ASTNodes.function.declaration.FuncDefNode;
 import DLS.ASTNodes.enums.attributes.*;
 import DLS.ASTNodes.enums.methods.*;
@@ -119,15 +120,17 @@ public class ParseTreeVisitor {
         statements.addAll(pageDefFuncs);
 
         //all page function identifiers
-        List<IdentifierNode> funcIdentifiers = pageDefFuncs.stream()
+        List<ExpressionNode> funcIdentifiers = pageDefFuncs.stream()
                 .map(FuncDefNode::getName)
+                .map(ExpressionNode.class::cast)
                 .collect(Collectors.toList());
 
         //define a list of list to hold all page functions
         IdentifierNode callOrderListIdentifier = new IdentifierNode(this.generateRandomIdentifierName());
         //initialise the list by putting all page function identifier into it.
-        ListLiteralNode pageFuncNameList = new ListLiteralNode(funcIdentifiers);
-        DefNode defCallOrders = new DefNode(callOrderListIdentifier, pageFuncNameList);
+        //creating a list is really calling global namespace function List with any number of parameters
+        CallNode createPageFuncNameList = new CallNode(BuiltInFuncNames.List.getFuncName(), funcIdentifiers);
+        DefNode defCallOrders = new DefNode(callOrderListIdentifier, createPageFuncNameList);
 
         statements.add(defCallOrders);
 
@@ -470,8 +473,6 @@ public class ParseTreeVisitor {
             return (ExpressionNode) visitIdentifierExpression((DLSParser.IdentifierExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.LiteralExpressionContext) {
             return (ExpressionNode) visitLiteralExpression((DLSParser.LiteralExpressionContext) ctx);
-        } else if (ctx instanceof DLSParser.ListLiteralExpressionContext) {
-            return (ExpressionNode) visitListLiteralExpression((DLSParser.ListLiteralExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.RowLiteralExpressionContext) {
             return (ExpressionNode) visitRowLiteralExpression((DLSParser.RowLiteralExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.ColumnLiteralExpressionContext) {
@@ -570,15 +571,6 @@ public class ParseTreeVisitor {
         }
     }
 
-    
-    public Node visitListLiteralExpression(DLSParser.ListLiteralExpressionContext ctx) {
-        List<ExpressionNode> elements = convertExpressionContextsToExpressionNodes(
-                ctx.listLiteral()
-                        .listElements()
-                        .expression()
-        );
-        return new ListLiteralNode(elements);
-    }
 
     private List<ExpressionNode> convertExpressionContextsToExpressionNodes(Collection<DLSParser.ExpressionContext> ctxs) {
         return ctxs.stream()
@@ -746,7 +738,7 @@ public class ParseTreeVisitor {
                 new IdentifierNode(GetRandomNumber.getFuncName()),
                 getRandomNumberArguments);
 
-        IdentifierNode randomNumberIdentifier = new IdentifierNode(generateRandomIdentifierName());
+        IdentifierNode randomNumberIdentifier = new IdentifierNode(generateRandomIdentifierName("randomNumber"));
         DefNode defRandomNumber = new DefNode(randomNumberIdentifier, getRandomNumberCall);
 
         statements.add(defRandomNumber);

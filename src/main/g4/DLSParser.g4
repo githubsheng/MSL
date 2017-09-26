@@ -69,7 +69,6 @@ expression
 | expression Assign expression                                                      #AssignmentExpression
 | Identifier                                                                        #IdentifierExpression
 | literal                                                                           #LiteralExpression
-| listLiteral                                                                       #ListLiteralExpression
 | rowLiteral                                                                        #RowLiteralExpression
 | colLiteral                                                                        #ColumnLiteralExpression
 | LeftParen expression RightParen                                                   #ParenthesizedExpression
@@ -80,10 +79,6 @@ literal
 | BooleanLiteral        #BooleanLiteral
 | StringLiteral         #StringLiteral
 ;
-
-listLiteral: List LeftParen listElements RightParen;
-
-listElements: expression (Comma expression)*;
 
 rowLiteral: ScriptModeRowStart attributes Close scriptTextArea ScriptModeInLineTagClose;
 

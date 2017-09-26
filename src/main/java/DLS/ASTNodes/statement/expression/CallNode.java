@@ -27,6 +27,10 @@ public class CallNode extends ExpressionNode {
         this(null, funcName, arguments);
     }
 
+    public CallNode(String funcName, List<ExpressionNode> arguments) {
+        this(null, new IdentifierNode(funcName), arguments);
+    }
+
     public CallNode(ExpressionNode thisArg, IdentifierNode funcName) {
         this(thisArg, funcName, Collections.emptyList());
     }

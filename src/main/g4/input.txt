@@ -1,85 +1,51 @@
-
-
-[PageGroup]
-
 [Page]
 
-function myFunc()
-    terminate
-end
-
-function yourFunc(a, b)
-    terminate
-end
-
-myFunc()
-
-yourFunc(1, 2)
-
 def a = 1
+def global b = 2
+
+if a > b and b > 3 then
+    b = false
+end
 
 chance
-    10%: a = 2
-    20%: b = 3
-    40%:
-        a = b
-        terminate
+80%: b = true
+20%: b = false
 end
 
-[SingleChoice id="qa" randomize={a + b}] some question text
-[Row id="r1"]row one
-[Row id="r2"]row two
-
-[Submit]
-
-
-
-def bbb = "hello world"
-
-def a = 1
-
-function myFunction()
-    def b = 2
-    b = a + b
-    if ( b > 2 ) and ( b > 4 ) then
-        b = (2+5) * 16 - 7
-        return
-    end
-    if
-        b > 10
-    then
-        def ccc = 100
-        return ccc
-    end
+function myFunc (left, right)
+    def temp = left + right
+    return temp
 end
 
-[PageEnd]
+def myList = List(a, b, a > b, 1+1)
 
-[PageGroupEnd]
+myList = [Row id="myRow"] hello world how are you here [End]
 
-[Page]
-[SingleChoice] some question text
-[Row]row one
-
-[SingleChoice] some question text
-[Row]row one
+[SingleChoice id="q3" randomize={ a + b > 2}] some question text
+[Row] aa
+[Row] bb
 [Submit]
+
+select q3.a
+select q3.b
+rank q3.a -> q3.b -> q3.c
+terminate
+
 [PageEnd]
 
 [PageGroup]
 
-[Page]
+[Page id="page1"]
+[SingleChoice id="q4" randomize={q3Randomize}] some question text
+[Row] aa
+[Row] bb
+[Submit]
+[PageEnd]
 
-[SingleChoice] some question text
-[Row]row one
-[Row]row two
-
-[MultipleChoice] some question text
-[Row]row one
-[Row]row two
-[Col]col one
-[Col]col two
-
+[Page id="page2"]
+[SingleChoice id="q5" randomize={q3Randomize}] some question text
+[Row] aa
+[Row] bb
 [Submit]
 [PageEnd]
 

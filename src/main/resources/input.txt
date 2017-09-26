@@ -12,10 +12,14 @@ chance
 20%: b = false
 end
 
-function (left, right)
+function myFunc (left, right)
     def temp = left + right
     return temp
 end
+
+def myList = List(a, b, a > b, 1+1)
+
+myList = [Row id="myRow"] hello world how are you here [End]
 
 [SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa
