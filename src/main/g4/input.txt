@@ -1,4 +1,19 @@
 [Page]
+def rows = List(a,
+                [Row id="myRow"] aa ${a} bb [End],
+                c)
+
+def row1 = [Row id="myRow"] aa ${a} bb [End]
+
+[SingleChoice] some question text ${a} other text
+[Row] aa ${aa}
+[Row] bb ${bb} cc
+[Submit]
+[PageEnd]
+
+
+
+[Page]
 
 def a = 1
 def global b = 2
@@ -18,11 +33,6 @@ function myFunc (left, right)
 end
 
 def row1 = [Row id="myRow"] hello world how are you here [End]
-def listOfRows = List(
-    [Row id="shared1"]some text here[End],
-    [Row id="shared2"]some text here[End],
-    [Row id="shared3"]some text here[End]
-    )
 
 [SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa

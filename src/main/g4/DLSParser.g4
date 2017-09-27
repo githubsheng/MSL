@@ -80,11 +80,9 @@ literal
 | StringLiteral         #StringLiteral
 ;
 
-rowLiteral: ScriptModeRowStart attributes Close scriptTextArea ScriptModeInLineTagClose;
+rowLiteral: ScriptModeRowStart attributes Close (ScriptTextArea | ('${' expression '}'))+ ScriptModeInLineTagClose;
 
-colLiteral: ScriptModeColStart attributes Close scriptTextArea ScriptModeInLineTagClose;
-
-scriptTextArea: ScriptTextAreaChar* ScriptTextAreaLastChar;
+colLiteral: ScriptModeColStart attributes Close (ScriptTextArea | ('${' expression '}'))+ ScriptModeInLineTagClose;
 
 ifStatement: noEndingIfStatement End eos;
 
@@ -140,18 +138,18 @@ question
 ;
 
 singleChoiceQuestion
-: SingleChoiceStart attributes Close TextArea rows+=row+
+: SingleChoiceStart attributes Close (TextArea | ('${' expression '}'))+ rows+=row+
 ;
 
 multipleChoiceQuestion
-: MultipleChoiceStart attributes Close TextArea rows+=row+ cols+=col+
+: MultipleChoiceStart attributes Close (TextArea | ('${' expression '}'))+ rows+=row+ cols+=col+
 ;
 
 row
-: RowStart attributes Close TextArea
+: RowStart attributes Close (TextArea | ('${' expression '}'))+
 ;
 
 col
-: ColStart attributes Close TextArea
+: ColStart attributes Close (TextArea | ('${' expression '}'))+
 ;
 

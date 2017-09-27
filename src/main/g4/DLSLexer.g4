@@ -134,6 +134,10 @@ TextArea: .+? TextAreaEnd {
         popMode();
         pushMode(ScriptMode);
      }
+     if(matched.endsWith("${")) {
+        offSet = 2;
+        pushMode(ScriptMode);
+     }
      int idx = _input.index();
      _input.seek(idx - offSet);
 };
@@ -142,6 +146,7 @@ TextAreaEnd
 : '[Row'
 | '[Col'
 | '[Submit'
+| '${'
 | SingleChoiceStart
 | MultipleChoiceStart
 ;
@@ -203,8 +208,7 @@ ScriptModeColStart
 ScriptModeInLineTagClose: '[End]';
 
 NewLine
-: '\r\n'+
-| '\n'+
+: [ \t\n\r]+
 {
     if(opened > 0) skip();
 }
@@ -280,6 +284,8 @@ Identifier
 | '$' Name
 ;
 
+TextInjectionStart: '${';
+
 BindingClose
 : '}'
 -> popMode
@@ -307,11 +313,25 @@ PageEnd
 
 mode ScriptTextAreaMode;
 
-ScriptTextAreaLastChar
-: ~[\r\n]
-{_input.LA(1) == '[' && _input.LA(2) == 'E' && _input.LA(3) == 'n' && _input.LA(4) == 'd' && _input.LA(5) == ']'}?
--> popMode;
+ScriptTextArea: ~[\r\n]+? ScriptTextAreaEnd {
+     int offSet = 0;
+     String matched = getText();
 
-ScriptTextAreaChar: ~[\r\n];
+     if(matched.endsWith("[End]")) {
+        offSet = 5;
+        popMode();
+     }
 
+     if(matched.endsWith("${")) {
+        offSet = 2;
+        pushMode(ScriptMode);
+     }
 
+     int idx = _input.index();
+     _input.seek(idx - offSet);
+};
+
+ScriptTextAreaEnd
+: '[End]'
+| '${'
+;
