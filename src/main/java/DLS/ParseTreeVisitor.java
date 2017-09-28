@@ -83,15 +83,14 @@ class ParseTreeVisitor {
         return "_" + prefix + "_gn" + (++randomIdentifierNameCounter);
     }
     
-    Node visitFile(DLSParser.FileContext ctx) {
+    List<StatementNode> visitFile(DLSParser.FileContext ctx) {
         //we sees pages as functions ( has its own local variable scope )
         //we sees a page group as a function that contains functions (pages)
-        List<StatementNode> statements = ctx.element()
+        return ctx.element()
                 .stream()
                 .map(this::getPageNodeOrPageGroupNode)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-        return new FileNode(statements);
     }
 
     private List<StatementNode> getPageNodeOrPageGroupNode(DLSParser.ElementContext ctx) {
@@ -488,7 +487,7 @@ class ParseTreeVisitor {
     private Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
         fields.add(getColTypeField());
-        //todo: set question text field?
+        fields.add(getTextField(ctx.colLiteral().scriptTextArea()));
         return new ObjectLiteralNode(fields);
     }
 
@@ -496,7 +495,7 @@ class ParseTreeVisitor {
     private Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
         fields.add(getRowTypeField());
-        //todo: set question text field?
+        fields.add(getTextField(ctx.rowLiteral().scriptTextArea()));
         return new ObjectLiteralNode(fields);
     }
 
@@ -567,7 +566,7 @@ class ParseTreeVisitor {
             return new BooleanNode(Boolean.valueOf(isTrue));
         } else {
             String str = lctx.getText();
-            return new StringNode(str);
+            return new StringNode(removeDoubleQuotes(str));
         }
     }
 
@@ -814,7 +813,6 @@ class ParseTreeVisitor {
                 .findFirst();
     }
 
-    //todo: move this inner class to some more appropriate places.
     private static class OrderedExpressionNode {
         final int order;
         final ExpressionNode exp;
@@ -839,16 +837,37 @@ class ParseTreeVisitor {
         }).collect(Collectors.toList());
 
         t2.addAll(t1);
-        t2.sort(Comparator.comparingInt(o -> o.order));
-        if(t2.size() == 1) {
-            return new ObjectLiteralNode.Field("text", t2.get(0).exp);
-        } else if(t2.size() == 2) {
-            AddNode add = new AddNode(t2.get(0).exp, t2.get(1).exp);
+        return getTextField(t2);
+    }
+
+    private ObjectLiteralNode.Field getTextField(DLSParser.ScriptTextAreaContext scriptTextAreaContext) {
+        List<OrderedExpressionNode> t1 = scriptTextAreaContext.ScriptTextArea().stream().map(ctx -> {
+            int order = ctx.getSymbol().getStartIndex();
+            ExpressionNode exp = new StringNode(ctx.getText());
+            return new OrderedExpressionNode(order, exp);
+        }).collect(Collectors.toList());
+
+        List<OrderedExpressionNode> t2 = scriptTextAreaContext.expression().stream().map(ctx -> {
+            int order = ctx.getStart().getStartIndex();
+            ExpressionNode exp = visitExpression(ctx);
+            return new OrderedExpressionNode(order, exp);
+        }).collect(Collectors.toList());
+
+        t2.addAll(t1);
+        return getTextField(t2);
+    }
+
+    private ObjectLiteralNode.Field getTextField(List<OrderedExpressionNode> orderedExpressionNodes) {
+        orderedExpressionNodes.sort(Comparator.comparingInt(o -> o.order));
+        if(orderedExpressionNodes.size() == 1) {
+            return new ObjectLiteralNode.Field("text", orderedExpressionNodes.get(0).exp);
+        } else if(orderedExpressionNodes.size() == 2) {
+            AddNode add = new AddNode(orderedExpressionNodes.get(0).exp, orderedExpressionNodes.get(1).exp);
             return new ObjectLiteralNode.Field("text", add);
         } else {
-            AddNode add = new AddNode(t2.get(0).exp, t2.get(1).exp);
-            for(int i = 2; i < t2.size(); i++) {
-                add = new AddNode(add, t2.get(i).exp);
+            AddNode add = new AddNode(orderedExpressionNodes.get(0).exp, orderedExpressionNodes.get(1).exp);
+            for(int i = 2; i < orderedExpressionNodes.size(); i++) {
+                add = new AddNode(add, orderedExpressionNodes.get(i).exp);
             }
             return new ObjectLiteralNode.Field("text", add);
         }

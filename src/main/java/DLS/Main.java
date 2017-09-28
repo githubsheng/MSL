@@ -1,6 +1,7 @@
 package DLS;
 
 import DLS.ASTNodes.Node;
+import DLS.ASTNodes.statement.StatementNode;
 import DLS.generated.DLSLexer;
 import DLS.generated.DLSParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -9,6 +10,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class Main {
 
@@ -34,7 +36,7 @@ public class Main {
         DLSParser.FileContext fileContext = parser.file(); // begin parsing at init rule
 
         ParseTreeVisitor ptv = new ParseTreeVisitor();
-        Node node = ptv.visitFile(fileContext);
+        List<StatementNode> statements = ptv.visitFile(fileContext);
         System.out.println("end");
 
 
