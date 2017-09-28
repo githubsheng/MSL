@@ -310,10 +310,7 @@ class ParseTreeVisitor {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
 
         fields.add(getQuestionTypeField(sc));
-
-        String questionText = sc.TextArea().getText();
-        ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
-        fields.add(questionTextField);
+        fields.add(getTextField(sc.textArea()));
 
         ObjectLiteralNode rows = getQuestionRowsField(sc.rows);
         ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
@@ -329,11 +326,7 @@ class ParseTreeVisitor {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
 
         fields.add(getQuestionTypeField(mc));
-
-        String questionText = mc.TextArea().getText();
-        ObjectLiteralNode.Field questionTextField = new ObjectLiteralNode.Field("text", new StringNode(questionText));
-        fields.add(questionTextField);
-
+        fields.add(getTextField(mc.textArea()));
 
         ObjectLiteralNode rows = getQuestionRowsField(mc.rows);
         ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
@@ -378,22 +371,14 @@ class ParseTreeVisitor {
     @SuppressWarnings("Duplicates")
     private ObjectLiteralNode getRowObjectLiteralFromRowTag(DLSParser.RowContext rc) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(rc.attributes(), rowImplicitValues);
-
-        String rowText = rc.TextArea().getText();
-        ObjectLiteralNode.Field rowTextField = new ObjectLiteralNode.Field("text", new StringNode(rowText));
-        fields.add(rowTextField);
-
+        fields.add(getTextField(rc.textArea()));
         return new ObjectLiteralNode(fields);
     }
 
     @SuppressWarnings("Duplicates")
     private ObjectLiteralNode getColObjectLiteralFromColTag(DLSParser.ColContext cc) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(cc.attributes(), colImplicitValues);
-
-        String colText = cc.TextArea().getText();
-        ObjectLiteralNode.Field colTextField = new ObjectLiteralNode.Field("text", new StringNode(colText));
-        fields.add(colTextField);
-
+        fields.add(getTextField(cc.textArea()));
         return new ObjectLiteralNode(fields);
     }
 
@@ -503,6 +488,7 @@ class ParseTreeVisitor {
     private Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
         fields.add(getColTypeField());
+        //todo: set question text field?
         return new ObjectLiteralNode(fields);
     }
 
@@ -510,6 +496,7 @@ class ParseTreeVisitor {
     private Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
         fields.add(getRowTypeField());
+        //todo: set question text field?
         return new ObjectLiteralNode(fields);
     }
 
@@ -825,5 +812,45 @@ class ParseTreeVisitor {
                 .map(strValAttr -> strValAttr.String().getText())
                 .map(this::removeDoubleQuotes)
                 .findFirst();
+    }
+
+    //todo: move this inner class to some more appropriate places.
+    private static class OrderedExpressionNode {
+        final int order;
+        final ExpressionNode exp;
+
+        OrderedExpressionNode(int order, ExpressionNode exp) {
+            this.order = order;
+            this.exp = exp;
+        }
+    }
+
+    private ObjectLiteralNode.Field getTextField(DLSParser.TextAreaContext textAreaContext) {
+        List<OrderedExpressionNode> t1 = textAreaContext.TextArea().stream().map(ctx -> {
+            int order = ctx.getSymbol().getStartIndex();
+            ExpressionNode exp = new StringNode(ctx.getText());
+            return new OrderedExpressionNode(order, exp);
+        }).collect(Collectors.toList());
+
+        List<OrderedExpressionNode> t2 = textAreaContext.expression().stream().map(ctx -> {
+            int order = ctx.getStart().getStartIndex();
+            ExpressionNode exp = visitExpression(ctx);
+            return new OrderedExpressionNode(order, exp);
+        }).collect(Collectors.toList());
+
+        t2.addAll(t1);
+        t2.sort(Comparator.comparingInt(o -> o.order));
+        if(t2.size() == 1) {
+            return new ObjectLiteralNode.Field("text", t2.get(0).exp);
+        } else if(t2.size() == 2) {
+            AddNode add = new AddNode(t2.get(0).exp, t2.get(1).exp);
+            return new ObjectLiteralNode.Field("text", add);
+        } else {
+            AddNode add = new AddNode(t2.get(0).exp, t2.get(1).exp);
+            for(int i = 2; i < t2.size(); i++) {
+                add = new AddNode(add, t2.get(i).exp);
+            }
+            return new ObjectLiteralNode.Field("text", add);
+        }
     }
 }
