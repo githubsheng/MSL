@@ -1,6 +1,9 @@
 package DLS.ASTNodes.statement;
 
 import DLS.ASTNodes.statement.expression.IdentifierNode;
+import jdk.nashorn.internal.ir.Symbol;
+import org.antlr.v4.runtime.Token;
+
 import java.util.Optional;
 
 
@@ -19,19 +22,20 @@ public class DefNode extends StatementNode {
     private final Optional<ExpressionNode> initializer;
 
 
-    public DefNode(String identifierName, ExpressionNode initializer) {
-        this(false, new IdentifierNode(identifierName), initializer);
+    public DefNode(String identifierName, ExpressionNode initializer, Token token) {
+        this(false, new IdentifierNode(identifierName), initializer, token);
     }
 
-    public DefNode(boolean global, String identifierName, ExpressionNode initializer) {
-        this(global, new IdentifierNode(identifierName), initializer);
+    public DefNode(boolean global, String identifierName, ExpressionNode initializer, Token token) {
+        this(global, new IdentifierNode(identifierName), initializer, token);
     }
 
-    public DefNode(IdentifierNode identifier, ExpressionNode initializer) {
-        this(false, identifier, initializer);
+    public DefNode(IdentifierNode identifier, ExpressionNode initializer, Token token) {
+        this(false, identifier, initializer, token);
     }
 
-    public DefNode(boolean global, IdentifierNode identifier, ExpressionNode initializer) {
+    public DefNode(boolean global, IdentifierNode identifier, ExpressionNode initializer, Token token) {
+        super(token);
         this.global = global;
         this.identifier = identifier;
         this.initializer = Optional.ofNullable(initializer);
