@@ -10,6 +10,7 @@ element
 ;
 
 //todo: allow script to be inside page group
+//todo: we need to build the expression for time
 pageGroup
 : PageGroupStart attributes Close page+ PageGroupEnd
 ;

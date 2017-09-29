@@ -678,6 +678,11 @@ class ParseTreeVisitor {
             //create the catch all "else statement" in the end.
             ExpressionNode alwaysTrue = new BooleanNode(true);
             List<StatementNode> lastBranchStatements = createListOfStatementNodes(ctx.elseStatement().statements());
+            /*
+                in this case it is like the final else statement, from user point of view it does not really
+                have a condition. The condition we have here is a hidden generated condition that always evaluates
+                to true. We do not want to stop at this condition.
+             */
             IfElseNode.Branch lastBranch = new IfElseNode.Branch(alwaysTrue, lastBranchStatements);
             branches.add(lastBranch);
         }
@@ -735,6 +740,7 @@ class ParseTreeVisitor {
 
         List<StatementNode> statements = getStatementNodes(ctx.statements());
         ListOptNode ret = new ListOptNode(optType, identifier, statements);
+        //we want to be able to stop at the first line of a map/reduce/filter so that we do not even need to get into the statements inside to stop.
         if(needsTokenAssociation)ret.setToken(ctx.getStart());
         return ret;
     }
@@ -812,7 +818,20 @@ class ParseTreeVisitor {
                 AssignNode setAnswerRank = new AssignNode(answerRank, new NumberNode(rank++));
                 statementNodes.add(new ExpressionStatementNode(setAnswerRank));
             }
+            /*
+                a single rank row1 -> row2 -> row3 is broken into three statements:
+                row1.rank = 1
+                row2.rank = 2
+                row3.rank = 3
+                although its actually three statements, from user point of view it is only a single command,
+                therefore we should only have one stop here.
+                we choose to stop at the first generated statement. When we stop at the first statement, it is
+                effectively the same as stop at the "single" command (before any rank is assigned). If we stop at the
+                second generated statement, by the time we stop we have already set the rank of the first row1. But
+                from user point of view, when he stop the command, the entire commands has not been executed yet.
+             */
             if(needsTokenAssociation)
+                //parser syntax gurantee that there will at least be one statement here.
                 ((ExpressionStatementNode)statementNodes.get(0)).setToken(ctx.getStart());
             return statementNodes;
         }
