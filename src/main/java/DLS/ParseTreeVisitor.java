@@ -44,6 +44,9 @@ class ParseTreeVisitor {
     private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
     private final Map<String, String> pageImplicitValues = new HashMap<>();
 
+    //I don't like making it stateful but this requires least code changes so guess will just have to live with it for now.
+    private boolean needsTokenAssociation = false;
+
     ParseTreeVisitor() {
         super();
         //row implicit attribute values
@@ -221,11 +224,14 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> getScriptStatements(DLSParser.ScriptContext scriptCtx) {
-        return scriptCtx.statement().stream()
+        needsTokenAssociation = true;
+        List<StatementNode> ret = scriptCtx.statement().stream()
                 .map(this::getStatementNodes)
                 .flatMap(List::stream)
                 .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
+        needsTokenAssociation = false;
+        return ret;
     }
 
     
@@ -400,7 +406,7 @@ class ParseTreeVisitor {
      * @param ctx statement context
      * @return a single statement node
      */
-    private Node tryGetSingleStatementNode(DLSParser.StatementContext ctx) {
+    private StatementNode tryGetSingleStatementNode(DLSParser.StatementContext ctx) {
         if (ctx.variableStatement() != null) return visitVariableStatement(ctx.variableStatement());
         if (ctx.expressionStatement() != null) return visitExpressionStatement(ctx.expressionStatement());
         if (ctx.ifStatement() != null) return visitIfStatement(ctx.ifStatement());
@@ -431,15 +437,16 @@ class ParseTreeVisitor {
     }
 
     
-    private Node visitVariableStatement(DLSParser.VariableStatementContext ctx) {
+    private StatementNode visitVariableStatement(DLSParser.VariableStatementContext ctx) {
         IdentifierNode name = new IdentifierNode(ctx.Identifier().getText());
         ExpressionNode initializer = visitExpression(ctx.initialiser().expression());
         boolean isGlobal = ctx.Global() != null;
-        return new DefNode(isGlobal, name, initializer);
+        DefNode ret = new DefNode(isGlobal, name, initializer);
+        return ret;
     }
 
     
-    private Node visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
+    private StatementNode visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
         return visitExpression(ctx.expression());
     }
 
@@ -645,7 +652,7 @@ class ParseTreeVisitor {
     }
 
     
-    private Node visitIfStatement(DLSParser.IfStatementContext ctx) {
+    private StatementNode visitIfStatement(DLSParser.IfStatementContext ctx) {
         List<IfElseNode.Branch> branches = new ArrayList<>();
         createBranchFromNoEndingIfStatement(ctx.noEndingIfStatement(), branches);
         return new IfElseNode(branches);
@@ -681,7 +688,7 @@ class ParseTreeVisitor {
     }
 
     
-    private Node visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
+    private StatementNode visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
         String functionName = ctx.Identifier().getText();
         IdentifierNode funcIdentifier = new IdentifierNode(functionName);
         List<String> argNames = ctx.formalArgumentList().Identifier()
@@ -697,13 +704,13 @@ class ParseTreeVisitor {
     }
 
     
-    private Node visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
+    private StatementNode visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
         Optional<ExpressionNode> maybeRetVal = Optional.ofNullable(ctx.expression()).map(this::visitExpression);
         return new ReturnNode(maybeRetVal.orElse(null));
     }
 
     
-    private Node visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
+    private StatementNode visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
         ListOptNode.ListOptType optType;
         if(ctx.Each() != null) {
             optType = ListOptNode.ListOptType.LOOP;
