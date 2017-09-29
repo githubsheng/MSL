@@ -1,5 +1,7 @@
-package DLS.ASTNodes.statement;
+package DLS.ASTNodes.statement.expression;
 
+import DLS.ASTNodes.Node;
+import DLS.ASTNodes.statement.StatementNode;
 import org.antlr.v4.runtime.Token;
 
 /**
@@ -7,5 +9,5 @@ import org.antlr.v4.runtime.Token;
  * You can see in the parser rule (DLSParser.g4) that the only difference from rule expressionStatement and rule
  * expression is that single eos.
  */
-public class ExpressionNode extends StatementNode {
+public class ExpressionNode extends Node {
 }

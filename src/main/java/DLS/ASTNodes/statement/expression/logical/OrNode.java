@@ -1,6 +1,6 @@
 package DLS.ASTNodes.statement.expression.logical;
 
-import DLS.ASTNodes.statement.ExpressionNode;
+import DLS.ASTNodes.statement.expression.ExpressionNode;
 import DLS.ASTNodes.statement.expression.BinaryNode;
 
 /**

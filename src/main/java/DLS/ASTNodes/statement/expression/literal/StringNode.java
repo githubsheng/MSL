@@ -1,6 +1,6 @@
 package DLS.ASTNodes.statement.expression.literal;
 
-import DLS.ASTNodes.statement.ExpressionNode;
+import DLS.ASTNodes.statement.expression.ExpressionNode;
 
 /**
  * Created by wangsheng on 16/9/17.

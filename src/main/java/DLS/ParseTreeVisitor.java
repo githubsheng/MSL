@@ -4,17 +4,14 @@ import DLS.ASTNodes.*;
 import DLS.ASTNodes.enums.attributes.PageGroupAttribute;
 import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
 import DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames;
-import DLS.ASTNodes.function.declaration.FuncDefNode;
+import DLS.ASTNodes.statement.FuncDefNode;
 import DLS.ASTNodes.enums.attributes.*;
 import DLS.ASTNodes.enums.methods.*;
 import DLS.ASTNodes.statement.*;
 import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
-import DLS.ASTNodes.statement.expression.AssignNode;
-import DLS.ASTNodes.statement.expression.CallNode;
-import DLS.ASTNodes.statement.expression.DotNode;
-import DLS.ASTNodes.statement.expression.IdentifierNode;
+import DLS.ASTNodes.statement.expression.*;
 import DLS.ASTNodes.statement.expression.literal.*;
 import DLS.ASTNodes.statement.expression.logical.AndNode;
 import DLS.ASTNodes.statement.expression.logical.EqualsNode;
@@ -144,7 +141,7 @@ class ParseTreeVisitor {
         //equals to "true"
         EqualsNode isTrueStr = new EqualsNode(_randomize, new StringNode("true"));
         OrNode either = new OrNode(isTrue, isTrueStr);
-        IfElseNode maybeRandomize = new IfElseNode(either, randomizeCall);
+        IfElseNode maybeRandomize = new IfElseNode(either, new ExpressionStatementNode(randomizeCall));
         statements.add(maybeRandomize);
 
         //call list.randomize if page group attribute "rotate" evaluates to true.
@@ -156,11 +153,15 @@ class ParseTreeVisitor {
         //equals to "true"
         EqualsNode isTrueStr1 = new EqualsNode(_rotate, new StringNode("true"));
         OrNode either1 = new OrNode(isTrue1, isTrueStr1);
-        IfElseNode maybeRotate = new IfElseNode(either1, rotateCall);
+        IfElseNode maybeRotate = new IfElseNode(either1, new ExpressionStatementNode(rotateCall));
         statements.add(maybeRotate);
 
         //loop the list, get the page functions and call them one by one.
-        ListOptNode loop = new ListOptNode(ListOptNode.ListOptType.LOOP, callOrderListIdentifier, Collections.singletonList(new CallNode(ListOptNode.$element)));
+        ListOptNode loop = new ListOptNode(
+                ListOptNode.ListOptType.LOOP,
+                callOrderListIdentifier,
+                Collections.singletonList(new ExpressionStatementNode(new CallNode(ListOptNode.$element)))
+        );
         statements.add(loop);
 
         //page group func def
@@ -172,7 +173,7 @@ class ParseTreeVisitor {
 
         List<StatementNode> statementNodes = new LinkedList<>();
         statementNodes.add(pageGroupFuncDef);
-        statementNodes.add(pageGroupFuncCall);
+        statementNodes.add(new ExpressionStatementNode(pageGroupFuncCall));
         return statementNodes;
     }
 
@@ -278,7 +279,7 @@ class ParseTreeVisitor {
 
         List<StatementNode> statements = new LinkedList<>();
         statements.add(pageFuncDef);
-        statements.add(pageFuncCall);
+        statements.add(new ExpressionStatementNode(pageFuncCall));
         return statements;
     }
 
@@ -442,12 +443,15 @@ class ParseTreeVisitor {
         ExpressionNode initializer = visitExpression(ctx.initialiser().expression());
         boolean isGlobal = ctx.Global() != null;
         DefNode ret = new DefNode(isGlobal, name, initializer);
+        if(needsTokenAssociation)ret.setToken(ctx.getStart());
         return ret;
     }
 
     
     private StatementNode visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
-        return visitExpression(ctx.expression());
+        ExpressionStatementNode est = new ExpressionStatementNode(visitExpression(ctx.expression()));
+        if(needsTokenAssociation) est.setToken(ctx.getStart());
+        return est;
     }
 
     private ExpressionNode visitExpression(DLSParser.ExpressionContext ctx) {
@@ -663,6 +667,7 @@ class ParseTreeVisitor {
         ExpressionNode condition = visitExpression(ctx.expression());
         List<StatementNode> statements = createListOfStatementNodes(ctx.statements());
         IfElseNode.Branch branch = new IfElseNode.Branch(condition, statements);
+        if(needsTokenAssociation) branch.setToken(ctx.expression().getStart());
         branches.add(branch);
 
         if (ctx.elseStatement() == null) return;
@@ -700,13 +705,17 @@ class ParseTreeVisitor {
                 .flatMap(List::stream)
                 .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
-        return new FuncDefNode(funcIdentifier, argNames, statements);
+        FuncDefNode ret = new FuncDefNode(funcIdentifier, argNames, statements);
+        if(needsTokenAssociation) ret.setToken(ctx.getStart());
+        return ret;
     }
 
     
     private StatementNode visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
         Optional<ExpressionNode> maybeRetVal = Optional.ofNullable(ctx.expression()).map(this::visitExpression);
-        return new ReturnNode(maybeRetVal.orElse(null));
+        ReturnNode ret = new ReturnNode(maybeRetVal.orElse(null));
+        if(needsTokenAssociation)ret.setToken(ctx.getStart());
+        return ret;
     }
 
     
@@ -725,7 +734,9 @@ class ParseTreeVisitor {
         IdentifierNode identifier = new IdentifierNode(ctx.Identifier().getText());
 
         List<StatementNode> statements = getStatementNodes(ctx.statements());
-        return new ListOptNode(optType, identifier, statements);
+        ListOptNode ret = new ListOptNode(optType, identifier, statements);
+        if(needsTokenAssociation)ret.setToken(ctx.getStart());
+        return ret;
     }
 
     private List<StatementNode> getChanceStatementNodes(DLSParser.ChanceStatementContext ctx) {
@@ -762,6 +773,12 @@ class ParseTreeVisitor {
             LessThanEqualsNode t2 = new LessThanEqualsNode(randomNumberIdentifier, new NumberNode(highBound));
             AndNode t3 = new AndNode(t1, t2);
             List<StatementNode> branchStatements = getStatementNodes(possibility.statements());
+            /*
+                here we do not associate token to branch because we dont want to stop on condition.
+                we can still stop on a statement inside the branch. When those statement nodes can generated,
+                appropriate tokens will be associated with those statement nodes. Please see the comments for
+                `getToken` method of IfElseNode.Branch
+             */
             branches.add(new IfElseNode.Branch(t3, branchStatements));
         }
 
@@ -773,13 +790,17 @@ class ParseTreeVisitor {
 
     private List<StatementNode> visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
         if(ctx instanceof DLSParser.TerminateCommandContext) {
-            return Collections.singletonList(new EndSurveyNode());
+            EndSurveyNode end = new EndSurveyNode();
+            if(needsTokenAssociation)end.setToken(ctx.getStart());
+            return Collections.singletonList(end);
         } else if (ctx instanceof DLSParser.SelectCommandContext) {
             DLSParser.SelectCommandContext scc = (DLSParser.SelectCommandContext)ctx;
             ExpressionNode left = visitExpression(scc.expression());
             DotNode answerIsSelected = new DotNode(left, AnswerFields.IsSelected.getName());
             AssignNode setAnswerToBeSelected = new AssignNode(answerIsSelected, new BooleanNode(true));
-            return Collections.singletonList(setAnswerToBeSelected);
+            ExpressionStatementNode select = new ExpressionStatementNode(setAnswerToBeSelected);
+            if(needsTokenAssociation)select.setToken(ctx.getStart());
+            return Collections.singletonList(select);
         } else if (ctx instanceof DLSParser.RankCommandContext) {
             DLSParser.RankCommandContext rcc = (DLSParser.RankCommandContext)ctx;
             List<DLSParser.ExpressionContext> ecs = rcc.rankOrders().expression();
@@ -789,8 +810,10 @@ class ParseTreeVisitor {
                 ExpressionNode left = visitExpression(ec);
                 DotNode answerRank = new DotNode(left, AnswerFields.Rank.getName());
                 AssignNode setAnswerRank = new AssignNode(answerRank, new NumberNode(rank++));
-                statementNodes.add(setAnswerRank);
+                statementNodes.add(new ExpressionStatementNode(setAnswerRank));
             }
+            if(needsTokenAssociation)
+                ((ExpressionStatementNode)statementNodes.get(0)).setToken(ctx.getStart());
             return statementNodes;
         }
         throw new RuntimeException("unsupported built in command");

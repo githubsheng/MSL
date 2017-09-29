@@ -1,6 +1,6 @@
 package DLS.ASTNodes.statement.built.in.commands;
 
-import DLS.ASTNodes.statement.ExpressionNode;
+import DLS.ASTNodes.statement.expression.ExpressionNode;
 import DLS.ASTNodes.statement.StatementNode;
 import java.util.List;
 

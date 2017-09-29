@@ -4,18 +4,13 @@ import DLS.ASTNodes.TokenAssociation;
 import DLS.ASTNodes.statement.expression.ExpressionNode;
 import org.antlr.v4.runtime.Token;
 
-import java.util.Optional;
+public class ExpressionStatementNode extends StatementNode implements TokenAssociation {
 
-/**
- * Created by wangsheng on 16/9/17.
- */
-public class ReturnNode extends StatementNode implements TokenAssociation {
-
-    private final Optional<ExpressionNode> returnValue;
+    private final ExpressionNode exp;
     private Token token;
 
-    public ReturnNode(ExpressionNode returnValue) {
-        this.returnValue = Optional.of(returnValue);
+    public ExpressionStatementNode(ExpressionNode exp) {
+        this.exp = exp;
     }
 
     @Override

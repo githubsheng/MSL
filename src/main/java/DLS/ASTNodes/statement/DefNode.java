@@ -1,6 +1,7 @@
 package DLS.ASTNodes.statement;
 
 import DLS.ASTNodes.TokenAssociation;
+import DLS.ASTNodes.statement.expression.ExpressionNode;
 import DLS.ASTNodes.statement.expression.IdentifierNode;
 import org.antlr.v4.runtime.Token;
 
@@ -15,11 +16,12 @@ import java.util.Optional;
  * we later walk the AST. So we decided to add a new field 'initializer' to this node and in the code commited
  * later, parser rule variable corresponds to a single DefNode (with initializer).
  */
-public class DefNode extends StatementNode {
+public class DefNode extends StatementNode implements TokenAssociation {
 
     private final boolean global;
     private final IdentifierNode identifier;
     private final Optional<ExpressionNode> initializer;
+    private Token token;
 
 
     public DefNode(String identifierName, ExpressionNode initializer) {
@@ -50,5 +52,15 @@ public class DefNode extends StatementNode {
 
     public boolean isGlobal() {
         return global;
+    }
+
+    @Override
+    public Token getToken() {
+        return token;
+    }
+
+    @Override
+    public void setToken(Token token) {
+        this.token = token;
     }
 }
