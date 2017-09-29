@@ -1,6 +1,5 @@
 [Page]
 
-def a1 = "Hello World" + "Good Morning"
 def a = 1
 def global b = 2
 
@@ -20,11 +19,11 @@ end
 
 def myList = List(a, b, a > b, 1+1)
 
-def row1 = [Row id="myRow"] hello world ${a + b} how are you here [End]
+def row1 = [Row id="myRow"] hello world how are you here [End]
 def listOfRows = List(row1, [Row id="yourRow"]some text here[End])
 
 
-[SingleChoice id="q3" randomize={ a + b > 2}] some question ${"injected text" + "another injected text"} text
+[SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa
 [Row use={myRow}]
 [Row] bb

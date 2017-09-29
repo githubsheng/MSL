@@ -28,7 +28,6 @@ import DLS.ASTNodes.statement.expression.relational.LessThanNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
 import DLS.generated.DLSParser;
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.*;
@@ -44,7 +43,6 @@ class ParseTreeVisitor {
     //the keys of pageGroupImplicitValues and pageImplicitValues use the identifier forms.
     private final Map<String, String> pageGroupImplicitValues = new HashMap<>();
     private final Map<String, String> pageImplicitValues = new HashMap<>();
-    private final Token NO_CORRESPONDING_TOKEN = null;
 
     ParseTreeVisitor() {
         super();
@@ -103,8 +101,6 @@ class ParseTreeVisitor {
     private List<StatementNode> visitPageGroup(DLSParser.PageGroupContext ctx) {
         //page group function statements
         List<StatementNode> statements = new ArrayList<>();
-
-        //todo: !important   decide where user can stop
 
         //todo: semantic checking: warn invalid attribute name
         //page group attributes
