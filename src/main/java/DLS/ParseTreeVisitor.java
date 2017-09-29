@@ -445,46 +445,46 @@ class ParseTreeVisitor {
 
     private ExpressionNode visitExpression(DLSParser.ExpressionContext ctx) {
         if (ctx instanceof DLSParser.MemberExpressionContext) {
-            return (ExpressionNode) visitMemberExpression((DLSParser.MemberExpressionContext) ctx);
+            return visitMemberExpression((DLSParser.MemberExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.CallExpressionContext) {
-            return (ExpressionNode) visitCallExpression((DLSParser.CallExpressionContext) ctx);
+            return visitCallExpression((DLSParser.CallExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.NotExpressionContext) {
-            return (ExpressionNode) visitNotExpression((DLSParser.NotExpressionContext) ctx);
+            return visitNotExpression((DLSParser.NotExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.MultiplicativeExpressionContext) {
-            return (ExpressionNode) visitMultiplicativeExpression((DLSParser.MultiplicativeExpressionContext) ctx);
+            return visitMultiplicativeExpression((DLSParser.MultiplicativeExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.AdditiveExpressionContext) {
-            return (ExpressionNode) visitAdditiveExpression((DLSParser.AdditiveExpressionContext) ctx);
+            return visitAdditiveExpression((DLSParser.AdditiveExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.RelationalExpressionContext) {
-            return (ExpressionNode) visitRelationalExpression((DLSParser.RelationalExpressionContext) ctx);
+            return visitRelationalExpression((DLSParser.RelationalExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.EqualityExpressionContext) {
-            return (ExpressionNode) visitEqualityExpression((DLSParser.EqualityExpressionContext) ctx);
+            return visitEqualityExpression((DLSParser.EqualityExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.LogicalAndExpressionContext) {
-            return (ExpressionNode) visitLogicalAndExpression((DLSParser.LogicalAndExpressionContext) ctx);
+            return visitLogicalAndExpression((DLSParser.LogicalAndExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.LogicalOrExpressionContext) {
-            return (ExpressionNode) visitLogicalOrExpression((DLSParser.LogicalOrExpressionContext) ctx);
+            return visitLogicalOrExpression((DLSParser.LogicalOrExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.AssignmentExpressionContext) {
-            return (ExpressionNode) visitAssignmentExpression((DLSParser.AssignmentExpressionContext) ctx);
+            return visitAssignmentExpression((DLSParser.AssignmentExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.IdentifierExpressionContext) {
-            return (ExpressionNode) visitIdentifierExpression((DLSParser.IdentifierExpressionContext) ctx);
+            return visitIdentifierExpression((DLSParser.IdentifierExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.LiteralExpressionContext) {
-            return (ExpressionNode) visitLiteralExpression((DLSParser.LiteralExpressionContext) ctx);
+            return visitLiteralExpression((DLSParser.LiteralExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.RowLiteralExpressionContext) {
-            return (ExpressionNode) visitRowLiteralExpression((DLSParser.RowLiteralExpressionContext) ctx);
+            return visitRowLiteralExpression((DLSParser.RowLiteralExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.ColumnLiteralExpressionContext) {
-            return (ExpressionNode) visitColumnLiteralExpression((DLSParser.ColumnLiteralExpressionContext) ctx);
+            return visitColumnLiteralExpression((DLSParser.ColumnLiteralExpressionContext) ctx);
         } else {
             //must be instance ParenthesizedExpression
-            return (ExpressionNode) visitParenthesizedExpression((DLSParser.ParenthesizedExpressionContext) ctx);
+            return visitParenthesizedExpression((DLSParser.ParenthesizedExpressionContext) ctx);
         }
     }
 
     
-    private Node visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
+    private ExpressionNode visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
         return visitExpression(ctx.expression());
     }
 
 
-    private Node visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
+    private ExpressionNode visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
         fields.add(getColTypeField());
         fields.add(getTextField(ctx.colLiteral().scriptTextArea()));
@@ -492,7 +492,7 @@ class ParseTreeVisitor {
     }
 
 
-    private Node visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
+    private ExpressionNode visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
         fields.add(getRowTypeField());
         fields.add(getTextField(ctx.rowLiteral().scriptTextArea()));
@@ -521,7 +521,7 @@ class ParseTreeVisitor {
     }
 
     
-    private Node visitAdditiveExpression(DLSParser.AdditiveExpressionContext ctx) {
+    private ExpressionNode visitAdditiveExpression(DLSParser.AdditiveExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         if (ctx.Minus() != null) {
@@ -532,7 +532,7 @@ class ParseTreeVisitor {
     }
 
 
-    private Node visitRelationalExpression(DLSParser.RelationalExpressionContext ctx) {
+    private ExpressionNode visitRelationalExpression(DLSParser.RelationalExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
 
@@ -548,14 +548,14 @@ class ParseTreeVisitor {
     }
 
 
-    private Node visitLogicalAndExpression(DLSParser.LogicalAndExpressionContext ctx) {
+    private ExpressionNode visitLogicalAndExpression(DLSParser.LogicalAndExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new AndNode(left, right);
     }
 
 
-    private Node visitLiteralExpression(DLSParser.LiteralExpressionContext ctx) {
+    private ExpressionNode visitLiteralExpression(DLSParser.LiteralExpressionContext ctx) {
         //here we do not have object literal cos user cannot define objects.
         DLSParser.LiteralContext lctx = ctx.literal();
         if (lctx instanceof DLSParser.DecimalLiteralContext) {
@@ -578,53 +578,53 @@ class ParseTreeVisitor {
     }
 
 
-    private Node visitLogicalOrExpression(DLSParser.LogicalOrExpressionContext ctx) {
+    private ExpressionNode visitLogicalOrExpression(DLSParser.LogicalOrExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new OrNode(left, right);
     }
 
 
-    private Node visitNotExpression(DLSParser.NotExpressionContext ctx) {
+    private ExpressionNode visitNotExpression(DLSParser.NotExpressionContext ctx) {
         ExpressionNode target = visitExpression(ctx.expression());
         return new NotNode(target);
     }
 
 
-    private Node visitIdentifierExpression(DLSParser.IdentifierExpressionContext ctx) {
+    private ExpressionNode visitIdentifierExpression(DLSParser.IdentifierExpressionContext ctx) {
         return new IdentifierNode(ctx.getText());
     }
 
 
-    private Node visitMemberExpression(DLSParser.MemberExpressionContext ctx) {
+    private ExpressionNode visitMemberExpression(DLSParser.MemberExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression());
         IdentifierNode right = new IdentifierNode(ctx.Identifier().getText());
         return new DotNode(left, right);
     }
 
     
-    private Node visitAssignmentExpression(DLSParser.AssignmentExpressionContext ctx) {
+    private ExpressionNode visitAssignmentExpression(DLSParser.AssignmentExpressionContext ctx) {
         ExpressionNode target = visitExpression(ctx.expression(0));
         ExpressionNode value = visitExpression(ctx.expression(1));
         return new AssignNode(target, value);
     }
 
     
-    private Node visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
+    private ExpressionNode visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new EqualsNode(left, right);
     }
 
     
-    private Node visitMultiplicativeExpression(DLSParser.MultiplicativeExpressionContext ctx) {
+    private ExpressionNode visitMultiplicativeExpression(DLSParser.MultiplicativeExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new MultiplyNode(left, right);
     }
 
     
-    private Node visitCallExpression(DLSParser.CallExpressionContext ctx) {
+    private ExpressionNode visitCallExpression(DLSParser.CallExpressionContext ctx) {
         DLSParser.ExpressionContext e = ctx.expression();
         List<ExpressionNode> args;
         if (ctx.argumentList().expression() != null) {
