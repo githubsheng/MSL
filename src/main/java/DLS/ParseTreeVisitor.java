@@ -294,12 +294,11 @@ class ParseTreeVisitor {
         }
     }
 
-
-    private ObjectLiteralNode.Field getQuestionTypeField(DLSParser.SingleChoiceQuestionContext sc) {
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleChoiceQuestionContext sc) {
         return new ObjectLiteralNode.Field("_type", new StringNode("single-choice"));
     }
 
-    private ObjectLiteralNode.Field getQuestionTypeField(DLSParser.MultipleChoiceQuestionContext mc) {
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.MultipleChoiceQuestionContext mc) {
         return new ObjectLiteralNode.Field("_type", new StringNode("multiple-choice"));
     }
 
@@ -483,10 +482,11 @@ class ParseTreeVisitor {
             return visitRowLiteralExpression((DLSParser.RowLiteralExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.ColumnLiteralExpressionContext) {
             return visitColumnLiteralExpression((DLSParser.ColumnLiteralExpressionContext) ctx);
-        } else {
+        } else if (ctx instanceof DLSParser.ParenthesizedExpressionContext) {
             //must be instance ParenthesizedExpression
             return visitParenthesizedExpression((DLSParser.ParenthesizedExpressionContext) ctx);
         }
+        throw new RuntimeException("unsupported expression");
     }
 
     
@@ -575,10 +575,65 @@ class ParseTreeVisitor {
         } else if (lctx instanceof DLSParser.BooleanLiteralContext) {
             String isTrue = lctx.getText();
             return new BooleanNode(Boolean.valueOf(isTrue));
-        } else {
+        } else if (lctx instanceof DLSParser.StringLiteralContext) {
             String str = lctx.getText();
             return new StringNode(removeDoubleQuotes(str));
+        } else if (lctx instanceof DLSParser.HoursLiteralContext) {
+            DLSParser.HoursLiteralContext hcx = (DLSParser.HoursLiteralContext)lctx;
+            int hours = hcx.Hours() != null ? removeLastCharacter(hcx.Hours().getText()) : 0;
+            int minutes = hcx.Minutes() != null ? removeLastCharacter(hcx.Minutes().getText()) : 0;
+            int seconds = hcx.Seconds() != null ? removeLastCharacter(hcx.Seconds().getText()) : 0;
+            int totalMilliseconds = hours * 60 * 60 * 1000
+                    + minutes * 60 * 1000
+                    + seconds * 1000;
+            return new NumberNode(totalMilliseconds);
+        } else if (lctx instanceof DLSParser.MinutesLiteralContext) {
+            DLSParser.MinutesLiteralContext mcx = (DLSParser.MinutesLiteralContext)lctx;
+            int minutes = mcx.Minutes() != null ? removeLastCharacter(mcx.Minutes().getText()) : 0;
+            int seconds = mcx.Seconds() != null ? removeLastCharacter(mcx.Seconds().getText()) : 0;
+            int totalMilliseconds = minutes * 60 * 1000 + seconds * 1000;
+            return new NumberNode(totalMilliseconds);
+        } else if (lctx instanceof DLSParser.SecondsLiteralContext) {
+            DLSParser.SecondsLiteralContext mcx = (DLSParser.SecondsLiteralContext)lctx;
+            int seconds = removeLastCharacter(mcx.Seconds().getText());
+            int totalMilliseconds = seconds * 1000;
+            return new NumberNode(totalMilliseconds);
+        } else if (lctx instanceof DLSParser.ClockUnitLiteralContext) {
+            String t = lctx.getText();
+            return convertClockUnitStringToNumber(t);
         }
+        throw new RuntimeException("unsupported literal type");
+    }
+
+    private int removeLastCharacter(String str) {
+        String t = str.substring(0, str.length() - 1);
+        return Integer.valueOf(t);
+    }
+
+    private NumberNode convertClockUnitStringToNumber(String t){
+        int c;
+        switch (t) {
+            case "12am":
+                c = 0;
+                break;
+            case "12pm":
+                c = 12;
+                break;
+            default:
+                String n = t.substring(0, t.length() - 2);
+                String s = t.substring(t.length() - 2);
+                switch (s) {
+                    case "am":
+                        c = Integer.valueOf(n);
+                        break;
+                    case "pm":
+                        c = Integer.valueOf(n) + 12;
+                        break;
+                    default:
+                        throw new RuntimeException("unknown clock unit suffix");
+                }
+        }
+        return new NumberNode(c);
     }
 
 
@@ -834,6 +889,12 @@ class ParseTreeVisitor {
                 //parser syntax gurantee that there will at least be one statement here.
                 ((ExpressionStatementNode)statementNodes.get(0)).setToken(ctx.getStart());
             return statementNodes;
+        } else if (ctx instanceof DLSParser.PrintCommandContext) {
+            ExpressionNode exp = visitExpression(((DLSParser.PrintCommandContext) ctx).expression());
+            CallNode callBuiltInPrintFunction = new CallNode(BuiltInFuncNames.PRINT.getFuncName(), exp);
+            ExpressionStatementNode statementNode = new ExpressionStatementNode(callBuiltInPrintFunction);
+            if(needsTokenAssociation) statementNode.setToken(ctx.getStart());
+            return Collections.singletonList(statementNode);
         }
         throw new RuntimeException("unsupported built in command");
     }

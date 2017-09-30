@@ -218,6 +218,7 @@ NewLine
 Terminate: 'terminate';
 Select: 'select';
 Rank: 'rank';
+Print: 'print';
 
 //operators
 Assign: '=';
@@ -253,12 +254,10 @@ DecimalLiteral
 ;
 
 //time related
-Time: 'time';
 Seconds: DecimalIntegerLiteral 's';
 Minutes: DecimalIntegerLiteral 'm';
 Hours: DecimalIntegerLiteral 'h';
 
-Clock: 'clock';
 ClockUnit
 : '12am'        //00:00
 | [1-9] 'am'    //01:00 ~ 09:00
@@ -281,7 +280,7 @@ StringLiteral: String;
 //identifier
 Identifier
 : Name
-| '$' Name
+| '$' Name   //this is for $element and $index inside an list loop.
 ;
 
 TextInjectionStart: '${';

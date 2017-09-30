@@ -5,7 +5,7 @@ package DLS.ASTNodes.enums.built.in.funcNames;
  */
 public enum BuiltInFuncNames {
 
-    GetRandomNumber("_getRandomNumber"), List("List");
+    GetRandomNumber("_getRandomNumber"), List("List"), PRINT("_print"), CLOCK("_clock");
 
     private final String funcName;
 

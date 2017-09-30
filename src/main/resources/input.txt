@@ -1,5 +1,11 @@
 [Page]
 
+print 1 + 2
+
+if clock > 2pm then
+    def shortestTimeToAnswer = 10s
+end
+
 def a = 1
 def global b = 2
 

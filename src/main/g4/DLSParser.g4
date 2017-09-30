@@ -10,7 +10,6 @@ element
 ;
 
 //todo: allow script to be inside page group
-//todo: we need to build the expression for time
 pageGroup
 : PageGroupStart attributes Close page+ PageGroupEnd
 ;
@@ -76,10 +75,15 @@ expression
 | LeftParen expression RightParen                                                   #ParenthesizedExpression
 ;
 
+//todo: should be able to do something like this: 1m50s 4h50s or something
 literal
-: DecimalLiteral        #DecimalLiteral
-| BooleanLiteral        #BooleanLiteral
-| StringLiteral         #StringLiteral
+: DecimalLiteral            #DecimalLiteral
+| BooleanLiteral            #BooleanLiteral
+| StringLiteral             #StringLiteral
+| Hours Minutes? Seconds?   #HoursLiteral
+| Minutes Seconds?          #MinutesLiteral
+| Seconds                   #SecondsLiteral
+| ClockUnit                 #ClockUnitLiteral
 ;
 
 rowLiteral: ScriptModeRowStart attributes Close scriptTextArea ScriptModeInLineTagClose;
@@ -116,6 +120,7 @@ builtInCommandStatement
 : Terminate                                     #TerminateCommand
 | Select expression                             #SelectCommand
 | Rank rankOrders                               #RankCommand
+| Print expression                              #PrintCommand
 ;
 
 rankOrders: expression (RankOrder expression)+;

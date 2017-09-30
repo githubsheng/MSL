@@ -1,4 +1,13 @@
 [Page]
+
+clock < 3am
+
+if clock < 3am then
+    def a = 1
+end
+
+answerTime < 12h40s
+
 def rows = List(a,
                 [Row id="myRow"] aa ${a} bb [End],
                 c)
