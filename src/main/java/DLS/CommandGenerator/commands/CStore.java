@@ -1,7 +1,13 @@
 package DLS.CommandGenerator.commands;
 
+import DLS.CommandGenerator.AbstractCommand;
+
 /**
- * Created by wangsheng on 30/9/17.
+ * first operand: the variable name
  */
-public class CStore  {
+public class CStore extends AbstractCommand {
+    @Override
+    public String getName() {
+        return "store";
+    }
 }

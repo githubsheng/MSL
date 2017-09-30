@@ -9,4 +9,9 @@ public interface Command {
     String getFirstOperand();
     String getSecondOperand();
     String getThirdOperand();
+    void setLineNumber(int lineNumber);
+    void setFirstOperand(String str);
+    void setSecondOperand(String str);
+    void setThirdOperand(String str);
+    String print();
 }

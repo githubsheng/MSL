@@ -1,29 +1,54 @@
 package DLS.CommandGenerator;
 
-/**
- * Created by wangsheng on 30/9/17.
- */
 public abstract class AbstractCommand implements Command {
-
-    static final int NO_LINE_NUMBER = -1;
+    //-1 means this command is not annotated with a line number.
+    private int lineNumber = -1;
+    private String firstOperand = "";
+    private String secondOperand = "";
+    private String thirdOperand = "";
 
     @Override
     public int getLineNumber() {
-        return NO_LINE_NUMBER;
+        return lineNumber;
     }
 
     @Override
     public String getFirstOperand() {
-        return null;
+        return firstOperand;
     }
 
     @Override
     public String getSecondOperand() {
-        return null;
+        return secondOperand;
     }
 
     @Override
     public String getThirdOperand() {
-        return null;
+        return thirdOperand;
+    }
+
+    @Override
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
+    @Override
+    public void setFirstOperand(String str) {
+        this.firstOperand = str;
+    }
+
+    @Override
+    public void setSecondOperand(String str) {
+        this.secondOperand = str;
+    }
+
+    @Override
+    public void setThirdOperand(String str) {
+        this.thirdOperand = str;
+    }
+
+    @Override
+    public String print() {
+        return lineNumber + ":" + getName() + ":" + firstOperand + ":" + secondOperand + ":" + thirdOperand;
     }
 }

@@ -1,7 +1,17 @@
 package DLS.CommandGenerator.commands;
 
+import DLS.CommandGenerator.AbstractCommand;
+
 /**
- * Created by wangsheng on 30/9/17.
+ * first operand: function name
+ * second operand: start index
+ * third operand: number of arguments
  */
-public class CDefFunc {
+public class CDefFunc extends AbstractCommand {
+
+    @Override
+    public String getName() {
+        return "def_func";
+    }
+
 }
