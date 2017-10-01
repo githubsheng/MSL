@@ -3,9 +3,7 @@ package DLS.CommandGenerator;
 import DLS.ASTNodes.TokenAssociation;
 import DLS.ASTNodes.statement.*;
 import DLS.ASTNodes.statement.expression.ExpressionNode;
-import DLS.CommandGenerator.commands.CDefFunc;
-import DLS.CommandGenerator.commands.CNull;
-import DLS.CommandGenerator.commands.CStore;
+import DLS.CommandGenerator.commands.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,12 +13,9 @@ import java.util.stream.Collectors;
 
 import static DLS.CommandGenerator.Command.NO_LINE_NUMBER;
 
-/**
- * Created by wangsheng on 30/9/17.
- */
 public class Generator {
 
-    public List<Command> generate(List<StatementNode> statements) {
+    public List<Command> getCommands(List<StatementNode> statements) {
         List<Command> cs = statements.stream()
                 .map(this::generate)
                 .flatMap(List::stream)
@@ -32,6 +27,9 @@ public class Generator {
         return cs;
     }
 
+    private List<Command> generate(List<StatementNode> statements) {
+        return statements.stream().map(this::generate).flatMap(List::stream).collect(Collectors.toList());
+    }
 
     private List<Command> generate(StatementNode statement) {
         if(statement instanceof DefNode) {
@@ -100,7 +98,26 @@ public class Generator {
     }
 
     private List<Command> generate(IfElseNode ien) {
-        return null;
+        List<Command> commands = new ArrayList<>();
+        CEmpty last = new CEmpty();
+        CIfgt prevCmp = null;
+        for(IfElseNode.Branch branch : ien.getBranches()) {
+            List<Command> branchConditionCommands = generate(branch.getCondition());
+            List<Command> branchStatementCommands = generate(branch.getStatements());
+            CIfgt cmp = new CIfgt();
+            if(prevCmp != null)prevCmp.setBranchIfNotGreater(branchConditionCommands.get(0));
+            prevCmp = cmp;
+            CGoTo cGoTo = new CGoTo();
+            cGoTo.setGoToCommand(last);
+            commands.addAll(branchConditionCommands);
+            commands.add(cmp);
+            commands.addAll(branchStatementCommands);
+            commands.add(cGoTo);
+        }
+        if(prevCmp == null) throw new RuntimeException("maybe if else statement is missing a branch?");
+        if(prevCmp.getBranchIfNotGreater() == null) prevCmp.setBranchIfNotGreater(last);
+        commands.add(last);
+        return commands;
     }
 
     private List<Command> generate(ListOptNode lon) {

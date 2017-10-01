@@ -1,7 +1,22 @@
 package DLS.CommandGenerator.commands;
 
-/**
- * Created by wangsheng on 1/10/17.
- */
-public class CIfgt {
+import DLS.CommandGenerator.AbstractCommand;
+import DLS.CommandGenerator.Command;
+
+public class CIfgt extends AbstractCommand {
+
+    private Command branchIfNotGreater;
+
+    @Override
+    public String getName() {
+        return "compare_branch";
+    }
+
+    public Command getBranchIfNotGreater() {
+        return branchIfNotGreater;
+    }
+
+    public void setBranchIfNotGreater(Command branchIfNotGreater) {
+        this.branchIfNotGreater = branchIfNotGreater;
+    }
 }

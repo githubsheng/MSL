@@ -29,13 +29,21 @@ public class IfElseNode extends StatementNode {
     }
 
     public static final class Branch implements TokenAssociation {
-        public final ExpressionNode condition;
-        public final List<StatementNode> statements;
+        private final ExpressionNode condition;
+        private final List<StatementNode> statements;
         private Token token;
 
         public Branch(ExpressionNode condition, List<StatementNode> statements) {
             this.condition = condition;
             this.statements = statements;
+        }
+
+        public ExpressionNode getCondition() {
+            return condition;
+        }
+
+        public List<StatementNode> getStatements() {
+            return statements;
         }
 
         /**
