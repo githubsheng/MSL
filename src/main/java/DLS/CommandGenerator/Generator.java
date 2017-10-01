@@ -65,15 +65,15 @@ public class Generator {
 
     private void generate(FuncDefNode fd) {
         CDefFunc c = new CDefFunc();
+        commands.add(c);
         c.setFirstOperand(fd.getName().name);
         /*
-            commands.size() will be the index of CDefFunc, its start index is the index
-            of the fist store parameter command
+            next command is the command that initialize our first parameter, and that is really
+            the begin of the execution of the function.
          */
-        c.setSecondOperand(String.valueOf(commands.size() + 1));
+        c.setSecondOperand(getStartIndexOfNextCommand());
         c.setThirdOperand(String.valueOf(fd.getArgumentList().size()));
         c.setLineNumber(getLineNumber(fd));
-        commands.add(c);
         //vm will create a new call stack
         //vm should record the caller's return index
         //vm will transfer all parameters from caller's stack to the new call stack
@@ -87,7 +87,6 @@ public class Generator {
     }
 
     private void generate(IfElseNode ien) {
-
     }
 
     private void generate(ListOptNode lon) {
@@ -109,6 +108,10 @@ public class Generator {
 
     private int getLineNumber(TokenAssociation ta) {
         return ta.getToken() == null ? NO_LINE_NUMBER : ta.getToken().getLine();
+    }
+
+    private String getStartIndexOfNextCommand() {
+        return String.valueOf(commands.size());
     }
 
 }
