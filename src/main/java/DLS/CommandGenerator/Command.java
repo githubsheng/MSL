@@ -4,6 +4,9 @@ package DLS.CommandGenerator;
  * Created by wangsheng on 30/9/17.
  */
 public interface Command {
+
+    final int NO_LINE_NUMBER = -1;
+
     String getName();
     int getLineNumber();
     String getFirstOperand();

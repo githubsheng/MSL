@@ -1,12 +1,17 @@
 package DLS.CommandGenerator;
 
+import DLS.ASTNodes.TokenAssociation;
 import DLS.ASTNodes.statement.*;
+import DLS.ASTNodes.statement.expression.ExpressionNode;
 import DLS.CommandGenerator.commands.CDefFunc;
+import DLS.CommandGenerator.commands.CNull;
 import DLS.CommandGenerator.commands.CStore;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static DLS.CommandGenerator.Command.NO_LINE_NUMBER;
 
 /**
  * Created by wangsheng on 30/9/17.
@@ -40,7 +45,18 @@ public class Generator {
     }
 
     private void generate(DefNode defNode) {
-
+        int lineNumber = getLineNumber(defNode);
+        if(defNode.getInitializer().isPresent()) {
+            generate(defNode.getInitializer().get(), lineNumber);
+        } else {
+            CNull pushNull = new CNull();
+            pushNull.setLineNumber(NO_LINE_NUMBER);
+            commands.add(new CNull());
+        }
+        CStore store = new CStore();
+        store.setFirstOperand(defNode.getIdentifier().name);
+        store.setLineNumber(lineNumber);
+        commands.add(store);
     }
 
     private void generate(ExpressionStatementNode esn) {
@@ -56,8 +72,8 @@ public class Generator {
          */
         c.setSecondOperand(String.valueOf(commands.size() + 1));
         c.setThirdOperand(String.valueOf(fd.getArgumentList().size()));
-        if(fd.getToken()!=null)c.setLineNumber(fd.getToken().getLine());
-        this.commands.add(c);
+        c.setLineNumber(getLineNumber(fd));
+        commands.add(c);
         //vm will create a new call stack
         //vm should record the caller's return index
         //vm will transfer all parameters from caller's stack to the new call stack
@@ -80,6 +96,19 @@ public class Generator {
 
     private void generate(ReturnNode ret) {
 
+    }
+
+    /**
+     * generate commands for a expression
+     * @param exp expression node
+     * @param lineNumber add line number to generated commands, if lineNumber is not -1.
+     */
+    private void generate(ExpressionNode exp, int lineNumber) {
+        //todo:
+    }
+
+    private int getLineNumber(TokenAssociation ta) {
+        return ta.getToken() == null ? NO_LINE_NUMBER : ta.getToken().getLine();
     }
 
 }

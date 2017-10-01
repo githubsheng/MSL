@@ -1,8 +1,7 @@
 package DLS.CommandGenerator;
 
 public abstract class AbstractCommand implements Command {
-    //-1 means this command is not annotated with a line number.
-    private int lineNumber = -1;
+    private int lineNumber = NO_LINE_NUMBER;
     private String firstOperand = "";
     private String secondOperand = "";
     private String thirdOperand = "";
