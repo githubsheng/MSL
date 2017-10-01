@@ -1,6 +1,7 @@
 package DLS.CommandGenerator.commands;
 
 import DLS.CommandGenerator.AbstractCommand;
+import DLS.CommandGenerator.Command;
 
 /**
  * first operand: function name
@@ -9,9 +10,18 @@ import DLS.CommandGenerator.AbstractCommand;
  */
 public class CDefFunc extends AbstractCommand {
 
+    private Command executionStart;
+
     @Override
     public String getName() {
         return "def_func";
     }
 
+    public Command getExecutionStart() {
+        return executionStart;
+    }
+
+    public void setExecutionStart(Command executionStart) {
+        this.executionStart = executionStart;
+    }
 }

@@ -5,6 +5,7 @@ public abstract class AbstractCommand implements Command {
     private String firstOperand = "";
     private String secondOperand = "";
     private String thirdOperand = "";
+    private int index;
 
     @Override
     public int getLineNumber() {
@@ -44,6 +45,16 @@ public abstract class AbstractCommand implements Command {
     @Override
     public void setThirdOperand(String str) {
         this.thirdOperand = str;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
+
+    @Override
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     @Override

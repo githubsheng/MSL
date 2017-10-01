@@ -24,6 +24,10 @@ public class IfElseNode extends StatementNode {
         this.branches = branches;
     }
 
+    public List<Branch> getBranches() {
+        return branches;
+    }
+
     public static final class Branch implements TokenAssociation {
         public final ExpressionNode condition;
         public final List<StatementNode> statements;

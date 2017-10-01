@@ -1,8 +1,5 @@
 package DLS.CommandGenerator;
 
-/**
- * Created by wangsheng on 30/9/17.
- */
 public interface Command {
 
     final int NO_LINE_NUMBER = -1;
@@ -16,5 +13,7 @@ public interface Command {
     void setFirstOperand(String str);
     void setSecondOperand(String str);
     void setThirdOperand(String str);
+    int getIndex();
+    void setIndex(int index);
     String print();
 }
