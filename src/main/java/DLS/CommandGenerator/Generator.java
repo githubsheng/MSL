@@ -158,6 +158,8 @@ public class Generator {
             closeScope                      #closeScope
             some commands generated from statements after the loop
          */
+        CEmpty start = new CEmpty();
+        start.setLineNumber(getLineNumber(lon));
         commands.add(new CNewScope());
         commands.add(new CNumber(0));
         commands.add(new CStore(LOOP_INDEX));
@@ -185,7 +187,14 @@ public class Generator {
     }
 
     private List<Command> generate(ReturnNode ret) {
-        return null;
+        List<Command> commands = new ArrayList<>();
+        if(ret.getReturnValue().isPresent()) {
+            commands.addAll(generate(ret.getReturnValue().get()));
+            commands.add(new CReturnVal());
+        } else {
+            commands.add(new CReturnNull());
+        }
+        return commands;
     }
 
     /**

@@ -18,6 +18,10 @@ public class ReturnNode extends StatementNode implements TokenAssociation {
         this.returnValue = Optional.of(returnValue);
     }
 
+    public Optional<ExpressionNode> getReturnValue() {
+        return returnValue;
+    }
+
     @Override
     public Token getToken() {
         return token;
