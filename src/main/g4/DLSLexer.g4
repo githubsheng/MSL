@@ -174,8 +174,9 @@ Global: 'global';
 
 //array related
 Each: 'each';
-Map: 'map';
-Filter: 'filter';
+//we will support map and filter later.
+//Map: 'map';
+//Filter: 'filter';
 
 //chance related
 Chance: 'chance';

@@ -3,7 +3,7 @@ package DLS.CommandGenerator.commands;
 import DLS.CommandGenerator.AbstractCommand;
 import DLS.CommandGenerator.Command;
 
-public class CIfgt extends AbstractCommand {
+public class CIfle extends AbstractCommand {
 
     private Command branchIfNotGreater;
 

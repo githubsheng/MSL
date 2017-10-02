@@ -1,7 +1,18 @@
 package DLS.CommandGenerator.commands;
 
+import DLS.CommandGenerator.AbstractCommand;
+
 /**
- * Created by wangsheng on 30/9/17.
+ * first operand is the name of the field.
  */
-public class CReadField {
+public class CReadField extends AbstractCommand {
+
+    public CReadField(String fieldName){
+        this.setFirstOperand(fieldName);
+    }
+
+    @Override
+    public String getName() {
+        return "read_field";
+    }
 }

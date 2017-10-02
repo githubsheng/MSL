@@ -1,7 +1,18 @@
 package DLS.CommandGenerator.commands;
 
+import DLS.CommandGenerator.AbstractCommand;
+
 /**
- * Created by wangsheng on 30/9/17.
+ * first operand is the string we want to push onto the stack.
  */
-public class CString {
+public class CString extends AbstractCommand {
+
+    CString(String str) {
+        this.setFirstOperand(str);
+    }
+
+    @Override
+    public String getName() {
+        return "string";
+    }
 }

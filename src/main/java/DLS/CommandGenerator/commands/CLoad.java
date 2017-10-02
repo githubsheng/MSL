@@ -1,7 +1,18 @@
 package DLS.CommandGenerator.commands;
 
+import DLS.CommandGenerator.AbstractCommand;
+
 /**
- * Created by wangsheng on 30/9/17.
+ * first operand is the name of the variable you want to load onto the stack.
  */
-public class CLoad {
+public class CLoad extends AbstractCommand {
+
+    public CLoad(String variableName) {
+        this.setFirstOperand(variableName);
+    }
+
+    @Override
+    public String getName() {
+        return "load";
+    }
 }

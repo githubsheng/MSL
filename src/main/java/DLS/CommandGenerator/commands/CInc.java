@@ -3,16 +3,16 @@ package DLS.CommandGenerator.commands;
 import DLS.CommandGenerator.AbstractCommand;
 
 /**
- * first operand: the variable name
+ * first operand is the name of the variable we are going to increment
  */
-public class CStore extends AbstractCommand {
+public class CInc extends AbstractCommand {
 
-    public CStore(String variableName) {
+    public CInc(String variableName) {
         this.setFirstOperand(variableName);
     }
 
     @Override
     public String getName() {
-        return "store";
+        return "inc";
     }
 }

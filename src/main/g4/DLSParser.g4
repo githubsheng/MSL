@@ -108,8 +108,9 @@ returnStatement
 | Return expression eos
 ;
 
+//we do not support filter and map for now
 listOperationStatement
-: (Each | Map | Filter) Identifier NewLine statements End
+: Each Identifier NewLine statements End
 ;
 
 chanceStatement: Chance NewLine possibility+ End;

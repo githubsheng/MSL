@@ -1,7 +1,22 @@
 package DLS.CommandGenerator.commands;
 
+import DLS.CommandGenerator.AbstractCommand;
+
 /**
- * Created by wangsheng on 30/9/17.
+ * first operand is the number we want to push on to the stack.
  */
-public class CNumber {
+public class CNumber extends AbstractCommand {
+
+    public CNumber(int i) {
+        this.setFirstOperand(String.valueOf(i));
+    }
+
+    public CNumber(double d) {
+        this.setFirstOperand(String.valueOf(d));
+    }
+
+    @Override
+    public String getName() {
+        return "number";
+    }
 }

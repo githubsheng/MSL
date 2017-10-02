@@ -2,6 +2,9 @@ package DLS.CommandGenerator;
 
 import DLS.ASTNodes.TokenAssociation;
 import DLS.ASTNodes.statement.*;
+import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
+import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
+import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
 import DLS.ASTNodes.statement.expression.ExpressionNode;
 import DLS.CommandGenerator.commands.*;
 
@@ -14,6 +17,9 @@ import java.util.stream.Collectors;
 import static DLS.CommandGenerator.Command.NO_LINE_NUMBER;
 
 public class Generator {
+
+    private final static String LOOP_INDEX = "$index";
+    private final static String LOOP_ELEMENT = "$element";
 
     public List<Command> getCommands(List<StatementNode> statements) {
         List<Command> cs = statements.stream()
@@ -28,7 +34,9 @@ public class Generator {
     }
 
     private List<Command> generate(List<StatementNode> statements) {
-        return statements.stream().map(this::generate).flatMap(List::stream).collect(Collectors.toList());
+        return statements.stream().map(this::generate)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     private List<Command> generate(StatementNode statement) {
@@ -44,10 +52,16 @@ public class Generator {
             return generate((ListOptNode)statement);
         } else if (statement instanceof ReturnNode) {
             return generate((ReturnNode)statement);
+        } else if (statement instanceof EndSurveyNode) {
+            //todo:
+            return Collections.emptyList();
+        } else if (statement instanceof SendDataNode) {
+            //todo:
+            return Collections.emptyList();
+        } else if (statement instanceof ReceiveDataBlockingNode) {
+            //todo:
+            return Collections.emptyList();
         }
-        //todo: end survey node
-        //todo: send data node
-        //todo: receive data blocking node
         throw new RuntimeException("unsupported statement type");
     }
 
@@ -59,8 +73,7 @@ public class Generator {
         } else {
             commands.add(new CNull());
         }
-        CStore store = new CStore();
-        store.setFirstOperand(defNode.getIdentifier().name);
+        CStore store = new CStore(defNode.getIdentifier().name);
         commands.add(store);
         /*
             set line number to all related commands. when we stop at an variable definition, we do not want
@@ -82,29 +95,30 @@ public class Generator {
         c.setThirdOperand(String.valueOf(fd.getArgumentList().size()));
         c.setLineNumber(getLineNumber(fd));
         commands.add(c);
+        //todo: skip the executions commands and go to end
         //vm will create a new call stack
         //vm should record the caller's return index
         //vm will transfer all parameters from caller's stack to the new call stack
         //during transfer vm should check whether the number of parameters is correct
         List<Command> executions = fd.getArgumentList().stream().map(argName -> {
-            CStore s = new CStore();
-            s.setFirstOperand(argName);
+            CStore s = new CStore(argName);
             return s;
         }).collect(Collectors.toList());
         executions.addAll(generate(fd.getStatements()));
         //executions size is at least one because we always generate a return command
         c.setExecutionStart(executions.get(0));
+        //todo: add end.
         return commands;
     }
 
     private List<Command> generate(IfElseNode ien) {
         List<Command> commands = new ArrayList<>();
         CEmpty last = new CEmpty();
-        CIfgt prevCmp = null;
+        CIfle prevCmp = null;
         for(IfElseNode.Branch branch : ien.getBranches()) {
             List<Command> branchConditionCommands = generate(branch.getCondition());
             List<Command> branchStatementCommands = generate(branch.getStatements());
-            CIfgt cmp = new CIfgt();
+            CIfle cmp = new CIfle();
             if(prevCmp != null)prevCmp.setBranchIfNotGreater(branchConditionCommands.get(0));
             prevCmp = cmp;
             CGoTo cGoTo = new CGoTo();
@@ -121,7 +135,53 @@ public class Generator {
     }
 
     private List<Command> generate(ListOptNode lon) {
-        return null;
+        List<Command> commands = new ArrayList<>();
+        /*
+            example:
+            some commands generated from statements before the loop
+            newScope
+            push 0
+            store $index
+            load $index                     #3
+            load arr_ref
+            readField length
+            cmpge   #closeScope
+            inc $index
+            load arr_ref
+            load $index
+            aload
+            store $element
+            .....
+            commands generated from body statement of the loop.
+            .....
+            goTo #3
+            closeScope                      #closeScope
+            some commands generated from statements after the loop
+         */
+        commands.add(new CNewScope());
+        commands.add(new CNumber(0));
+        commands.add(new CStore(LOOP_INDEX));
+        CLoad load = new CLoad(LOOP_INDEX);
+        commands.add(load);
+        commands.add(new CLoad(lon.getListName().name));
+        commands.add(new CReadField("length"));
+        CCmpge cmpge = new CCmpge();
+        commands.add(cmpge);
+        commands.add(new CInc(LOOP_INDEX));
+        commands.add(new CLoad(lon.getListName().name));
+        commands.add(new CLoad(LOOP_INDEX));
+        commands.add(new CALoad());
+        commands.add(new CStore(LOOP_ELEMENT));
+
+        commands.addAll(generate(lon.getStatements()));
+
+        CGoTo goTo = new CGoTo();
+        goTo.setGoToCommand(load);
+        commands.add(goTo);
+        CCloseScope closeScope = new CCloseScope();
+        cmpge.setBranchIfGreaterThanEquals(closeScope);
+        commands.add(closeScope);
+        return commands;
     }
 
     private List<Command> generate(ReturnNode ret) {
