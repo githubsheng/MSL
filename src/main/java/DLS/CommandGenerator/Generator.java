@@ -6,7 +6,9 @@ import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
 import DLS.ASTNodes.statement.expression.ExpressionNode;
+import DLS.ASTNodes.statement.expression.math.*;
 import DLS.CommandGenerator.commands.*;
+import jdk.nashorn.internal.ir.EmptyNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,7 +81,7 @@ public class Generator {
             set line number to all related commands. when we stop at an variable definition, we do not want
             any part of the definition to run, including initialization expression.
          */
-        commands.forEach(c -> c.setLineNumber(lineNumber));
+        setLineNumberForCommands(commands, lineNumber);
         return commands;
     }
 
@@ -89,25 +91,30 @@ public class Generator {
 
     private List<Command> generate(FuncDefNode fd) {
         List<Command> commands = new LinkedList<>();
-        CDefFunc c = new CDefFunc();
-        c.setFirstOperand(fd.getName().name);
+        CDefFunc defineCommand = new CDefFunc();
+
+        defineCommand.setFirstOperand(fd.getName().name);
         //we wait when all commands are ready then we find out all function def nodes and set their start index.
-        c.setThirdOperand(String.valueOf(fd.getArgumentList().size()));
-        c.setLineNumber(getLineNumber(fd));
-        commands.add(c);
-        //todo: skip the executions commands and go to end
+        defineCommand.setThirdOperand(String.valueOf(fd.getArgumentList().size()));
+        defineCommand.setLineNumber(getLineNumber(fd));
+        commands.add(defineCommand);
+
+        //skip the executions commands and go to end, we are not calling the function now.
+        CGoTo gotoCommand = new CGoTo();
+        commands.add(gotoCommand);
+
         //vm will create a new call stack
         //vm should record the caller's return index
         //vm will transfer all parameters from caller's stack to the new call stack
         //during transfer vm should check whether the number of parameters is correct
-        List<Command> executions = fd.getArgumentList().stream().map(argName -> {
-            CStore s = new CStore(argName);
-            return s;
-        }).collect(Collectors.toList());
+        List<Command> executions = fd.getArgumentList().stream().map(CStore::new).collect(Collectors.toList());
         executions.addAll(generate(fd.getStatements()));
         //executions size is at least one because we always generate a return command
-        c.setExecutionStart(executions.get(0));
-        //todo: add end.
+        defineCommand.setExecutionStart(executions.get(0));
+
+        CEmpty skipExecutionPoint = new CEmpty();
+        commands.add(skipExecutionPoint);
+        gotoCommand.setGoToCommand(skipExecutionPoint);
         return commands;
     }
 
@@ -194,6 +201,7 @@ public class Generator {
         } else {
             commands.add(new CReturnNull());
         }
+
         return commands;
     }
 
@@ -202,12 +210,44 @@ public class Generator {
      * @param exp expression node
      */
     private List<Command> generate(ExpressionNode exp) {
-        //todo:
+        if(exp instanceof AddNode) {
+            //math category
+
+        } else if (exp instanceof DivideNode) {
+
+        } else if (exp instanceof MinusNode) {
+
+        } else if (exp instanceof ModulusNode) {
+
+        } else if (exp instanceof MultiplyNode) {
+
+        }
+        //todo: other categories
         return Collections.emptyList();
     }
+//
+//    private List<Command> generate(AddNode exp) {
+//        List<Command> cs = new ArrayList<>();
+//        cs.addAll(generate(exp.getLeft()));
+//        cs.addAll(generate(exp.getRight()));
+//        cs.add(new CAdd());
+//        return cs;
+//    }
+//
+//    private List<Command> generate(MinusNode exp) {
+//        List<Command> cs = new ArrayList<>();
+//        cs.addAll(generate(exp.getLeft()));
+//        cs.addAll(generate(exp.getRight()));
+//        cs.add(new CSub());
+//        return cs;
+//    }
 
     private int getLineNumber(TokenAssociation ta) {
         return ta.getToken() == null ? NO_LINE_NUMBER : ta.getToken().getLine();
+    }
+
+    private void setLineNumberForCommands(List<Command> commands, int lineNumber) {
+        commands.forEach(c -> c.setLineNumber(lineNumber));
     }
 
 }
