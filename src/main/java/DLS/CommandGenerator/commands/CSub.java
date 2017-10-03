@@ -1,7 +1,10 @@
 package DLS.CommandGenerator.commands;
 
-/**
- * Created by wangsheng on 30/9/17.
- */
-public class CSub {
+import DLS.CommandGenerator.AbstractCommand;
+
+public class CSub extends AbstractCommand {
+    @Override
+    public String getName() {
+        return "sub";
+    }
 }

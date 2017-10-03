@@ -1,7 +1,10 @@
 package DLS.CommandGenerator.commands;
 
-/**
- * Created by wangsheng on 30/9/17.
- */
-public class CDiv {
+import DLS.CommandGenerator.AbstractCommand;
+
+public class CDiv extends AbstractCommand {
+    @Override
+    public String getName() {
+        return "div";
+    }
 }

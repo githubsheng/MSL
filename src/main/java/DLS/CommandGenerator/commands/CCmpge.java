@@ -19,4 +19,5 @@ public class CCmpge extends AbstractCommand {
     public void setBranchIfGreaterThanEquals(Command branchIfGreaterThanEquals) {
         this.branchIfGreaterThanEquals = branchIfGreaterThanEquals;
     }
+
 }

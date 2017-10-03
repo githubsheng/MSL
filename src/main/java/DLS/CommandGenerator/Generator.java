@@ -6,9 +6,11 @@ import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
 import DLS.ASTNodes.statement.expression.ExpressionNode;
+import DLS.ASTNodes.statement.expression.logical.*;
 import DLS.ASTNodes.statement.expression.math.*;
 import DLS.CommandGenerator.commands.*;
-import jdk.nashorn.internal.ir.EmptyNode;
+import DLS.CommandGenerator.commands.logical.CEquals;
+import DLS.CommandGenerator.commands.logical.CNotEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -121,12 +123,12 @@ public class Generator {
     private List<Command> generate(IfElseNode ien) {
         List<Command> commands = new ArrayList<>();
         CEmpty last = new CEmpty();
-        CIfle prevCmp = null;
+        CIfeq prevCmp = null;
         for(IfElseNode.Branch branch : ien.getBranches()) {
             List<Command> branchConditionCommands = generate(branch.getCondition());
             List<Command> branchStatementCommands = generate(branch.getStatements());
-            CIfle cmp = new CIfle();
-            if(prevCmp != null)prevCmp.setBranchIfNotGreater(branchConditionCommands.get(0));
+            CIfeq cmp = new CIfeq();
+            if(prevCmp != null)prevCmp.setBranchIfEqualsZero(branchConditionCommands.get(0));
             prevCmp = cmp;
             CGoTo cGoTo = new CGoTo();
             cGoTo.setGoToCommand(last);
@@ -136,7 +138,7 @@ public class Generator {
             commands.add(cGoTo);
         }
         if(prevCmp == null) throw new RuntimeException("maybe if else statement is missing a branch?");
-        if(prevCmp.getBranchIfNotGreater() == null) prevCmp.setBranchIfNotGreater(last);
+        if(prevCmp.getBranchIfEqualsZero() == null) prevCmp.setBranchIfEqualsZero(last);
         commands.add(last);
         return commands;
     }
@@ -201,7 +203,6 @@ public class Generator {
         } else {
             commands.add(new CReturnNull());
         }
-
         return commands;
     }
 
@@ -212,35 +213,148 @@ public class Generator {
     private List<Command> generate(ExpressionNode exp) {
         if(exp instanceof AddNode) {
             //math category
-
+            return generate((AddNode)exp);
         } else if (exp instanceof DivideNode) {
-
+            return generate((DivideNode)exp);
         } else if (exp instanceof MinusNode) {
-
+            return generate((MinusNode)exp);
         } else if (exp instanceof ModulusNode) {
-
+            return generate((ModulusNode)exp);
         } else if (exp instanceof MultiplyNode) {
+            return generate((MultiplyNode)exp);
+        } else if (exp instanceof AndNode) {
+            //logical category
+            return generate((AndNode)exp);
+        } else if (exp instanceof EqualsNode) {
 
+        } else if (exp instanceof NotEqualsNode) {
+
+        } else if (exp instanceof NotNode) {
+
+        } else if (exp instanceof OrNode) {
+            return generate((OrNode)exp);
         }
         //todo: other categories
         return Collections.emptyList();
     }
-//
-//    private List<Command> generate(AddNode exp) {
+
+    private List<Command> generate(AddNode exp) {
+        List<Command> cs = new ArrayList<>();
+        cs.addAll(generate(exp.getLeft()));
+        cs.addAll(generate(exp.getRight()));
+        cs.add(new CAdd());
+        return cs;
+    }
+
+    private List<Command> generate(MinusNode exp) {
+        List<Command> cs = new ArrayList<>();
+        cs.addAll(generate(exp.getLeft()));
+        cs.addAll(generate(exp.getRight()));
+        cs.add(new CSub());
+        return cs;
+    }
+
+    private List<Command> generate(ModulusNode exp) {
+        List<Command> cs = new ArrayList<>();
+        cs.addAll(generate(exp.getLeft()));
+        cs.addAll(generate(exp.getRight()));
+        cs.add(new CMod());
+        return cs;
+    }
+
+    private List<Command> generate(MultiplyNode exp) {
+        List<Command> cs = new ArrayList<>();
+        cs.addAll(generate(exp.getLeft()));
+        cs.addAll(generate(exp.getRight()));
+        cs.add(new CMul());
+        return cs;
+    }
+
+    private List<Command> generate(DivideNode exp) {
+        List<Command> cs = new ArrayList<>();
+        cs.addAll(generate(exp.getLeft()));
+        cs.addAll(generate(exp.getRight()));
+        cs.add(new CDiv());
+        return cs;
+    }
+
+    private List<Command> generate(AndNode exp) {
+        List<Command> cs = new ArrayList<>();
+        List<Command> lefts = generate(exp.getLeft());
+        CIfeq ifLeftFalseReturnFalse = new CIfeq();
+        List<Command> rights = generate(exp.getRight());
+        CIfeq ifRightFalseReturnFalse = new CIfeq();
+        CNumber isTrue = new CNumber(1);
+        CGoTo goToEnd = new CGoTo();
+        CNumber isFalse = new CNumber(0);
+        CEmpty end = new CEmpty();
+
+        ifLeftFalseReturnFalse.setBranchIfEqualsZero(isFalse);
+        ifRightFalseReturnFalse.setBranchIfEqualsZero(isFalse);
+        goToEnd.setGoToCommand(end);
+
+        cs.addAll(lefts);
+        cs.add(ifLeftFalseReturnFalse);
+        cs.addAll(rights);
+        cs.add(ifRightFalseReturnFalse);
+        cs.add(isTrue);
+        cs.add(goToEnd);
+        cs.add(isFalse);
+        cs.add(end);
+
+        return cs;
+    }
+
+    private List<Command> generate(OrNode exp) {
+        List<Command> cs = new ArrayList<>();
+
+        List<Command> lefts = generate(exp.getLeft());
+        CIfne ifLeftTrueReturnTrue = new CIfne();
+        List<Command> rights = generate(exp.getRight());
+        CIfeq ifRightFalseReturnFalse = new CIfeq();
+        CNumber isTrue = new CNumber(1);
+        CGoTo goToEnd = new CGoTo();
+        CNumber isFalse = new CNumber(0);
+        CEmpty end = new CEmpty();
+
+        ifLeftTrueReturnTrue.setBranchIfNotEqualsZero(isTrue);
+        ifRightFalseReturnFalse.setBranchIfEqualsZero(isFalse);
+        goToEnd.setGoToCommand(end);
+
+        cs.addAll(lefts);
+        cs.add(ifLeftTrueReturnTrue);
+        cs.addAll(rights);
+        cs.add(ifRightFalseReturnFalse);
+        cs.add(isTrue);
+        cs.add(goToEnd);
+        cs.add(isFalse);
+        cs.add(end);
+
+        return cs;
+    }
+
+    private List<Command> generate(EqualsNode exp) {
 //        List<Command> cs = new ArrayList<>();
 //        cs.addAll(generate(exp.getLeft()));
 //        cs.addAll(generate(exp.getRight()));
-//        cs.add(new CAdd());
+//        cs.add(new CEquals());
 //        return cs;
-//    }
-//
-//    private List<Command> generate(MinusNode exp) {
+        //todo:
+        return null;
+    }
+
+    private List<Command> generate(NotEqualsNode exp) {
 //        List<Command> cs = new ArrayList<>();
 //        cs.addAll(generate(exp.getLeft()));
 //        cs.addAll(generate(exp.getRight()));
-//        cs.add(new CSub());
+//        cs.add(new CNotEquals());
 //        return cs;
-//    }
+        //todo:
+        return null;
+    }
+
+
+
 
     private int getLineNumber(TokenAssociation ta) {
         return ta.getToken() == null ? NO_LINE_NUMBER : ta.getToken().getLine();
