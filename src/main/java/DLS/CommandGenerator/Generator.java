@@ -583,6 +583,11 @@ public class Generator {
         return Collections.singletonList(new CEnd());
     }
 
+    private List<Command> generate(SendDataNode sdn) {
+        List<Command> cs = new ArrayList<>();
+        //todo: review this SendDataNode and understand why its data is a list...
+        return null;
+    }
 
     private List<Command> resolveAndPushArguments(CallNode callNode) {
         return callNode.getArguments()
