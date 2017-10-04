@@ -334,13 +334,27 @@ public class Generator {
     }
 
     private List<Command> generate(EqualsNode exp) {
-//        List<Command> cs = new ArrayList<>();
-//        cs.addAll(generate(exp.getLeft()));
-//        cs.addAll(generate(exp.getRight()));
-//        cs.add(new CEquals());
-//        return cs;
-        //todo:
-        return null;
+        List<Command> cs = new ArrayList<>();
+        List<Command> lefts = generate(exp.getLeft());
+        List<Command> rights = generate(exp.getRight());
+        CCmpeq eq = new CCmpeq();
+        CNumber isFalse = new CNumber(0);
+        CGoTo goToEnd = new CGoTo();
+        CNumber isTrue = new CNumber(1);
+        CEmpty end = new CEmpty();
+
+        eq.setBranchIfEquals(isTrue);
+        goToEnd.setGoToCommand(end);
+
+        cs.addAll(lefts);
+        cs.addAll(rights);
+        cs.add(eq);
+        cs.add(isFalse);
+        cs.add(goToEnd);
+        cs.add(isTrue);
+        cs.add(end);
+
+        return cs;
     }
 
     private List<Command> generate(NotEqualsNode exp) {
