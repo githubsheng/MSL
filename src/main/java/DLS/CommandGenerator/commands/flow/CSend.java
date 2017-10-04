@@ -1,4 +1,4 @@
-package DLS.CommandGenerator.commands;
+package DLS.CommandGenerator.commands.flow;
 
 /**
  * Created by wangsheng on 30/9/17.

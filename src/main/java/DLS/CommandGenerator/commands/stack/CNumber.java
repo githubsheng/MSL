@@ -1,9 +1,9 @@
-package DLS.CommandGenerator.commands;
+package DLS.CommandGenerator.commands.stack;
 
 import DLS.CommandGenerator.AbstractCommand;
 
 /**
- * first operand is the number we want to push on to the stack.
+ * first operand is the number we want to stack on to the stack.
  */
 public class CNumber extends AbstractCommand {
 

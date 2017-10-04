@@ -5,7 +5,7 @@ import DLS.ASTNodes.statement.*;
 import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
-import DLS.ASTNodes.statement.expression.ExpressionNode;
+import DLS.ASTNodes.statement.expression.*;
 import DLS.ASTNodes.statement.expression.literal.BooleanNode;
 import DLS.ASTNodes.statement.expression.literal.NumberNode;
 import DLS.ASTNodes.statement.expression.literal.ObjectLiteralNode;
@@ -16,9 +16,13 @@ import DLS.ASTNodes.statement.expression.relational.LessThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.LessThanNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
-import DLS.CommandGenerator.commands.*;
 import DLS.CommandGenerator.commands.flow.*;
+import DLS.CommandGenerator.commands.function.*;
+import DLS.CommandGenerator.commands.stack.*;
 import DLS.CommandGenerator.commands.math.*;
+import DLS.CommandGenerator.commands.object.CNew;
+import DLS.CommandGenerator.commands.object.CPutField;
+import DLS.CommandGenerator.commands.object.CReadField;
 import DLS.CommandGenerator.commands.relational.CCmpge;
 import DLS.CommandGenerator.commands.relational.CCmpgt;
 import DLS.CommandGenerator.commands.relational.CCmple;
@@ -161,7 +165,7 @@ public class Generator {
             example:
             some commands generated from statements before the loop
             newScope
-            push 0
+            stack 0
             store $index
             load $index                     #3
             load arr_ref
@@ -235,7 +239,7 @@ public class Generator {
         } else if (exp instanceof MultiplyNode) {
             return generate((MultiplyNode)exp);
         } else if (exp instanceof AndNode) {
-            //flow category
+            //logical category
             return generate((AndNode)exp);
         } else if (exp instanceof EqualsNode) {
             return generate((EqualsNode)exp);
@@ -263,6 +267,16 @@ public class Generator {
             return generate((MoreThanEqualsNode)exp);
         } else if (exp instanceof MoreThanNode) {
             return generate((MoreThanNode)exp);
+        } else if (exp instanceof AssignNode) {
+
+        } else if (exp instanceof BinaryNode) {
+
+        } else if (exp instanceof CallNode) {
+
+        } else if (exp instanceof DotNode) {
+
+        } else if (exp instanceof IdentifierNode) {
+
         }
         //todo: other categories
         throw new RuntimeException("not supported expression node type");

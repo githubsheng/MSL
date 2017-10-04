@@ -1,4 +1,4 @@
-package DLS.CommandGenerator.commands;
+package DLS.CommandGenerator.commands.stack;
 
 
 import DLS.CommandGenerator.AbstractCommand;
