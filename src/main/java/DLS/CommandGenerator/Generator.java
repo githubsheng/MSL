@@ -358,17 +358,28 @@ public class Generator {
     }
 
     private List<Command> generate(NotEqualsNode exp) {
-//        List<Command> cs = new ArrayList<>();
-//        cs.addAll(generate(exp.getLeft()));
-//        cs.addAll(generate(exp.getRight()));
-//        cs.add(new CNotEquals());
-//        return cs;
-        //todo:
-        return null;
+        List<Command> cs = new ArrayList<>();
+        List<Command> lefts = generate(exp.getLeft());
+        List<Command> rights = generate(exp.getRight());
+        CCmpne ne = new CCmpne();
+        CNumber isFalse = new CNumber(0);
+        CGoTo goToEnd = new CGoTo();
+        CNumber isTrue = new CNumber(1);
+        CEmpty end = new CEmpty();
+
+        ne.setBranchIfNotEquals(isTrue);
+        goToEnd.setGoToCommand(end);
+
+        cs.addAll(lefts);
+        cs.addAll(rights);
+        cs.add(ne);
+        cs.add(isFalse);
+        cs.add(goToEnd);
+        cs.add(isTrue);
+        cs.add(end);
+
+        return cs;
     }
-
-
-
 
     private int getLineNumber(TokenAssociation ta) {
         return ta.getToken() == null ? NO_LINE_NUMBER : ta.getToken().getLine();
