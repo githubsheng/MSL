@@ -243,7 +243,7 @@ public class Generator {
         } else if (exp instanceof ObjectLiteralNode) {
             return generate((ObjectLiteralNode)exp);
         } else if (exp instanceof StringNode) {
-
+            return generate((StringNode)exp);
         }
         //todo: other categories
         throw new RuntimeException("not supported expression node type");
@@ -441,6 +441,10 @@ public class Generator {
             return setFieldCommands;
         }).flatMap(List::stream).collect(Collectors.toList()));
         return cs;
+    }
+
+    private List<Command> generate(StringNode strNode) {
+        return Collections.singletonList(new CString(strNode.getVal()));
     }
 
     private int getLineNumber(TokenAssociation ta) {

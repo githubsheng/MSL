@@ -7,7 +7,7 @@ import DLS.CommandGenerator.AbstractCommand;
  */
 public class CString extends AbstractCommand {
 
-    CString(String str) {
+    public CString(String str) {
         this.setFirstOperand(str);
     }
 
