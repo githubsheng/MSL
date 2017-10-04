@@ -13,4 +13,7 @@ public class NotNode extends ExpressionNode {
         this.target = target;
     }
 
+    public ExpressionNode getTarget() {
+        return target;
+    }
 }

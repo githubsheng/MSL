@@ -6,11 +6,13 @@ import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
 import DLS.ASTNodes.statement.expression.ExpressionNode;
+import DLS.ASTNodes.statement.expression.literal.BooleanNode;
+import DLS.ASTNodes.statement.expression.literal.NumberNode;
+import DLS.ASTNodes.statement.expression.literal.ObjectLiteralNode;
+import DLS.ASTNodes.statement.expression.literal.StringNode;
 import DLS.ASTNodes.statement.expression.logical.*;
 import DLS.ASTNodes.statement.expression.math.*;
 import DLS.CommandGenerator.commands.*;
-import DLS.CommandGenerator.commands.logical.CEquals;
-import DLS.CommandGenerator.commands.logical.CNotEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -226,16 +228,25 @@ public class Generator {
             //logical category
             return generate((AndNode)exp);
         } else if (exp instanceof EqualsNode) {
-
+            return generate((EqualsNode)exp);
         } else if (exp instanceof NotEqualsNode) {
-
+            return generate((NotEqualsNode)exp);
         } else if (exp instanceof NotNode) {
-
+            return generate((NotNode)exp);
         } else if (exp instanceof OrNode) {
             return generate((OrNode)exp);
+        } else if (exp instanceof BooleanNode) {
+            //literal category
+            return generate((BooleanNode)exp);
+        } else if (exp instanceof NumberNode) {
+            return generate((NumberNode)exp);
+        } else if (exp instanceof ObjectLiteralNode) {
+
+        } else if (exp instanceof StringNode) {
+
         }
         //todo: other categories
-        return Collections.emptyList();
+        throw new RuntimeException("not supported expression node type");
     }
 
     private List<Command> generate(AddNode exp) {
@@ -284,9 +295,9 @@ public class Generator {
         CIfeq ifLeftFalseReturnFalse = new CIfeq();
         List<Command> rights = generate(exp.getRight());
         CIfeq ifRightFalseReturnFalse = new CIfeq();
-        CNumber isTrue = new CNumber(1);
+        CNumber isTrue = new CNumber(true);
         CGoTo goToEnd = new CGoTo();
-        CNumber isFalse = new CNumber(0);
+        CNumber isFalse = new CNumber(false);
         CEmpty end = new CEmpty();
 
         ifLeftFalseReturnFalse.setBranchIfEqualsZero(isFalse);
@@ -312,9 +323,9 @@ public class Generator {
         CIfne ifLeftTrueReturnTrue = new CIfne();
         List<Command> rights = generate(exp.getRight());
         CIfeq ifRightFalseReturnFalse = new CIfeq();
-        CNumber isTrue = new CNumber(1);
+        CNumber isTrue = new CNumber(true);
         CGoTo goToEnd = new CGoTo();
-        CNumber isFalse = new CNumber(0);
+        CNumber isFalse = new CNumber(false);
         CEmpty end = new CEmpty();
 
         ifLeftTrueReturnTrue.setBranchIfNotEqualsZero(isTrue);
@@ -338,9 +349,9 @@ public class Generator {
         List<Command> lefts = generate(exp.getLeft());
         List<Command> rights = generate(exp.getRight());
         CCmpeq eq = new CCmpeq();
-        CNumber isFalse = new CNumber(0);
+        CNumber isFalse = new CNumber(false);
         CGoTo goToEnd = new CGoTo();
-        CNumber isTrue = new CNumber(1);
+        CNumber isTrue = new CNumber(true);
         CEmpty end = new CEmpty();
 
         eq.setBranchIfEquals(isTrue);
@@ -362,9 +373,9 @@ public class Generator {
         List<Command> lefts = generate(exp.getLeft());
         List<Command> rights = generate(exp.getRight());
         CCmpne ne = new CCmpne();
-        CNumber isFalse = new CNumber(0);
+        CNumber isFalse = new CNumber(false);
         CGoTo goToEnd = new CGoTo();
-        CNumber isTrue = new CNumber(1);
+        CNumber isTrue = new CNumber(true);
         CEmpty end = new CEmpty();
 
         ne.setBranchIfNotEquals(isTrue);
@@ -380,6 +391,23 @@ public class Generator {
 
         return cs;
     }
+
+    private List<Command> generate(NotNode exp) {
+        List<Command> cs = new ArrayList<>();
+        cs.addAll(generate(exp.getTarget()));
+        cs.add(new CNeg());
+        return cs;
+    }
+
+    private List<Command> generate(BooleanNode exp) {
+        return Collections.singletonList(new CNumber(exp.isTrue()));
+    }
+
+    private List<Command> generate(NumberNode exp) {
+        return Collections.singletonList(new CNumber(exp.getDecimal()));
+    }
+
+
 
     private int getLineNumber(TokenAssociation ta) {
         return ta.getToken() == null ? NO_LINE_NUMBER : ta.getToken().getLine();
