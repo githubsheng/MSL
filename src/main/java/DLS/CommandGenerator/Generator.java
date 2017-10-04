@@ -273,11 +273,10 @@ public class Generator {
         } else if (exp instanceof CallNode) {
             return generate((CallNode) exp);
         } else if (exp instanceof DotNode) {
-
+            return generate((DotNode) exp);
         } else if (exp instanceof IdentifierNode) {
-
+            return generate((IdentifierNode) exp);
         }
-        //todo: other categories
         throw new RuntimeException("not supported expression node type");
     }
 
@@ -568,6 +567,17 @@ public class Generator {
             cs.add(new CInvokeMethod(callNode.getFuncName().name));
             return cs;
         }
+    }
+
+    private List<Command> generate(DotNode dotNode) {
+        List<Command> cs = new ArrayList<>();
+        cs.addAll(generate(dotNode.getLeft()));
+        cs.add(new CReadField(dotNode.getRight().name));
+        return cs;
+    }
+
+    private List<Command> generate(IdentifierNode idn){
+        return Collections.singletonList(new CLoad(idn.name));
     }
 
     private List<Command> resolveAndPushArguments(CallNode callNode) {
