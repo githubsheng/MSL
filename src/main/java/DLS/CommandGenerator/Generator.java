@@ -241,7 +241,7 @@ public class Generator {
         } else if (exp instanceof NumberNode) {
             return generate((NumberNode)exp);
         } else if (exp instanceof ObjectLiteralNode) {
-
+            return generate((ObjectLiteralNode)exp);
         } else if (exp instanceof StringNode) {
 
         }
@@ -407,7 +407,41 @@ public class Generator {
         return Collections.singletonList(new CNumber(exp.getDecimal()));
     }
 
-
+    private List<Command> generate(ObjectLiteralNode exp) {
+        List<Command> cs = new ArrayList<>();
+        /*
+            here is an example:
+            new command
+            vm creates a empty object
+            vm puts the reference of the object (#1) onto stack
+            dup command
+            vm duplicates #1 and puts the copy (#2) onto stack
+            ...
+            evaluate first field
+            final result of first field evaluation (#3) put on stack
+            ...
+            set field command
+            vm pops out #2 and #3 and set the field
+            dup command
+            vm duplicates #1 and puts the copy (#4) onto stack
+            ...
+            evaluate second field
+            final result of second field evaluation (#5) put on stack
+            ...
+            set field command
+            vm pops out #4 and #5 and set the field
+            //finally #1 should remain on the stack.
+         */
+        cs.add(new CNew());
+        cs.addAll(exp.getFields().stream().map(field -> {
+            List<Command> setFieldCommands = new LinkedList<>();
+            setFieldCommands.add(new CDup());
+            setFieldCommands.addAll(generate(field.getValue()));
+            setFieldCommands.add(new CPutField(field.getName()));
+            return setFieldCommands;
+        }).flatMap(List::stream).collect(Collectors.toList()));
+        return cs;
+    }
 
     private int getLineNumber(TokenAssociation ta) {
         return ta.getToken() == null ? NO_LINE_NUMBER : ta.getToken().getLine();
