@@ -1,9 +1,9 @@
-package DLS.CommandGenerator.commands;
+package DLS.CommandGenerator.commands.flow;
 
 import DLS.CommandGenerator.AbstractCommand;
 import DLS.CommandGenerator.Command;
 
-public class CCmpne extends AbstractCommand {
+public class CCmpne extends AbstractCommand implements CompareAndBranch {
 
     private Command branchIfNotEquals;
 
@@ -18,5 +18,10 @@ public class CCmpne extends AbstractCommand {
 
     public void setBranchIfNotEquals(Command branchIfNotEquals) {
         this.branchIfNotEquals = branchIfNotEquals;
+    }
+
+    @Override
+    public void setBranch(Command command) {
+        setBranchIfNotEquals(command);
     }
 }

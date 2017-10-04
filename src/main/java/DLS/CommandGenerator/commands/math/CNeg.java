@@ -1,4 +1,4 @@
-package DLS.CommandGenerator.commands;
+package DLS.CommandGenerator.commands.math;
 
 import DLS.CommandGenerator.AbstractCommand;
 

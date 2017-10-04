@@ -1,9 +1,9 @@
-package DLS.CommandGenerator.commands;
+package DLS.CommandGenerator.commands.flow;
 
 import DLS.CommandGenerator.AbstractCommand;
 import DLS.CommandGenerator.Command;
 
-public class CCmpeq extends AbstractCommand {
+public class CCmpeq extends AbstractCommand implements CompareAndBranch {
 
     private Command branchIfEquals;
 
@@ -18,5 +18,10 @@ public class CCmpeq extends AbstractCommand {
 
     public void setBranchIfEquals(Command branchIfEquals) {
         this.branchIfEquals = branchIfEquals;
+    }
+
+    @Override
+    public void setBranch(Command command) {
+        setBranchIfEquals(command);
     }
 }

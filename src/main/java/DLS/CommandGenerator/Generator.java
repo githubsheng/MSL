@@ -12,7 +12,17 @@ import DLS.ASTNodes.statement.expression.literal.ObjectLiteralNode;
 import DLS.ASTNodes.statement.expression.literal.StringNode;
 import DLS.ASTNodes.statement.expression.logical.*;
 import DLS.ASTNodes.statement.expression.math.*;
+import DLS.ASTNodes.statement.expression.relational.LessThanEqualsNode;
+import DLS.ASTNodes.statement.expression.relational.LessThanNode;
+import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
+import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
 import DLS.CommandGenerator.commands.*;
+import DLS.CommandGenerator.commands.flow.*;
+import DLS.CommandGenerator.commands.math.*;
+import DLS.CommandGenerator.commands.relational.CCmpge;
+import DLS.CommandGenerator.commands.relational.CCmpgt;
+import DLS.CommandGenerator.commands.relational.CCmple;
+import DLS.CommandGenerator.commands.relational.CCmplt;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -225,7 +235,7 @@ public class Generator {
         } else if (exp instanceof MultiplyNode) {
             return generate((MultiplyNode)exp);
         } else if (exp instanceof AndNode) {
-            //logical category
+            //flow category
             return generate((AndNode)exp);
         } else if (exp instanceof EqualsNode) {
             return generate((EqualsNode)exp);
@@ -244,6 +254,15 @@ public class Generator {
             return generate((ObjectLiteralNode)exp);
         } else if (exp instanceof StringNode) {
             return generate((StringNode)exp);
+        } else if (exp instanceof LessThanEqualsNode) {
+            //relational category
+            return generate((LessThanEqualsNode)exp);
+        } else if (exp instanceof LessThanNode) {
+            return generate((LessThanNode)exp);
+        } else if (exp instanceof MoreThanEqualsNode) {
+            return generate((MoreThanEqualsNode)exp);
+        } else if (exp instanceof MoreThanNode) {
+            return generate((MoreThanNode)exp);
         }
         //todo: other categories
         throw new RuntimeException("not supported expression node type");
@@ -344,22 +363,19 @@ public class Generator {
         return cs;
     }
 
-    private List<Command> generate(EqualsNode exp) {
+    private List<Command> generate(CompareAndBranch cab, List<Command> lefts, List<Command> rights) {
         List<Command> cs = new ArrayList<>();
-        List<Command> lefts = generate(exp.getLeft());
-        List<Command> rights = generate(exp.getRight());
-        CCmpeq eq = new CCmpeq();
         CNumber isFalse = new CNumber(false);
         CGoTo goToEnd = new CGoTo();
         CNumber isTrue = new CNumber(true);
         CEmpty end = new CEmpty();
 
-        eq.setBranchIfEquals(isTrue);
+        cab.setBranch(isTrue);
         goToEnd.setGoToCommand(end);
 
         cs.addAll(lefts);
         cs.addAll(rights);
-        cs.add(eq);
+        cs.add(cab);
         cs.add(isFalse);
         cs.add(goToEnd);
         cs.add(isTrue);
@@ -368,28 +384,18 @@ public class Generator {
         return cs;
     }
 
+    private List<Command> generate(EqualsNode exp) {
+        List<Command> lefts = generate(exp.getLeft());
+        List<Command> rights = generate(exp.getRight());
+        CCmpeq eq = new CCmpeq();
+        return generate(eq, lefts, rights);
+    }
+
     private List<Command> generate(NotEqualsNode exp) {
-        List<Command> cs = new ArrayList<>();
         List<Command> lefts = generate(exp.getLeft());
         List<Command> rights = generate(exp.getRight());
         CCmpne ne = new CCmpne();
-        CNumber isFalse = new CNumber(false);
-        CGoTo goToEnd = new CGoTo();
-        CNumber isTrue = new CNumber(true);
-        CEmpty end = new CEmpty();
-
-        ne.setBranchIfNotEquals(isTrue);
-        goToEnd.setGoToCommand(end);
-
-        cs.addAll(lefts);
-        cs.addAll(rights);
-        cs.add(ne);
-        cs.add(isFalse);
-        cs.add(goToEnd);
-        cs.add(isTrue);
-        cs.add(end);
-
-        return cs;
+        return generate(ne, lefts, rights);
     }
 
     private List<Command> generate(NotNode exp) {
@@ -445,6 +451,34 @@ public class Generator {
 
     private List<Command> generate(StringNode strNode) {
         return Collections.singletonList(new CString(strNode.getVal()));
+    }
+
+    private List<Command> generate(LessThanNode exp) {
+        List<Command> lefts = generate(exp.getLeft());
+        List<Command> rights = generate(exp.getRight());
+        CCmplt lt = new CCmplt();
+        return generate(lt, lefts, rights);
+    }
+
+    private List<Command> generate(LessThanEqualsNode exp) {
+        List<Command> lefts = generate(exp.getLeft());
+        List<Command> rights = generate(exp.getRight());
+        CCmple lt = new CCmple();
+        return generate(lt, lefts, rights);
+    }
+
+    private List<Command> generate(MoreThanNode exp) {
+        List<Command> lefts = generate(exp.getLeft());
+        List<Command> rights = generate(exp.getRight());
+        CCmpgt gt = new CCmpgt();
+        return generate(gt, lefts, rights);
+    }
+
+    private List<Command> generate(MoreThanEqualsNode exp) {
+        List<Command> lefts = generate(exp.getLeft());
+        List<Command> rights = generate(exp.getRight());
+        CCmpge ge = new CCmpge();
+        return generate(ge, lefts, rights);
     }
 
     private int getLineNumber(TokenAssociation ta) {

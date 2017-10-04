@@ -1,9 +1,10 @@
-package DLS.CommandGenerator.commands;
+package DLS.CommandGenerator.commands.relational;
 
 import DLS.CommandGenerator.AbstractCommand;
 import DLS.CommandGenerator.Command;
+import DLS.CommandGenerator.commands.flow.CompareAndBranch;
 
-public class CCmpge extends AbstractCommand {
+public class CCmpge extends AbstractCommand implements CompareAndBranch {
 
     private Command branchIfGreaterThanEquals;
 
@@ -20,4 +21,8 @@ public class CCmpge extends AbstractCommand {
         this.branchIfGreaterThanEquals = branchIfGreaterThanEquals;
     }
 
+    @Override
+    public void setBranch(Command command) {
+        setBranchIfGreaterThanEquals(command);
+    }
 }
