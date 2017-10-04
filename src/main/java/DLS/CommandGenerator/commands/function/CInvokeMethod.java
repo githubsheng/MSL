@@ -1,7 +1,18 @@
 package DLS.CommandGenerator.commands.function;
 
+import DLS.CommandGenerator.AbstractCommand;
+
 /**
- * Created by wangsheng on 30/9/17.
+ * first operand is the method name
  */
-public class CInvokeMethod {
+public class CInvokeMethod extends AbstractCommand {
+
+    public CInvokeMethod(String methodName){
+        setFirstOperand(methodName);
+    }
+
+    @Override
+    public String getName() {
+        return "invoke_method";
+    }
 }

@@ -14,8 +14,7 @@ public class DotNode extends ExpressionNode {
     }
 
     public DotNode(ExpressionNode left, String right) {
-        this.left = left;
-        this.right = new IdentifierNode(right);
+        this(left, new IdentifierNode(right));
     }
 
     public ExpressionNode getLeft() {

@@ -60,18 +60,18 @@ public class Generator {
     }
 
     private List<Command> generate(StatementNode statement) {
-        if(statement instanceof DefNode) {
-            return generate((DefNode)statement);
+        if (statement instanceof DefNode) {
+            return generate((DefNode) statement);
         } else if (statement instanceof ExpressionStatementNode) {
-            return generate((ExpressionStatementNode)statement);
+            return generate((ExpressionStatementNode) statement);
         } else if (statement instanceof FuncDefNode) {
-            return generate((FuncDefNode)statement);
+            return generate((FuncDefNode) statement);
         } else if (statement instanceof IfElseNode) {
-            return generate((IfElseNode)statement);
+            return generate((IfElseNode) statement);
         } else if (statement instanceof ListOptNode) {
-            return generate((ListOptNode)statement);
+            return generate((ListOptNode) statement);
         } else if (statement instanceof ReturnNode) {
-            return generate((ReturnNode)statement);
+            return generate((ReturnNode) statement);
         } else if (statement instanceof EndSurveyNode) {
             //todo:
             return Collections.emptyList();
@@ -88,7 +88,7 @@ public class Generator {
     private List<Command> generate(DefNode defNode) {
         List<Command> commands = new LinkedList<>();
         int lineNumber = getLineNumber(defNode);
-        if(defNode.getInitializer().isPresent()) {
+        if (defNode.getInitializer().isPresent()) {
             commands.addAll(generate(defNode.getInitializer().get()));
         } else {
             commands.add(new CNull());
@@ -140,11 +140,11 @@ public class Generator {
         List<Command> commands = new ArrayList<>();
         CEmpty last = new CEmpty();
         CIfeq prevCmp = null;
-        for(IfElseNode.Branch branch : ien.getBranches()) {
+        for (IfElseNode.Branch branch : ien.getBranches()) {
             List<Command> branchConditionCommands = generate(branch.getCondition());
             List<Command> branchStatementCommands = generate(branch.getStatements());
             CIfeq cmp = new CIfeq();
-            if(prevCmp != null)prevCmp.setBranchIfEqualsZero(branchConditionCommands.get(0));
+            if (prevCmp != null) prevCmp.setBranchIfEqualsZero(branchConditionCommands.get(0));
             prevCmp = cmp;
             CGoTo cGoTo = new CGoTo();
             cGoTo.setGoToCommand(last);
@@ -153,8 +153,8 @@ public class Generator {
             commands.addAll(branchStatementCommands);
             commands.add(cGoTo);
         }
-        if(prevCmp == null) throw new RuntimeException("maybe if else statement is missing a branch?");
-        if(prevCmp.getBranchIfEqualsZero() == null) prevCmp.setBranchIfEqualsZero(last);
+        if (prevCmp == null) throw new RuntimeException("maybe if else statement is missing a branch?");
+        if (prevCmp.getBranchIfEqualsZero() == null) prevCmp.setBranchIfEqualsZero(last);
         commands.add(last);
         return commands;
     }
@@ -213,7 +213,7 @@ public class Generator {
 
     private List<Command> generate(ReturnNode ret) {
         List<Command> commands = new ArrayList<>();
-        if(ret.getReturnValue().isPresent()) {
+        if (ret.getReturnValue().isPresent()) {
             commands.addAll(generate(ret.getReturnValue().get()));
             commands.add(new CReturnVal());
         } else {
@@ -224,55 +224,54 @@ public class Generator {
 
     /**
      * generate commands for a expression
+     *
      * @param exp expression node
      */
     private List<Command> generate(ExpressionNode exp) {
-        if(exp instanceof AddNode) {
+        if (exp instanceof AddNode) {
             //math category
-            return generate((AddNode)exp);
+            return generate((AddNode) exp);
         } else if (exp instanceof DivideNode) {
-            return generate((DivideNode)exp);
+            return generate((DivideNode) exp);
         } else if (exp instanceof MinusNode) {
-            return generate((MinusNode)exp);
+            return generate((MinusNode) exp);
         } else if (exp instanceof ModulusNode) {
-            return generate((ModulusNode)exp);
+            return generate((ModulusNode) exp);
         } else if (exp instanceof MultiplyNode) {
-            return generate((MultiplyNode)exp);
+            return generate((MultiplyNode) exp);
         } else if (exp instanceof AndNode) {
             //logical category
-            return generate((AndNode)exp);
+            return generate((AndNode) exp);
         } else if (exp instanceof EqualsNode) {
-            return generate((EqualsNode)exp);
+            return generate((EqualsNode) exp);
         } else if (exp instanceof NotEqualsNode) {
-            return generate((NotEqualsNode)exp);
+            return generate((NotEqualsNode) exp);
         } else if (exp instanceof NotNode) {
-            return generate((NotNode)exp);
+            return generate((NotNode) exp);
         } else if (exp instanceof OrNode) {
-            return generate((OrNode)exp);
+            return generate((OrNode) exp);
         } else if (exp instanceof BooleanNode) {
             //literal category
-            return generate((BooleanNode)exp);
+            return generate((BooleanNode) exp);
         } else if (exp instanceof NumberNode) {
-            return generate((NumberNode)exp);
+            return generate((NumberNode) exp);
         } else if (exp instanceof ObjectLiteralNode) {
-            return generate((ObjectLiteralNode)exp);
+            return generate((ObjectLiteralNode) exp);
         } else if (exp instanceof StringNode) {
-            return generate((StringNode)exp);
+            return generate((StringNode) exp);
         } else if (exp instanceof LessThanEqualsNode) {
             //relational category
-            return generate((LessThanEqualsNode)exp);
+            return generate((LessThanEqualsNode) exp);
         } else if (exp instanceof LessThanNode) {
-            return generate((LessThanNode)exp);
+            return generate((LessThanNode) exp);
         } else if (exp instanceof MoreThanEqualsNode) {
-            return generate((MoreThanEqualsNode)exp);
+            return generate((MoreThanEqualsNode) exp);
         } else if (exp instanceof MoreThanNode) {
-            return generate((MoreThanNode)exp);
+            return generate((MoreThanNode) exp);
         } else if (exp instanceof AssignNode) {
-
-        } else if (exp instanceof BinaryNode) {
-
+            return generate((AssignNode) exp);
         } else if (exp instanceof CallNode) {
-
+            return generate((CallNode) exp);
         } else if (exp instanceof DotNode) {
 
         } else if (exp instanceof IdentifierNode) {
@@ -493,6 +492,90 @@ public class Generator {
         List<Command> rights = generate(exp.getRight());
         CCmpge ge = new CCmpge();
         return generate(ge, lefts, rights);
+    }
+
+    private List<Command> generate(AssignNode exp) {
+        List<Command> cs = new ArrayList<>();
+        if (exp.getTarget() instanceof DotNode) {
+            //we are trying to set a field of an object
+            //example: a.b = 2
+            DotNode dotNode = (DotNode) exp.getTarget();
+            List<Command> objRef = generate(dotNode.getLeft());
+            List<Command> fieldValue = generate(exp.getValue());
+            CPutField putField = new CPutField(dotNode.getRight().name);
+            cs.addAll(objRef);
+            cs.addAll(fieldValue);
+            cs.add(putField);
+            return cs;
+        } else if (exp.getTarget() instanceof IdentifierNode) {
+            //assigning a value to an identifier
+            //example: a = 2
+            IdentifierNode id = (IdentifierNode) exp.getTarget();
+            List<Command> value = generate(exp.getValue());
+            CStore store = new CStore(id.name);
+            cs.addAll(value);
+            cs.add(store);
+            return cs;
+        }
+        throw new RuntimeException("unsupported target type");
+    }
+
+    private List<Command> generate(CallNode callNode) {
+        List<Command> cs = new ArrayList<>();
+        if (callNode.getThisArg() == null) {
+            //function call
+            //example: a()
+            /*
+                push a CParamBoundary onto the stack (#-1)
+                resolve parameters and push the resolved values on to the stack
+                CInvokeFunc #0
+                vm sees #0 and creates a new call stack (#1).
+                vm sets the new call stack's return address (#-2) properly
+                vm sets the caller's local variable space (#2) as the parent scope of #1's local variable space (#3).
+                vm starts to transfer (not copy, but transfer) all parameters to the new stack until it sees a CParamBoundary
+                vm pops out CParamBoundary, it is not needed anymore.
+                vm gets the function name from #0
+                vm finds the function meta info in #2, including start index
+                vm jumps to start index position and execute commands from there.
+                vm continues executing util it sees a return command (#4)
+                vm resolves the return value (if there is any) in #4 and copy it back to #-1
+                vm set the execution pointer back to the return address #-2 recorded in #1
+                vm pops #1 out from the function call stack.
+                vm continue executing commands from #-2
+             */
+            cs.add(new CParamBoundary());
+            cs.addAll(resolveAndPushArguments(callNode));
+            cs.add(new CInvokeFunc(callNode.getFuncName().name));
+            return cs;
+        } else {
+            //method call
+            //example: a.b()
+            /*
+                for now all methods are methods of built in objects
+                so we can take a shortcut here
+                push thisArg onto the stack
+                push a CParamBoundary onto the stack
+                resolve parameters and push the resolved values on to the stack
+                CInvokeMethod
+                vm sees CInvokeMethod command, reads thisArg and all parameters
+                vm reads the method name from CInvokeMethod command
+                vm resolves thisArg and calls its method, using the parameters read
+                vm pushes the return value (if there is any) onto the stack
+             */
+            cs.addAll(generate(callNode.getThisArg()));
+            cs.add(new CParamBoundary());
+            cs.addAll(resolveAndPushArguments(callNode));
+            cs.add(new CInvokeMethod(callNode.getFuncName().name));
+            return cs;
+        }
+    }
+
+    private List<Command> resolveAndPushArguments(CallNode callNode) {
+        return callNode.getArguments()
+                .stream()
+                .map(this::generate)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     private int getLineNumber(TokenAssociation ta) {

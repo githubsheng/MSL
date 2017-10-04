@@ -1,9 +1,5 @@
 package DLS.ASTNodes.statement.expression;
 
-/**
- * Created by sheng.wang on 2017/09/13.
- */
-
 import java.util.Collections;
 import java.util.List;
 
@@ -47,7 +43,7 @@ public class CallNode extends ExpressionNode {
         return thisArg;
     }
 
-    public ExpressionNode getFuncName() {
+    public IdentifierNode getFuncName() {
         return funcName;
     }
 
