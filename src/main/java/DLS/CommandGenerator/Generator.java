@@ -73,8 +73,7 @@ public class Generator {
         } else if (statement instanceof ReturnNode) {
             return generate((ReturnNode) statement);
         } else if (statement instanceof EndSurveyNode) {
-            //todo:
-            return Collections.emptyList();
+            return generateEndSurveyCommand();
         } else if (statement instanceof SendDataNode) {
             //todo:
             return Collections.emptyList();
@@ -579,6 +578,11 @@ public class Generator {
     private List<Command> generate(IdentifierNode idn){
         return Collections.singletonList(new CLoad(idn.name));
     }
+
+    private List<Command> generateEndSurveyCommand() {
+        return Collections.singletonList(new CEnd());
+    }
+
 
     private List<Command> resolveAndPushArguments(CallNode callNode) {
         return callNode.getArguments()
