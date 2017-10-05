@@ -40,11 +40,7 @@ public class Main {
         Generator cmdGen = new Generator();
         List<String> cmdStrs = cmdGen.getCommands(statements);
         int idx = 0;
-        for(String cmdStr : cmdStrs) {
-            System.out.println(idx++ + " " + cmdStr);
-        }
+        for(String cmdStr : cmdStrs) System.out.println(idx++ + " " + cmdStr);
         System.out.println("end");
-
-
     }
 }

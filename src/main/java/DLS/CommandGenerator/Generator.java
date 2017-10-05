@@ -102,8 +102,14 @@ public class Generator {
         } else {
             commands.add(new CNull());
         }
-        CStore store = new CStore(defNode.getIdentifier().name);
-        commands.add(store);
+        if(defNode.isGlobal()) {
+            CGstore gStore = new CGstore(defNode.getIdentifier().name);
+            commands.add(gStore);
+        } else {
+            CStore store = new CStore(defNode.getIdentifier().name);
+            commands.add(store);
+        }
+
         /*
             set line number to all related commands. when we stop at an variable definition, we do not want
             any part of the definition to run, including initialization expression.
