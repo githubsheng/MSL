@@ -1,7 +1,0 @@
-package DLS.CommandGenerator.commands.flow;
-
-/**
- * Created by wangsheng on 30/9/17.
- */
-public class CSend {
-}

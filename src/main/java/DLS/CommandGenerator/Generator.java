@@ -23,10 +23,10 @@ import DLS.CommandGenerator.commands.math.*;
 import DLS.CommandGenerator.commands.object.CNew;
 import DLS.CommandGenerator.commands.object.CPutField;
 import DLS.CommandGenerator.commands.object.CReadField;
-import DLS.CommandGenerator.commands.relational.CCmpge;
-import DLS.CommandGenerator.commands.relational.CCmpgt;
-import DLS.CommandGenerator.commands.relational.CCmple;
-import DLS.CommandGenerator.commands.relational.CCmplt;
+import DLS.CommandGenerator.commands.flow.CCmpge;
+import DLS.CommandGenerator.commands.flow.CCmpgt;
+import DLS.CommandGenerator.commands.flow.CCmple;
+import DLS.CommandGenerator.commands.flow.CCmplt;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,12 +46,20 @@ public class Generator {
                 .map(this::generate)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-        //todo: set index for all commands
+
+//        setIndex(cs);
+
         //todo: set start index for function definitions
         //todo: set branch index for all branch commands
         //todo: set go to index for all goto commands.
         return cs;
     }
+
+//    private void setIndex(List<Command> cs) {
+//        for(int i = 0; i < cs.size(); i++) {
+//            cs.get(i).setIndex(i);
+//        }
+//    }
 
     private List<Command> generate(List<StatementNode> statements) {
         return statements.stream().map(this::generate)
@@ -75,11 +83,9 @@ public class Generator {
         } else if (statement instanceof EndSurveyNode) {
             return generateEndSurveyCommand();
         } else if (statement instanceof SendDataNode) {
-            //todo:
-            return Collections.emptyList();
+            return generate((SendDataNode) statement);
         } else if (statement instanceof ReceiveDataBlockingNode) {
-            //todo:
-            return Collections.emptyList();
+            return generateAwaitCommand();
         }
         throw new RuntimeException("unsupported statement type");
     }
@@ -584,9 +590,19 @@ public class Generator {
     }
 
     private List<Command> generate(SendDataNode sdn) {
+        //vm pops all questions references until it sees a CParamBoundary (and also pops the CParamBoundary)
+        //vm sends all the question datas to UI
+        //vm waits on the answer input
+        //vm merges the answer input to the data in the heap.
         List<Command> cs = new ArrayList<>();
-        //todo: review this SendDataNode and understand why its data is a list...
-        return null;
+        cs.add(new CParamBoundary());
+        cs.addAll(sdn.getData().stream().map(this::generate).flatMap(List::stream).collect(Collectors.toList()));
+        cs.add(new CSendQuestion());
+        return cs;
+    }
+
+    private List<Command> generateAwaitCommand() {
+        return Collections.singletonList(new CAwait());
     }
 
     private List<Command> resolveAndPushArguments(CallNode callNode) {
