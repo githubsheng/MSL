@@ -1,61 +1,10 @@
 [Page]
-
-print 1 + 2
-
-if clock > 2pm then
-    def shortestTimeToAnswer = 10s
-end
-
+function a ()
 def a = 1
-def global b = 2
-
-if a > b and b > 3 then
-    b = false
+return a
 end
-
-chance
-80%: b = true
-20%: b = false
-end
-
-function myFunc (left, right)
-    def temp = left + right
-    return temp
-end
-
-def myList = List(a, b, a > b, 1+1)
-
-def row1 = [Row id="myRow"] hello world how are you here [End]
-def listOfRows = List(row1, [Row id="yourRow"]some text here[End])
-
-
 [SingleChoice id="q3" randomize={ a + b > 2}] some question text
 [Row] aa
 [Row use={myRow}]
-[Row] bb
-[Submit]
-
-select q3.a
-select q3.b
-rank q3.a -> q3.b -> q3.c
-terminate
-
-[PageEnd]
-
-[PageGroup]
-
-[Page id="page1"]
-[SingleChoice id="q4" randomize={q3Randomize}] some question text
-[Row] aa
-[Row] bb
 [Submit]
 [PageEnd]
-
-[Page id="page2"]
-[SingleChoice id="q5" randomize={q3Randomize}] some question text
-[Row] aa
-[Row] bb
-[Submit]
-[PageEnd]
-
-[PageGroupEnd]
