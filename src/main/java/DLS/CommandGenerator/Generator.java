@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static DLS.CommandGenerator.Command.NO_LINE_NUMBER;
 
+//todo: global variable should be stored in global variable space.
 public class Generator {
 
     private final static String LOOP_INDEX = "$index";
@@ -155,6 +156,7 @@ public class Generator {
         CIfeq prevCmp = null;
         for (IfElseNode.Branch branch : ien.getBranches()) {
             List<Command> branchConditionCommands = generate(branch.getCondition());
+            setLineNumberForCommands(branchConditionCommands, getLineNumber(branch));
             List<Command> branchStatementCommands = generate(branch.getStatements());
             CIfeq cmp = new CIfeq();
             if (prevCmp != null) prevCmp.setBranchIfEqualsZero(branchConditionCommands.get(0));
