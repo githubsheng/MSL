@@ -22,4 +22,8 @@ public class ExpressionStatementNode extends StatementNode implements TokenAssoc
     public void setToken(Token token) {
         this.token = token;
     }
+
+    public ExpressionNode getExp() {
+        return exp;
+    }
 }

@@ -5,7 +5,7 @@ public abstract class AbstractCommand implements Command {
     private String firstOperand = "";
     private String secondOperand = "";
     private String thirdOperand = "";
-    private int index;
+    private int index = -1;
 
     @Override
     public int getLineNumber() {
@@ -58,7 +58,26 @@ public abstract class AbstractCommand implements Command {
     }
 
     @Override
-    public String print() {
-        return lineNumber + ":" + getName() + ":" + firstOperand + ":" + secondOperand + ":" + thirdOperand;
+    public boolean isIndexSet() {
+        return index != -1;
     }
+
+    @Override
+    public String print() {
+        return (lineNumber == -1 ? "": lineNumber) + " " + getName() + " " + firstOperand + " " + secondOperand + " " + thirdOperand;
+    }
+
+    //some convenient methods
+    public void setFirstOperand(int num) {
+        setFirstOperand(String.valueOf(num));
+    }
+
+    public void setSecondOperand(int num) {
+        setSecondOperand(String.valueOf(num));
+    }
+
+    public void setThirdOperation(int num) {
+        setThirdOperand(String.valueOf(num));
+    }
+
 }

@@ -2,6 +2,7 @@ package DLS;
 
 import DLS.ASTNodes.Node;
 import DLS.ASTNodes.statement.StatementNode;
+import DLS.CommandGenerator.Generator;
 import DLS.generated.DLSLexer;
 import DLS.generated.DLSParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -37,6 +38,12 @@ public class Main {
 
         ParseTreeVisitor ptv = new ParseTreeVisitor();
         List<StatementNode> statements = ptv.visitFile(fileContext);
+        Generator cmdGen = new Generator();
+        List<String> cmdStrs = cmdGen.getCommands(statements);
+        int idx = 0;
+        for(String cmdStr : cmdStrs) {
+            System.out.println(idx++ + " " + cmdStr);
+        }
         System.out.println("end");
 
 

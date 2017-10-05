@@ -41,25 +41,28 @@ public class Generator {
     private final static String LOOP_INDEX = "$index";
     private final static String LOOP_ELEMENT = "$element";
 
-    public List<Command> getCommands(List<StatementNode> statements) {
+    public List<String> getCommands(List<StatementNode> statements) {
         List<Command> cs = statements.stream()
                 .map(this::generate)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
-//        setIndex(cs);
-
-        //todo: set start index for function definitions
-        //todo: set branch index for all branch commands
-        //todo: set go to index for all goto commands.
-        return cs;
+        setIndex(cs);
+        setBranchIndex(cs);
+        return cs.stream().map(Command::print).collect(Collectors.toList());
     }
 
-//    private void setIndex(List<Command> cs) {
-//        for(int i = 0; i < cs.size(); i++) {
-//            cs.get(i).setIndex(i);
-//        }
-//    }
+    private void setIndex(List<Command> cs) {
+        for(int i = 0; i < cs.size(); i++) {
+            cs.get(i).setIndex(i);
+        }
+    }
+
+    private void setBranchIndex(List<Command> cs) {
+        cs.stream().filter(SetBranchIndex.class::isInstance)
+                .map(SetBranchIndex.class::cast)
+                .forEach(SetBranchIndex::setBranchIndex);
+    }
 
     private List<Command> generate(List<StatementNode> statements) {
         return statements.stream().map(this::generate)
@@ -109,7 +112,10 @@ public class Generator {
     }
 
     private List<Command> generate(ExpressionStatementNode esn) {
-        return null;
+        int lineNumber = getLineNumber(esn);
+        List<Command> commands = generate(esn.getExp());
+        setLineNumberForCommands(commands, lineNumber);
+        return commands;
     }
 
     private List<Command> generate(FuncDefNode fd) {
@@ -132,6 +138,8 @@ public class Generator {
         //during transfer vm should check whether the number of parameters is correct
         List<Command> executions = fd.getArgumentList().stream().map(CStore::new).collect(Collectors.toList());
         executions.addAll(generate(fd.getStatements()));
+        commands.addAll(executions);
+
         //executions size is at least one because we always generate a return command
         defineCommand.setExecutionStart(executions.get(0));
 

@@ -1,10 +1,10 @@
-package DLS.CommandGenerator.commands.relational;
+package DLS.CommandGenerator.commands.flow;
 
 import DLS.CommandGenerator.AbstractCommand;
 import DLS.CommandGenerator.Command;
 import DLS.CommandGenerator.commands.flow.CompareAndBranch;
 
-public class CCmpge extends AbstractCommand implements CompareAndBranch {
+public class CCmpge extends AbstractCommand implements CompareAndBranch, SetBranchIndex {
 
     private Command branchIfGreaterThanEquals;
 
@@ -24,5 +24,11 @@ public class CCmpge extends AbstractCommand implements CompareAndBranch {
     @Override
     public void setBranch(Command command) {
         setBranchIfGreaterThanEquals(command);
+    }
+
+    @Override
+    public void setBranchIndex() {
+        if(!branchIfGreaterThanEquals.isIndexSet()) throw new IllegalStateException("index of branchIfGreaterThanEquals is not certain at this stage");
+        setFirstOperand(branchIfGreaterThanEquals.getIndex());
     }
 }

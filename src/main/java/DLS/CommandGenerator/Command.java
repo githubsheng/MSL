@@ -15,5 +15,6 @@ public interface Command {
     void setThirdOperand(String str);
     int getIndex();
     void setIndex(int index);
+    boolean isIndexSet();
     String print();
 }

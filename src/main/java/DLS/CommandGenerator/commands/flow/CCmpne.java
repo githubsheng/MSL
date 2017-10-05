@@ -3,7 +3,7 @@ package DLS.CommandGenerator.commands.flow;
 import DLS.CommandGenerator.AbstractCommand;
 import DLS.CommandGenerator.Command;
 
-public class CCmpne extends AbstractCommand implements CompareAndBranch {
+public class CCmpne extends AbstractCommand implements CompareAndBranch, SetBranchIndex {
 
     private Command branchIfNotEquals;
 
@@ -23,5 +23,11 @@ public class CCmpne extends AbstractCommand implements CompareAndBranch {
     @Override
     public void setBranch(Command command) {
         setBranchIfNotEquals(command);
+    }
+
+    @Override
+    public void setBranchIndex() {
+        if(!branchIfNotEquals.isIndexSet()) throw new IllegalStateException("index of `branchIfNotEquals` is not certain at this stage");
+        setFirstOperand(branchIfNotEquals.getIndex());
     }
 }
