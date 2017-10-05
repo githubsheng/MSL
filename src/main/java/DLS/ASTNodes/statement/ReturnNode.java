@@ -14,6 +14,10 @@ public class ReturnNode extends StatementNode implements TokenAssociation {
     private final Optional<ExpressionNode> returnValue;
     private Token token;
 
+    public ReturnNode() {
+        this.returnValue = Optional.empty();
+    }
+
     public ReturnNode(ExpressionNode returnValue) {
         this.returnValue = Optional.of(returnValue);
     }

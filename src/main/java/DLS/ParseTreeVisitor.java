@@ -100,12 +100,12 @@ class ParseTreeVisitor {
     
     private List<StatementNode> visitPageGroup(DLSParser.PageGroupContext ctx) {
         //page group function statements
-        List<StatementNode> statements = new ArrayList<>();
+        List<StatementNode> pageGroupFuncBodyStatNodes = new ArrayList<>();
 
         //todo: semantic checking: warn invalid attribute name
         //page group attributes
         List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
-        statements.addAll(attribStats);
+        pageGroupFuncBodyStatNodes.addAll(attribStats);
 
         List<FuncDefNode> pageDefFuncs = ctx.page().stream()
                 .map(this::visitPage)
@@ -115,7 +115,7 @@ class ParseTreeVisitor {
                 .collect(Collectors.toList());
 
         //define all page functions
-        statements.addAll(pageDefFuncs);
+        pageGroupFuncBodyStatNodes.addAll(pageDefFuncs);
 
         //all page function identifiers
         List<ExpressionNode> funcIdentifiers = pageDefFuncs.stream()
@@ -130,7 +130,7 @@ class ParseTreeVisitor {
         CallNode createPageFuncNameList = new CallNode(BuiltInFuncNames.List.getFuncName(), funcIdentifiers);
         DefNode defCallOrders = new DefNode(callOrderListIdentifier, createPageFuncNameList);
 
-        statements.add(defCallOrders);
+        pageGroupFuncBodyStatNodes.add(defCallOrders);
 
         //call list.randomize if page group attribute "randomize" evaluates to true.
         CallNode randomizeCall = new CallNode(callOrderListIdentifier, new IdentifierNode(ListMethods.RANDOMIZE.getName()));
@@ -142,7 +142,7 @@ class ParseTreeVisitor {
         EqualsNode isTrueStr = new EqualsNode(_randomize, new StringNode("true"));
         OrNode either = new OrNode(isTrue, isTrueStr);
         IfElseNode maybeRandomize = new IfElseNode(either, new ExpressionStatementNode(randomizeCall));
-        statements.add(maybeRandomize);
+        pageGroupFuncBodyStatNodes.add(maybeRandomize);
 
         //call list.randomize if page group attribute "rotate" evaluates to true.
         CallNode rotateCall = new CallNode(callOrderListIdentifier, new IdentifierNode(ListMethods.ROTATE.getName()));
@@ -154,7 +154,7 @@ class ParseTreeVisitor {
         EqualsNode isTrueStr1 = new EqualsNode(_rotate, new StringNode("true"));
         OrNode either1 = new OrNode(isTrue1, isTrueStr1);
         IfElseNode maybeRotate = new IfElseNode(either1, new ExpressionStatementNode(rotateCall));
-        statements.add(maybeRotate);
+        pageGroupFuncBodyStatNodes.add(maybeRotate);
 
         //loop the list, get the page functions and call them one by one.
         ListOptNode loop = new ListOptNode(
@@ -162,11 +162,12 @@ class ParseTreeVisitor {
                 callOrderListIdentifier,
                 Collections.singletonList(new ExpressionStatementNode(new CallNode(ListOptNode.$element)))
         );
-        statements.add(loop);
+        pageGroupFuncBodyStatNodes.add(loop);
+        pageGroupFuncBodyStatNodes.add(new ReturnNode());
 
         //page group func def
         IdentifierNode pageGroupFuncName = new IdentifierNode(generateRandomIdentifierName("pageGroup"));
-        FuncDefNode pageGroupFuncDef = new FuncDefNode(pageGroupFuncName, statements);
+        FuncDefNode pageGroupFuncDef = new FuncDefNode(pageGroupFuncName, pageGroupFuncBodyStatNodes);
 
         //page group func call
         CallNode pageGroupFuncCall = new CallNode(pageGroupFuncName);
@@ -240,19 +241,19 @@ class ParseTreeVisitor {
         DLSParser.ScriptContext preScript = ctx.script(0);
         DLSParser.ScriptContext postScript = ctx.script(1);
 
-        List<StatementNode> statementNodes = new ArrayList<>();
-        statementNodes.addAll(getScriptStatements(preScript));
+        List<StatementNode> pageFuncBodyStatNodes = new ArrayList<>();
+        pageFuncBodyStatNodes.addAll(getScriptStatements(preScript));
 
         //get page attributes
         List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageImplicitValues);
-        statementNodes.addAll(attribStats);
+        pageFuncBodyStatNodes.addAll(attribStats);
 
         //a list of DefNode
         List<StatementNode> questionStatements = ctx.question()
                 .stream()
                 .map(this::getQuestionStatements)
                 .collect(Collectors.toList());
-        statementNodes.addAll(questionStatements);
+        pageFuncBodyStatNodes.addAll(questionStatements);
 
         List<IdentifierNode> questionIdentifiers = questionStatements.stream()
                 .map(DefNode.class::cast)
@@ -260,11 +261,12 @@ class ParseTreeVisitor {
                 .collect(Collectors.toList());
 
         SendDataNode sdn = new SendDataNode(questionIdentifiers);
-        statementNodes.add(sdn);
+        pageFuncBodyStatNodes.add(sdn);
         ReceiveDataBlockingNode rdbn = new ReceiveDataBlockingNode();
-        statementNodes.add(rdbn);
+        pageFuncBodyStatNodes.add(rdbn);
 
-        statementNodes.addAll(getScriptStatements(postScript));
+        pageFuncBodyStatNodes.addAll(getScriptStatements(postScript));
+        pageFuncBodyStatNodes.add(new ReturnNode());
 
         //todo: question identifier should be its id attribute if there is
         //todo: id attributes can only be strings
@@ -274,7 +276,7 @@ class ParseTreeVisitor {
         String funcName = maybeId.orElse(this.generateRandomIdentifierName("page"));
         IdentifierNode funcNameNode = new IdentifierNode(funcName);
 
-        FuncDefNode pageFuncDef = new FuncDefNode(funcNameNode, statementNodes);
+        FuncDefNode pageFuncDef = new FuncDefNode(funcNameNode, pageFuncBodyStatNodes);
         CallNode pageFuncCall = new CallNode(funcNameNode);
 
         List<StatementNode> statements = new LinkedList<>();
@@ -760,12 +762,15 @@ class ParseTreeVisitor {
                 .stream()
                 .map(TerminalNode::getText)
                 .collect(Collectors.toList());
-        List<StatementNode> statements = ctx.functionBody().statement().stream()
+        List<StatementNode> funcBodyStatNodes = ctx.functionBody().statement().stream()
                 .map(this::getStatementNodes)
                 .flatMap(List::stream)
                 .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
-        FuncDefNode ret = new FuncDefNode(funcIdentifier, argNames, statements);
+        //if the last statement in the function body is not return statement, we add one.
+        if(!(funcBodyStatNodes.get(funcBodyStatNodes.size() - 1) instanceof ReturnNode))
+            funcBodyStatNodes.add(new ReturnNode());
+        FuncDefNode ret = new FuncDefNode(funcIdentifier, argNames, funcBodyStatNodes);
         if(needsTokenAssociation) ret.setToken(ctx.getStart());
         return ret;
     }
