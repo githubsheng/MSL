@@ -1,6 +1,5 @@
-funcName
-.idea
-MSL.iml
-src/main/java/DLS/generated
-src/playground/generated
-target
+compiler/.idea
+compiler/MSL.iml
+compiler/src/main/java/DLS/generated
+compiler/src/playground/generated
+compiler/target

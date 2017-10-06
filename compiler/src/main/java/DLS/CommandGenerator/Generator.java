@@ -47,7 +47,9 @@ public class Generator {
                 .map(this::generate)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-
+        if(cs.isEmpty()) return Collections.emptyList();
+        Command lastCommand = cs.get(cs.size() - 1);
+        if(!(lastCommand instanceof CEnd)) cs.add(new CEnd());
         setIndex(cs);
         setBranchIndex(cs);
         return cs.stream().map(Command::print).collect(Collectors.toList());
