@@ -1,4 +1,7 @@
+.idea
+.DS_Store
 compiler/.idea
+compiler/.DS_Store
 compiler/MSL.iml
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
