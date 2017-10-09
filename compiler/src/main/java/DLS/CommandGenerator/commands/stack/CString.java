@@ -7,8 +7,8 @@ import DLS.CommandGenerator.AbstractCommand;
  */
 public class CString extends AbstractCommand {
 
-    public CString(String str) {
-        this.setFirstOperand(str);
+    public CString(int strIndex) {
+        this.setFirstOperand(strIndex);
     }
 
     @Override

@@ -9,11 +9,13 @@ public interface Command {
     String getFirstOperand();
     String getSecondOperand();
     String getThirdOperand();
+    int getIndex();
+
     void setLineNumber(int lineNumber);
     void setFirstOperand(String str);
     void setSecondOperand(String str);
     void setThirdOperand(String str);
-    int getIndex();
+
     void setIndex(int index);
     boolean isIndexSet();
     String print();

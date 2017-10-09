@@ -269,7 +269,7 @@ class ParseTreeVisitor {
         pageFuncBodyStatNodes.add(new ReturnNode());
 
         //todo: question identifier should be its id attribute if there is
-        //todo: id attributes can only be strings
+        //todo: id attributes can only be stringConstants
         //todo: verify the expressions....
         Optional<String> maybeId = getIdStrVal(ctx.attributes());
 
