@@ -96,9 +96,8 @@ class Commands {
     advanceIndexForNewCommands() {
         this.execIndex = this.commArray.length;
     }
-    parseCommandsAndAppend(commands) {
-        //todo:
-        return this.commArray;
+    parseCommandsAndAppend(commandsStr) {
+        //todo: we need both string constants and commands string
     }
     reset() {
         this.execIndex = 0;
@@ -296,13 +295,14 @@ class NormalStateRun extends AbstractInterpreterState {
     }
 }
 class Interpreter {
-    constructor(commandsStr) {
+    constructor(commandsStr, stringConstants) {
         this.commands = new Commands(commandsStr);
         this.callStack = new CallStack();
         this.breakPoints = new Set();
         this.debugStateStart = new DebugStateStart(this);
         this.debugStateStopped = new DebugStateStopped(this);
         this.normalStateRun = new NormalStateRun(this);
+        this.stringConstants = stringConstants.split('\n');
     }
     popOperandStack() {
         return this.callStack.getCurrentFrame().getOperandStack().pop();
@@ -523,7 +523,8 @@ class Interpreter {
         this.setInLocalVarSpace(name, value);
     }
     string(comm) {
-        this.pushOperandStack(comm.firstOperand);
+        const string = this.stringConstants[+(comm.firstOperand)];
+        this.pushOperandStack(string);
     }
     execute(comm) {
         return __awaiter(this, void 0, void 0, function* () {

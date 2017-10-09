@@ -139,9 +139,8 @@ class Commands {
         this.execIndex = this.commArray.length;
     }
 
-    parseCommandsAndAppend(commands: string): Array<Command> {
-        //todo:
-        return this.commArray;
+    parseCommandsAndAppend(commandsStr: string) {
+        //todo: we need both string constants and commands string
     }
 
     reset() {
@@ -359,14 +358,16 @@ class Interpreter {
     normalStateRun: NormalStateRun;
     state: InterpreterState;
     sendFunc: (data: any) => Promise<any>;
+    stringConstants: Array<string>;
 
-    constructor(commandsStr: string) {
+    constructor(commandsStr: string, stringConstants: string) {
         this.commands = new Commands(commandsStr);
         this.callStack = new CallStack();
         this.breakPoints = new Set();
         this.debugStateStart = new DebugStateStart(this);
         this.debugStateStopped = new DebugStateStopped(this);
         this.normalStateRun = new NormalStateRun(this);
+        this.stringConstants = stringConstants.split('\n');
     }
 
     private popOperandStack() {
@@ -623,7 +624,8 @@ class Interpreter {
     }
 
     private string(comm: Command) {
-        this.pushOperandStack(comm.firstOperand);
+        const string = this.stringConstants[+(comm.firstOperand)];
+        this.pushOperandStack(string);
     }
 
     async execute(comm: Command) {
