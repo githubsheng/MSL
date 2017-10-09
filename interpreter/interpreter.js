@@ -391,7 +391,12 @@ class Interpreter {
                 //here params being question references..
                 questionData.push(param);
             });
-            const answerData = yield this.sendFunc(questionData);
+            const answerData = yield new Promise(function (resolve, reject) {
+                this.sendFunc(questionData, answer);
+                function answer(answerData) {
+                    resolve(answerData);
+                }
+            });
             this.mergeAnswerData(answerData);
         });
     }

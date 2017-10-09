@@ -357,7 +357,7 @@ class Interpreter {
     debugStateStopped: DebugStateStopped;
     normalStateRun: NormalStateRun;
     state: InterpreterState;
-    sendFunc: (data: any) => Promise<any>;
+    sendFunc: (data: any, answer: (answerData: any) => void) => void;
     stringConstants: Array<string>;
 
     constructor(commandsStr: string, stringConstants: string) {
@@ -466,7 +466,12 @@ class Interpreter {
             //here params being question references..
             questionData.push(param);
         });
-        const answerData = await this.sendFunc(questionData);
+        const answerData = await new Promise(function(resolve, reject) {
+            this.sendFunc(questionData, answer);
+            function answer(answerData: any) {
+                resolve(answerData);
+            }
+        });
         this.mergeAnswerData(answerData);
     }
 
