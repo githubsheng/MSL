@@ -18,6 +18,7 @@ import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
 import DLS.CommandGenerator.commands.flow.*;
 import DLS.CommandGenerator.commands.function.*;
+import DLS.CommandGenerator.commands.object.CDup;
 import DLS.CommandGenerator.commands.stack.*;
 import DLS.CommandGenerator.commands.math.*;
 import DLS.CommandGenerator.commands.object.CNew;

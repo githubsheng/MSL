@@ -788,10 +788,11 @@ class ParseTreeVisitor {
         ListOptNode.ListOptType optType;
         if(ctx.Each() != null) {
             optType = ListOptNode.ListOptType.LOOP;
-        } else if (ctx.Map() != null) {
-            optType = ListOptNode.ListOptType.MAP;
-        } else if (ctx.Filter() != null) {
-            optType = ListOptNode.ListOptType.FILTER;
+//        we will support map and filter later
+//        } else if (ctx.Map() != null) {
+//            optType = ListOptNode.ListOptType.MAP;
+//        } else if (ctx.Filter() != null) {
+//            optType = ListOptNode.ListOptType.FILTER;
         } else {
             throw new RuntimeException("unsupported list operation");
         }
