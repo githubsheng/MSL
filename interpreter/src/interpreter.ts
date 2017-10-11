@@ -388,7 +388,7 @@ class Interpreter {
     }
 
     private parseStringConstants(stringConstants: string) {
-        return stringConstants.split('\n').map(str => {
+        return stringConstants.trim().split('\n').map(str => {
             //remove the first and last "
             return str.substring(1, str.length - 1);
         })
