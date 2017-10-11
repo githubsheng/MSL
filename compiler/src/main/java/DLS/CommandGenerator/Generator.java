@@ -494,7 +494,8 @@ public class Generator {
         //because of the lexer reason, we sometimes gets an extra \n
         if(str.endsWith("\n")) str = str.substring(0, str.length() - 1);
         //escape line breaks because we want each string to be on a single line in the generated result.
-        str = str.replace("\n", "\\n").trim();
+        str = str.replaceAll("\n", "");
+        str = str.replaceAll("\r", "");
         stringConstants.add(str);
         return Collections.singletonList(new CString(index));
     }

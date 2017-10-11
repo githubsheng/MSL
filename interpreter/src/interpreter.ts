@@ -643,7 +643,7 @@ class Interpreter {
         this.pushOperandStack(this.getFromLocalVarSpace(name));
     }
 
-    private null() {
+    private pushNull() {
         this.pushOperandStack(null);
     }
 
@@ -659,7 +659,7 @@ class Interpreter {
 
     private string(comm: Command) {
         const string = this.stringConstants[+(comm.firstOperand)];
-        this.pushOperandStack(string);
+        this.pushOperandStack(string.replace('\\n', '\n'));
     }
 
     async execute(comm: Command) {
@@ -737,7 +737,7 @@ class Interpreter {
             case "load":
                 return this.load(comm);
             case "null":
-                return this.null();
+                return this.pushNull();
             case "number":
                 return this.number(comm);
             case "store":
