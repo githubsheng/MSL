@@ -166,7 +166,9 @@ class Commands {
     }
 
     end(){
-        this.execIndex = this.commArray.length - 1;
+        //index for next command points at undefined.
+        //this allows hasNext() to properly return false when we exit the program.
+        this.execIndex = this.commArray.length;
     }
 }
 
