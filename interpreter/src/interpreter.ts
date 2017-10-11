@@ -30,7 +30,7 @@ class FuncCallFrame {
 
     getFromSpace(key: string): any {
         const ret = this.localVarSpace.get(key);
-        if(!ret && this.parent) return this.parent.getFromSpace(key);
+        if(ret === undefined && this.parent) return this.parent.getFromSpace(key);
         return ret;
     }
 
