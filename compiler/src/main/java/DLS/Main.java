@@ -9,10 +9,9 @@ import DLS.generated.DLSParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
+import java.util.Random;
 
 public class Main {
 
@@ -40,10 +39,20 @@ public class Main {
         List<StatementNode> statements = ptv.visitFile(fileContext);
         Generator cmdGen = new Generator();
         Result ret = cmdGen.getCommands(statements);
-        int idx = 0;
-        for(String cmdStr : ret.commands) System.out.println(idx++ + "\t" + cmdStr);
-        System.out.println("---------------------");
-        ret.stringConstants.forEach(System.out::println);
-        System.out.println("---------------------");
+        try (FileWriter fw = new FileWriter("commandsStr.txt", false);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+            for(String cmdStr : ret.commands) out.println(cmdStr);
+        } catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
+
+        try (FileWriter fw = new FileWriter("stringConstants.txt", false);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+            for(String strConst : ret.stringConstants) out.println(strConst);
+        } catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
     }
 }
