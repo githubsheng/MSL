@@ -2,7 +2,7 @@
     def a = "a" + "b" + "c"
     def b = true and false
 [SingleChoice id="q3"] hello ${a} world ${b} byebye
-[Row] aa
+[Row] a\na
 [Row] bb
 [Submit]
 [PageEnd]

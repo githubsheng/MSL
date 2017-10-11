@@ -1,11 +1,11 @@
-a
-b
-c
-q3
-single-choice
-hello
-world
-byebye
-aa
-bb
-row
+"a"
+"b"
+"c"
+"q3"
+"single-choice"
+" hello "
+" world "
+" byebye"
+" a\na"
+" bb"
+"row"
