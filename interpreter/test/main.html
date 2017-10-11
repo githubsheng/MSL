@@ -9,7 +9,7 @@
             float: left;
         }
 
-        textarea {
+        textarea, code {
             width: 100%;
             height: 600px;
         }
@@ -38,23 +38,38 @@
     <legend>Commands:</legend>
     <textarea id="commands">
 	def_func	_page_gn5	2	0
-	go_to	44
-2	number	1.0
-2	number	2.0
+	go_to	59
+2	string	0
+2	string	1
+2	add
+2	string	2
 2	add
 2	store	a
+3	number	1
+3	if_eq_0	14
+3	number	0
+3	if_eq_0	14
+3	number	1
+3	go_to	15
+3	number	0
+3	empty
+3	store	b
 	new
 	dup
-	string	0
+	string	3
 	put_field	id
 	dup
-	string	1
+	string	4
 	put_field	_type
 	dup
-	string	2
+	string	5
 	load	a
 	add
-	string	3
+	string	6
+	add
+	load	b
+	add
+	string	7
 	add
 	put_field	text
 	dup
@@ -62,17 +77,17 @@
 	dup
 	new
 	dup
-	string	4
+	string	8
 	put_field	text
 	put_field	_generatedIdentifierName2
 	dup
 	new
 	dup
-	string	5
+	string	9
 	put_field	text
 	put_field	_generatedIdentifierName3
 	dup
-	string	6
+	string	10
 	put_field	_type
 	put_field	rows
 	g_store	q3
@@ -90,13 +105,17 @@
 <fieldset>
     <legend>String constants:</legend>
     <textarea id="string-constants">
-q3
-single-choice
-aa bb
-cc
-aa
-bb
-row
+"a"
+"b"
+"c"
+"q3"
+"single-choice"
+" hello "
+" world "
+" byebye"
+" a\na"
+" bb"
+"row"
     </textarea>
 </fieldset>
 <div class="clear"></div>

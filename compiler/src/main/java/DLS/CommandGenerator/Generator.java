@@ -496,6 +496,7 @@ public class Generator {
         //escape line breaks because we want each string to be on a single line in the generated result.
         str = str.replaceAll("\n", "");
         str = str.replaceAll("\r", "");
+        str = "\"" + str + "\"";
         stringConstants.add(str);
         return Collections.singletonList(new CString(index));
     }

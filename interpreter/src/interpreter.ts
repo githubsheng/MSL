@@ -383,8 +383,15 @@ class Interpreter {
         this.debugStateStart = new DebugStateStart(this);
         this.debugStateStopped = new DebugStateStopped(this);
         this.normalStateRun = new NormalStateRun(this);
-        this.stringConstants = stringConstants.split('\n');
+        this.stringConstants = this.parseStringConstants(stringConstants);
         this.sendFunc = sendFunc;
+    }
+
+    private parseStringConstants(stringConstants: string) {
+        return stringConstants.split('\n').map(str => {
+            //remove the first and last "
+            return str.substring(1, str.length - 1);
+        })
     }
 
     private popOperandStack() {
@@ -457,6 +464,7 @@ class Interpreter {
 
     private end() {
         this.commands.end();
+        console.log("survey exits");
     }
 
     private goTo(comm: Command) {
