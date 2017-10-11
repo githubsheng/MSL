@@ -559,7 +559,18 @@ class Interpreter {
     }
 
     private add(){
-        this.pushOperandStack(this.popOperandStack() + this.popOperandStack());
+        /*
+            we have to respect the order because when you add two strings a + b is
+            very different from b + a
+            the way the compiler generates commands is that it always first generates
+            a push command to push the left operand of an add operation into the stack,
+            and then generates a push command to push the right operand of the add operation
+            into the stack.
+            so when we pop the stack we would get the right first and then the left.
+         */
+        const right = this.popOperandStack();
+        const left = this.popOperandStack();
+        this.pushOperandStack(left + right);
     }
 
     private div(){
