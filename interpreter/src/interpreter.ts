@@ -112,19 +112,17 @@ class Commands {
     }
 
     hasNext(): boolean {
-        return this.execIndex < this.commArray.length - 1;
+        //when we call get next we already advance the index to point to next command.
+        return this.execIndex < this.commArray.length;
     }
 
     peekNext(): Command {
-        return this.commArray[this.execIndex + 1];
+        //when we call get next we already advance the index to point to next command.
+        return this.commArray[this.execIndex];
     }
 
     getNext(): Command {
         return this.commArray[this.execIndex++];
-    }
-
-    getNextIndex(): number {
-        return this.execIndex + 1;
     }
 
     setIndex(index: number) {
@@ -135,7 +133,7 @@ class Commands {
         this.execIndex = +(index);
     }
 
-    getCurrentIndex(): number {
+    getNextCommandIndex(): number {
         return this.execIndex;
     }
 
@@ -339,13 +337,13 @@ class DebugStateStopped extends AbstractInterpreterState {
     async consoleEval(commandsStr: string){
         const vm = this.vm;
         vm.commands.parseCommandsAndAppend(commandsStr);
-        const curIdx = vm.commands.getCurrentIndex();
+        const preIdx = vm.commands.getNextCommandIndex();
         vm.commands.advanceIndexForNewCommands();
         vm.callStack.getCurrentFrame().enableTempOperandStack();
         await this.run();
         vm.callStack.getCurrentFrame().disableTempOperandStack();
         vm.state = this;
-        vm.commands.setIndex(curIdx);
+        vm.commands.setIndex(preIdx);
     }
 }
 
@@ -536,7 +534,11 @@ class Interpreter {
 
     private invokeFunc(comm: Command) {
         const parent = this.callStack.getCurrentFrame();
-        const returnIndex = this.commands.getNextIndex();
+        //this is a little tricky. whenever we run a command we always immediately increment the
+        //the command index. So right now the index is point at next command we will execute.
+        //when this command is done, we use the index to get the next command, increment the index,
+        //and start to execute the next command.
+        const returnIndex = this.commands.getNextCommandIndex();
         const newFrame = new FuncCallFrame(parent, returnIndex);
         //it is important that for now parent is still the call at the top of call stack because
         //`this.forEachParameters` works on the frame on top of the call stack.
