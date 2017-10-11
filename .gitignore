@@ -1,5 +1,5 @@
-compiler/.idea
-compiler/MSL.iml
+**/.idea
+**/*.iml
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
 compiler/target
