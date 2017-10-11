@@ -148,7 +148,14 @@ class Commands {
     }
 
     parseCommandsAndAppend(commandsStr: string) {
-        this.commArray = commandsStr.split('\n').map(line => {
+        this.commArray = commandsStr.split('\n')
+            /*
+                any command would at least have a name so it cannot be an empty line
+                we need to filter out the empty lines because sometimes when pasting the
+                the commands string manually we accidentally introduce some empty lines.
+             */
+            .filter(line => line.trim() !== "")
+            .map(line => {
             const comps = line.split('\t');
             const lineNumber = comps[0] === "" ? undefined : +(comps[0]);
             return new Command(lineNumber, comps[1], comps[2], comps[3], comps[4]);
@@ -388,10 +395,18 @@ class Interpreter {
     }
 
     private parseStringConstants(stringConstants: string) {
-        return stringConstants.trim().split('\n').map(str => {
-            //remove the first and last "
-            return str.substring(1, str.length - 1);
-        })
+        return stringConstants.split('\n')
+            /*
+                an empty string constant would at least have two " symbol because
+                a string constant is always surrounded by double quotes.
+                we need to filter out the empty lines because sometimes when pasting the
+                the string constants string manually we accidentally introduce some empty lines.
+             */
+            .filter(line => line.trim() !== "")
+            .map(str => {
+                //remove the first and last " symbol
+                return str.substring(1, str.length - 1);
+            })
     }
 
     private popOperandStack() {
