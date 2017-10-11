@@ -3,8 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        fieldset {
+            width: 400px;
+            float: left;
+        }
+
+        textarea {
+            width: 100%;
+            height: 600px;
+        }
+
+        div.clear {
+            clear: both;
+        }
+    </style>
+    <script src="interpreter.js"></script>
+    <script>
+        function sendFunc(data, returnAnswerCallback) {
+            console.log(data);
+            returnAnswerCallback(null);
+        }
+
+        function run(){
+            const commandsStr = document.querySelector("#commands").value;
+            const stringConstStr = document.querySelector("#string-constants").value;
+            const interpreter = new Interpreter(commandsStr, stringConstStr, sendFunc);
+            interpreter.run();
+        }
+    </script>
 </head>
 <body>
-
+<fieldset>
+    <legend>Commands:</legend>
+    <textarea id="commands">
+	def_func	_page_gn5	2	0
+	go_to	44
+2	number	1.0
+2	number	2.0
+2	add
+2	store	a
+	new
+	dup
+	string	0
+	put_field	id
+	dup
+	string	1
+	put_field	_type
+	dup
+	string	2
+	load	a
+	add
+	string	3
+	add
+	put_field	text
+	dup
+	new
+	dup
+	new
+	dup
+	string	4
+	put_field	text
+	put_field	_generatedIdentifierName2
+	dup
+	new
+	dup
+	string	5
+	put_field	text
+	put_field	_generatedIdentifierName3
+	dup
+	string	6
+	put_field	_type
+	put_field	rows
+	g_store	q3
+	param_bound
+	load	q3
+	send_question
+	await
+	return_null
+	empty
+	param_bound
+	invoke_func	_page_gn5
+	exit_program
+    </textarea>
+</fieldset>
+<fieldset>
+    <legend>String constants:</legend>
+    <textarea id="string-constants">
+q3
+single-choice
+aa bb
+cc
+aa
+bb
+row
+    </textarea>
+</fieldset>
+<div class="clear"></div>
+<button onclick="run()">Submit</button>
 </body>
 </html>

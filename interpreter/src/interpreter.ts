@@ -31,7 +31,7 @@ class FuncCallFrame {
     getFromSpace(key: string): any {
         const ret = this.localVarSpace.get(key);
         if(!ret && this.parent) return this.parent.getFromSpace(key);
-        return undefined;
+        return ret;
     }
 
     putInSpace(key: string, value: any) {
@@ -39,12 +39,20 @@ class FuncCallFrame {
     }
 }
 
-interface Command {
+class Command {
     lineNumber: number;
     name: string;
     firstOperand: string;
     secondOperand: string;
     thirdOperand: string;
+
+    constructor(lineNumber, name, firstOperand, secondOperand, thirdOperand) {
+        this.lineNumber = lineNumber;
+        this.name = name;
+        this.firstOperand = firstOperand;
+        this.secondOperand = secondOperand;
+        this.thirdOperand = thirdOperand;
+    }
 }
 
 class FuncDef {
@@ -112,7 +120,7 @@ class Commands {
     }
 
     getNext(): Command {
-        return this.commArray[++this.execIndex];
+        return this.commArray[this.execIndex++];
     }
 
     getNextIndex(): number {
@@ -140,7 +148,11 @@ class Commands {
     }
 
     parseCommandsAndAppend(commandsStr: string) {
-        //todo: we need both string constants and commands string
+        this.commArray = commandsStr.split('\n').map(line => {
+            const comps = line.split('\t');
+            const lineNumber = comps[0] === "" ? undefined : +(comps[0]);
+            return new Command(lineNumber, comps[1], comps[2], comps[3], comps[4]);
+        });
     }
 
     reset() {
@@ -349,6 +361,10 @@ class NormalStateRun extends AbstractInterpreterState {
     }
 }
 
+interface SendFunc {
+    (data: any, returnAnswerCallback: (returnedAnswer: any) => void) : void;
+}
+
 class Interpreter {
     callStack: CallStack;
     commands: Commands;
@@ -357,10 +373,10 @@ class Interpreter {
     debugStateStopped: DebugStateStopped;
     normalStateRun: NormalStateRun;
     state: InterpreterState;
-    sendFunc: (data: any, answer: (answerData: any) => void) => void;
+    sendFunc: SendFunc;
     stringConstants: Array<string>;
 
-    constructor(commandsStr: string, stringConstants: string) {
+    constructor(commandsStr: string, stringConstants: string, sendFunc: SendFunc) {
         this.commands = new Commands(commandsStr);
         this.callStack = new CallStack();
         this.breakPoints = new Set();
@@ -368,6 +384,7 @@ class Interpreter {
         this.debugStateStopped = new DebugStateStopped(this);
         this.normalStateRun = new NormalStateRun(this);
         this.stringConstants = stringConstants.split('\n');
+        this.sendFunc = sendFunc;
     }
 
     private popOperandStack() {
@@ -398,7 +415,7 @@ class Interpreter {
         let t;
         do {
             t = this.popOperandStack();
-            func(t);
+            if( t !== PARAM_BOUND) func(t);
         } while (t !== PARAM_BOUND);
     }
 
@@ -466,9 +483,10 @@ class Interpreter {
             //here params being question references..
             questionData.push(param);
         });
+        const sendFunc = this.sendFunc.bind(this);
         const answerData = await new Promise(function(resolve, reject) {
-            this.sendFunc(questionData, answer);
-            function answer(answerData: any) {
+            sendFunc(questionData, returnAnswerCallback);
+            function returnAnswerCallback(answerData: any) {
                 resolve(answerData);
             }
         });
@@ -504,7 +522,7 @@ class Interpreter {
             newFrame.getOperandStack().push(param);
         });
         const funcName = comm.firstOperand;
-        const funcDef = <FuncDef>this.getFromGlobalVarSpace(funcName);
+        const funcDef = <FuncDef>this.getFromLocalVarSpace(funcName);
         this.commands.setIndex(funcDef.startIndex);
         this.callStack.addFrame(newFrame);
     }
@@ -576,7 +594,7 @@ class Interpreter {
         this.pushOperandStack(t);
     }
 
-    private new(){
+    private newObj(){
         this.pushOperandStack({});
     }
 
@@ -619,7 +637,7 @@ class Interpreter {
     }
 
     private number(comm: Command) {
-        this.pushOperandStack(+(comm));
+        this.pushOperandStack(+(comm.firstOperand));
     }
 
     private store(comm: Command) {
@@ -694,7 +712,7 @@ class Interpreter {
             case "dup":
                 return this.dup();
             case "new":
-                return this.new();
+                return this.newObj();
             case "put_field":
                 return this.putField(comm);
             case "read_field":
@@ -720,6 +738,7 @@ class Interpreter {
     }
 
     async run() {
+        this.state = this.normalStateRun;
         await this.state.run();
     }
 
@@ -740,18 +759,3 @@ class Interpreter {
     }
 
 }
-
-
-// //todo: this should be one of the execute logic
-// function newCall() {
-//     const cur = callStack.getCurrentFrame();
-//     const retIdx = commands.getNextIndex();
-//     callStack.addFrame(new FuncCallFrame(retIdx, cur.localVarSpace));
-// }
-//
-// //todo: this should be one of the execute logic
-// function endCall(){
-//     const fr = callStack.popFrame();
-//     commands.setIndex(fr.returnIndex);
-// }
-

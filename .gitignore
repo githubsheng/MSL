@@ -1,7 +1,7 @@
 **/.idea
 **/*.iml
 **/.DS_Store
-interpreter/*.js
+interpreter/src/*.js
 **/*.js.map
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
