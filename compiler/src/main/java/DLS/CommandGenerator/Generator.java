@@ -18,6 +18,7 @@ import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
 import DLS.CommandGenerator.commands.flow.*;
 import DLS.CommandGenerator.commands.function.*;
+import DLS.CommandGenerator.commands.object.CDup;
 import DLS.CommandGenerator.commands.stack.*;
 import DLS.CommandGenerator.commands.math.*;
 import DLS.CommandGenerator.commands.object.CNew;
@@ -42,17 +43,20 @@ public class Generator {
     private final static String LOOP_INDEX = "$index";
     private final static String LOOP_ELEMENT = "$element";
 
-    public List<String> getCommands(List<StatementNode> statements) {
+    private List<String> stringConstants = new ArrayList<>();
+
+    public Result getCommands(List<StatementNode> statements) {
         List<Command> cs = statements.stream()
                 .map(this::generate)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-        if(cs.isEmpty()) return Collections.emptyList();
+        if(cs.isEmpty()) return new Result(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
         Command lastCommand = cs.get(cs.size() - 1);
         if(!(lastCommand instanceof CEnd)) cs.add(new CEnd());
         setIndex(cs);
         setBranchIndex(cs);
-        return cs.stream().map(Command::print).collect(Collectors.toList());
+        List<String> cmms = cs.stream().map(Command::print).collect(Collectors.toList());
+        return new Result(stringConstants, cmms);
     }
 
     private void setIndex(List<Command> cs) {
@@ -485,7 +489,14 @@ public class Generator {
     }
 
     private List<Command> generate(StringNode strNode) {
-        return Collections.singletonList(new CString(strNode.getVal()));
+        int index = stringConstants.size();
+        String str = strNode.getVal();
+        //because of the lexer reason, we sometimes gets an extra \n
+        if(str.endsWith("\n")) str = str.substring(0, str.length() - 1);
+        //escape line breaks because we want each string to be on a single line in the generated result.
+        str = str.replace("\n", "\\n").trim();
+        stringConstants.add(str);
+        return Collections.singletonList(new CString(index));
     }
 
     private List<Command> generate(LessThanNode exp) {

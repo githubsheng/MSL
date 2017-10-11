@@ -269,7 +269,7 @@ class ParseTreeVisitor {
         pageFuncBodyStatNodes.add(new ReturnNode());
 
         //todo: question identifier should be its id attribute if there is
-        //todo: id attributes can only be strings
+        //todo: id attributes can only be stringConstants
         //todo: verify the expressions....
         Optional<String> maybeId = getIdStrVal(ctx.attributes());
 
@@ -788,10 +788,11 @@ class ParseTreeVisitor {
         ListOptNode.ListOptType optType;
         if(ctx.Each() != null) {
             optType = ListOptNode.ListOptType.LOOP;
-        } else if (ctx.Map() != null) {
-            optType = ListOptNode.ListOptType.MAP;
-        } else if (ctx.Filter() != null) {
-            optType = ListOptNode.ListOptType.FILTER;
+//        we will support map and filter later
+//        } else if (ctx.Map() != null) {
+//            optType = ListOptNode.ListOptType.MAP;
+//        } else if (ctx.Filter() != null) {
+//            optType = ListOptNode.ListOptType.FILTER;
         } else {
             throw new RuntimeException("unsupported list operation");
         }

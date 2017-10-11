@@ -64,7 +64,7 @@ public abstract class AbstractCommand implements Command {
 
     @Override
     public String print() {
-        return (lineNumber == -1 ? "": lineNumber) + " " + getName() + " " + firstOperand + " " + secondOperand + " " + thirdOperand;
+        return (lineNumber == -1 ? "": lineNumber) + "\t" + getName() + "\t" + firstOperand + "\t" + secondOperand + "\t" + thirdOperand;
     }
 
     //some convenient methods

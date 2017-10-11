@@ -1,5 +1,6 @@
 **/.idea
 **/*.iml
+**/.DS_Store
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
 compiler/target
