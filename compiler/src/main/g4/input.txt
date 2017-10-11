@@ -1,17 +1,8 @@
-[PageGroup]
-
-[Page id="page1"]
-[SingleChoice id="q4" randomize={q3Randomize}] some question text
+[Page]
+    def a = "a" + "b" + "c"
+    def b = true and false
+[SingleChoice id="q3"] hello ${a} world
 [Row] aa
 [Row] bb
 [Submit]
 [PageEnd]
-
-[Page id="page2"]
-[SingleChoice id="q5" randomize={q3Randomize}] some question text
-[Row] aa
-[Row] bb
-[Submit]
-[PageEnd]
-
-[PageGroupEnd]
