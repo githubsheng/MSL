@@ -1,6 +1,8 @@
 **/.idea
 **/*.iml
 **/.DS_Store
+interpreter/*.js
+**/*.js.map
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
 compiler/target
