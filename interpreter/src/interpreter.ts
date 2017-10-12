@@ -458,27 +458,27 @@ class Interpreter {
     }
 
     private cmpGe(comm: Command) {
-        const t1 = this.popOperandStack();
-        const t2 = this.popOperandStack();
-        if(t1 >= t2) this.commands.setIndexUsingStr(comm.firstOperand);
+        const right = this.popOperandStack();
+        const left = this.popOperandStack();
+        if(left >= right) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private cmpGt(comm: Command) {
-        const t1 = this.popOperandStack();
-        const t2 = this.popOperandStack();
-        if(t1 > t2) this.commands.setIndexUsingStr(comm.firstOperand);
+        const right = this.popOperandStack();
+        const left = this.popOperandStack();
+        if(left > right) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private cmpLe(comm: Command) {
-        const t1 = this.popOperandStack();
-        const t2 = this.popOperandStack();
-        if(t1 <= t2) this.commands.setIndexUsingStr(comm.firstOperand);
+        const right = this.popOperandStack();
+        const left = this.popOperandStack();
+        if(left <= right) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private cmpLt(comm: Command) {
-        const t1 = this.popOperandStack();
-        const t2 = this.popOperandStack();
-        if(t1 < t2) this.commands.setIndexUsingStr(comm.firstOperand)
+        const right = this.popOperandStack();
+        const left = this.popOperandStack();
+        if(left < right) this.commands.setIndexUsingStr(comm.firstOperand)
     }
 
     private cmpNe(comm: Command) {
