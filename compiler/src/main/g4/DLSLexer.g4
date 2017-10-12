@@ -156,7 +156,7 @@ mode ScriptMode;
 SubmitButton: '[Submit]';
 
 ScriptModeWS
-: [ \t]
+: [ \t]+
 -> skip
 ;
 /*
@@ -209,7 +209,7 @@ ScriptModeColStart
 ScriptModeInLineTagClose: '[End]';
 
 NewLine
-: [ \t\n\r]+
+: [\n\r]+
 {
     if(opened > 0) skip();
 }
