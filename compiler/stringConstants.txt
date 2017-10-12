@@ -1,8 +1,0 @@
-"hello world"
-"q3"
-"single-choice"
-" hello "
-" world"
-" aa"
-" bb"
-"row"

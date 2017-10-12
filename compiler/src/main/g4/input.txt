@@ -1,8 +1,0 @@
-[Page]
-def a = 1 + 2
-def b = a * ( 2 + 1 )
-[SingleChoice id="q3"] hello ${b} world
-[Row] aa
-[Row] bb
-[Submit]
-[PageEnd]
