@@ -54,5 +54,38 @@ public class Main {
         } catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
+
+        try (FileWriter fw = new FileWriter("../interpreter/test/main.html", false);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html lang=\"en\">");
+            out.println("<head>");
+            out.println("    <meta charset=\"UTF-8\">");
+            out.println("    <title>Title</title>");
+            out.println("    <link rel=\"stylesheet\" href=\"styles.css\"/>");
+            out.println("    <script src=\"interpreter.js\"></script>");
+            out.println("    <script src=\"scripts.js\"></script>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<fieldset>");
+            out.println("    <legend>Commands:</legend>");
+            out.println("    <textarea id=\"commands\">");
+            for(String cmdStr : ret.commands) out.println(cmdStr);
+            out.println("    </textarea>");
+            out.println("</fieldset>");
+            out.println("<fieldset>");
+            out.println("    <legend>String constants:</legend>");
+            out.println("    <textarea id=\"string-constants\">");
+            for(String strConst : ret.stringConstants) out.println(strConst);
+            out.println("    </textarea>");
+            out.println("</fieldset>");
+            out.println("<div class=\"clear\"></div>");
+            out.println("<button onclick=\"run()\">Submit</button>");
+            out.println("</body>");
+            out.println("</html>");
+        } catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
     }
 }

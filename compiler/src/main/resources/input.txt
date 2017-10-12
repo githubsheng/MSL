@@ -1,8 +1,15 @@
 [Page]
-    def a = "a" + "b" + "c"
-    def b = true and false
-[SingleChoice id="q3"] hello ${a} world ${b} byebye
-[Row] a\na
+def a = 1 + 2
+def b = a * ( 2 + 3 )
+print b
+
+if a == 3 then
+ print "hello world"
+ end
+
+
+[SingleChoice id="q3"] hello ${b} world
+[Row] aa
 [Row] bb
 [Submit]
 [PageEnd]

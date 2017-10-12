@@ -3,117 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <style>
-        fieldset {
-            width: 400px;
-            float: left;
-        }
-
-        textarea, code {
-            width: 100%;
-            height: 600px;
-        }
-
-        div.clear {
-            clear: both;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css"/>
     <script src="interpreter.js"></script>
-    <script>
-        function sendFunc(data, returnAnswerCallback) {
-            console.log(data);
-            returnAnswerCallback(null);
-        }
-
-        function run(){
-            const commandsStr = document.querySelector("#commands").value;
-            const stringConstStr = document.querySelector("#string-constants").value;
-            const interpreter = new Interpreter(commandsStr, stringConstStr, sendFunc);
-            interpreter.run();
-        }
-    </script>
+    <script src="scripts.js"></script>
 </head>
 <body>
 <fieldset>
     <legend>Commands:</legend>
     <textarea id="commands">
 	def_func	_page_gn5	2	0
-	go_to	59
-2	string	0
-2	string	1
-2	add
-2	string	2
-2	add
-2	store	a
-3	number	1
-3	if_eq_0	14
-3	number	0
-3	if_eq_0	14
-3	number	1
-3	go_to	15
-3	number	0
-3	empty
-3	store	b
-	new
-	dup
-	string	3
-	put_field	id
-	dup
-	string	4
-	put_field	_type
-	dup
-	string	5
-	load	a
-	add
-	string	6
-	add
-	load	b
-	add
-	string	7
-	add
-	put_field	text
-	dup
-	new
-	dup
-	new
-	dup
-	string	8
-	put_field	text
-	put_field	_generatedIdentifierName2
-	dup
-	new
-	dup
-	string	9
-	put_field	text
-	put_field	_generatedIdentifierName3
-	dup
-	string	10
-	put_field	_type
-	put_field	rows
-	g_store	q3
-	param_bound
-	load	q3
-	send_question
-	await
-	return_null
-	empty
-	param_bound
-	invoke_func	_page_gn5
-	exit_program
+	go_to	66		
+2	number	1.0		
+2	number	2.0		
+2	add			
+2	store	a		
+3	load	a		
+3	number	2.0		
+3	number	3.0		
+3	add			
+3	mul			
+3	store	b		
+4	param_bound			
+4	load	b		
+4	invoke_func	_print		
+6	load	a		
+6	number	3.0		
+6	cmp_eq	20		
+6	number	0		
+6	go_to	21		
+6	number	1		
+6	empty			
+	if_eq_0	27		
+7	param_bound			
+7	string	0		
+7	invoke_func	_print		
+	go_to	27		
+	empty			
+	new			
+	dup			
+	string	1		
+	put_field	id		
+	dup			
+	string	2		
+	put_field	_type		
+	dup			
+	string	3		
+	load	b		
+	add			
+	string	4		
+	add			
+	put_field	text		
+	dup			
+	new			
+	dup			
+	new			
+	dup			
+	string	5		
+	put_field	text		
+	put_field	_generatedIdentifierName2		
+	dup			
+	new			
+	dup			
+	string	6		
+	put_field	text		
+	put_field	_generatedIdentifierName3		
+	dup			
+	string	7		
+	put_field	_type		
+	put_field	rows		
+	g_store	q3		
+	param_bound			
+	load	q3		
+	send_question			
+	await			
+	return_null			
+	empty			
+	param_bound			
+	invoke_func	_page_gn5		
+	exit_program			
     </textarea>
 </fieldset>
 <fieldset>
     <legend>String constants:</legend>
     <textarea id="string-constants">
-"a"
-"b"
-"c"
+"hello world"
 "q3"
 "single-choice"
 " hello "
-" world "
-" byebye"
-" a\na"
+" world"
+" aa"
 " bb"
 "row"
     </textarea>

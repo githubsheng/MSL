@@ -382,6 +382,7 @@ class Interpreter {
     state: InterpreterState;
     sendFunc: SendFunc;
     stringConstants: Array<string>;
+    builtInFunctions: Map<string, Function>;
 
     constructor(commandsStr: string, stringConstants: string, sendFunc: SendFunc) {
         this.commands = new Commands(commandsStr);
@@ -392,6 +393,15 @@ class Interpreter {
         this.normalStateRun = new NormalStateRun(this);
         this.stringConstants = this.parseStringConstants(stringConstants);
         this.sendFunc = sendFunc;
+        this.initBuiltInFunctions();
+    }
+
+    private initBuiltInFunctions(){
+        this.builtInFunctions = new Map();
+        function _print(something) {
+            console.log(something);
+        }
+        this.builtInFunctions.set("_print", _print);
     }
 
     private parseStringConstants(stringConstants: string) {
@@ -535,6 +545,19 @@ class Interpreter {
     }
 
     private invokeFunc(comm: Command) {
+        const funcName = comm.firstOperand;
+
+        //test if the func name is a built in function, if it is, we skips the rest and just make a direct call
+        if(this.builtInFunctions.has(funcName)) {
+            const params = [];
+            this.forEachParameters(param => {
+                params.push(param);
+            });
+            const ret = this.builtInFunctions.get(funcName).apply(null, params);
+            this.pushOperandStack(ret);
+            return;
+        }
+
         const parent = this.callStack.getCurrentFrame();
         //this is a little tricky. whenever we run a command we always immediately increment the
         //the command index. So right now the index is point at next command we will execute.
@@ -548,11 +571,12 @@ class Interpreter {
             //transfer the params from current frame's operand stack to the new frame's
             newFrame.getOperandStack().push(param);
         });
-        const funcName = comm.firstOperand;
+
         const funcDef = <FuncDef>this.getFromLocalVarSpace(funcName);
         this.commands.setIndex(funcDef.startIndex);
         this.callStack.addFrame(newFrame);
     }
+
 
     private invokeMethod(comm: Command) {
         //for now we only allow invoking methods on built in objects
