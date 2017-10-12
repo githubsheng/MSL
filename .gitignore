@@ -6,3 +6,8 @@ interpreter/src/*.js
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
 compiler/target
+compiler/commandsStr.txt
+compiler/src/main/g4/input.txt
+compiler/src/main/resources/input.txt
+compiler/stringConstants.txt
+interpreter/test/main.html
