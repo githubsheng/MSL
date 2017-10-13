@@ -5,7 +5,14 @@ package DLS.ASTNodes.enums.built.in.funcNames;
  */
 public enum BuiltInFuncNames {
 
-    GetRandomNumber("_getRandomNumber"), List("List"), PRINT("_print"), CLOCK("_clock");
+    /*
+        this function takes two parameters. a lower bound (inclusive ) and a higher bound (exclusive)
+        it returns a random integer between the lower bound and higher bound
+     */
+    GetRandomNumber("_getRandomNumber"),
+    List("List"),
+    PRINT("_print"),
+    CLOCK("_clock");
 
     private final String funcName;
 
