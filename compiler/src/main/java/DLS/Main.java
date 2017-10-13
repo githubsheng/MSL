@@ -42,7 +42,7 @@ public class Main {
         try (FileWriter fw = new FileWriter("commandsStr.txt", false);
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
-            for(String cmdStr : ret.commands) out.println(cmdStr);
+            for (String cmdStr : ret.commands) out.println(cmdStr);
         } catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
@@ -50,7 +50,7 @@ public class Main {
         try (FileWriter fw = new FileWriter("stringConstants.txt", false);
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
-            for(String strConst : ret.stringConstants) out.println(strConst);
+            for (String strConst : ret.stringConstants) out.println(strConst);
         } catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
@@ -58,32 +58,39 @@ public class Main {
         try (FileWriter fw = new FileWriter("../interpreter/test/main.html", false);
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
-            out.println("<!DOCTYPE html>");
-            out.println("<html lang=\"en\">");
-            out.println("<head>");
-            out.println("    <meta charset=\"UTF-8\">");
-            out.println("    <title>Title</title>");
-            out.println("    <link rel=\"stylesheet\" href=\"styles.css\"/>");
-            out.println("    <script src=\"interpreter.js\"></script>");
-            out.println("    <script src=\"scripts.js\"></script>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<fieldset>");
-            out.println("    <legend>Commands:</legend>");
-            out.println("    <textarea id=\"commands\">");
-            for(String cmdStr : ret.commands) out.println(cmdStr);
-            out.println("    </textarea>");
-            out.println("</fieldset>");
-            out.println("<fieldset>");
-            out.println("    <legend>String constants:</legend>");
-            out.println("    <textarea id=\"string-constants\">");
-            for(String strConst : ret.stringConstants) out.println(strConst);
-            out.println("    </textarea>");
-            out.println("</fieldset>");
-            out.println("<div class=\"clear\"></div>");
-            out.println("<button onclick=\"run()\">Submit</button>");
-            out.println("</body>");
-            out.println("</html>");
+            out.println("<!DOCTYPE html>\n" +
+                    "<html lang=\"en\">\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\">\n" +
+                    "    <title>Title</title>\n" +
+                    "    <link rel=\"stylesheet\" href=\"styles.css\"/>\n" +
+                    "    <script src=\"../src/interpreter.js\"></script>\n" +
+                    "    <script src=\"scripts.js\"></script>\n" +
+                    "</head>\n" +
+                    "<body onload=\"init()\">\n" +
+                    "<fieldset>\n" +
+                    "    <legend>Commands:</legend>\n" +
+                    "    <textarea id=\"commands\">");
+            for (String cmdStr : ret.commands) out.println(cmdStr);
+            out.println("    </textarea>\n" +
+                    "</fieldset>\n" +
+                    "<fieldset>\n" +
+                    "    <legend>String constants:</legend>\n" +
+                    "    <textarea id=\"string-constants\">");
+            for (String strConst : ret.stringConstants) out.println(strConst);
+            out.println("    </textarea>\n" +
+                    "</fieldset>\n" +
+                    "<div class=\"clear\"></div>\n" +
+                    "<input id=\"add-break-points\" placeholder=\"add break points\"/>\n" +
+                    "<button onclick=\"addBreakPoints()\">Add break points</button>\n" +
+                    "<input id=\"remove-break-points\" placeholder=\"delete break points\"/>\n" +
+                    "<button onclick=\"deleteBreakPoints()\">Delete break points</button>\n" +
+                    "<br/><br/>\n" +
+                    "<button onclick=\"run()\">Run</button>\n" +
+                    "<button onclick=\"debug()\">Debug/Resume</button>\n" +
+                    "<button onclick=\"restartDebug()\">Restart debug</button>\n" +
+                    "<button onclick=\"stepOver()\">Step over</button>\n" +
+                    "<div id=\"break-points\"></div>");
         } catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
