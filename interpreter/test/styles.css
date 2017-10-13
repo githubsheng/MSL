@@ -10,4 +10,9 @@ textarea, code {
 
 div.clear {
     clear: both;
+    margin-bottom: 10px;
+}
+
+#break-points {
+    margin-top: 10px;
 }
