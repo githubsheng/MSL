@@ -408,7 +408,14 @@ class Interpreter {
         function _print(something) {
             console.log(something);
         }
+        function _getRandomNumber(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
         this.builtInFunctions.set("_print", _print);
+        this.builtInFunctions.set("_getRandomNumber", _getRandomNumber);
     }
 
     private parseStringConstants(stringConstants: string) {
