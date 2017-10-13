@@ -188,23 +188,54 @@ interface InterpreterState {
 abstract class AbstractInterpreterState implements InterpreterState {
 
     async run() {
-        throw new Error("illegal state");
+        console.log("operation not supported under such state");
     }
 
     async debug() {
-        throw new Error("illegal state");
+        console.log("operation not supported under such state");
     }
 
     async stepOver() {
-        throw new Error("illegal state");
+        console.log("operation not supported under such state");
     }
 
     async restartDebug() {
-        throw new Error("illegal state");
+        console.log("operation not supported under such state");
     }
 
     async consoleEval(commandsStr: string) {
-        throw new Error("illegal state");
+        console.log("operation not supported under such state");
+    }
+}
+
+class NormalStateStart extends AbstractInterpreterState {
+
+    vm: Interpreter;
+
+    constructor(interpreter: Interpreter) {
+        super();
+        this.vm = interpreter;
+    }
+
+    async run() {
+        const vm = this.vm;
+        //as long as there are commands, execute the commands
+        while (vm.commands.hasNext()) {
+            const comm = vm.commands.getNext();
+            await vm.execute(comm);
+        }
+        //just so after we are done running the program user can run again.
+        vm.reset();
+    }
+
+    async debug() {
+        const vm = this.vm;
+        vm.state = vm.debugStateStart;
+        await vm.state.debug();
+    }
+
+    async restartDebug() {
+        await this.debug();
     }
 }
 
@@ -224,22 +255,15 @@ class DebugStateStart extends AbstractInterpreterState {
             if (vm.breakPoints.has(comm.lineNumber)) {
                 vm.state = vm.debugStateStopped;
                 vm.debugStateStopped.stoppedAt = comm.lineNumber;
+                return;
             } else {
                 vm.commands.advanceIndex();
                 await vm.execute(comm);
             }
         }
-    }
-
-    async run() {
-        this.vm.state = this.vm.normalStateRun;
-        await this.vm.normalStateRun.run();
-    }
-
-    async restartDebug() {
-        this.vm.commands.reset();
-        this.vm.callStack.reset();
-        await this.debug();
+        //just so after we are done running the entire program in debug mode user can run again.
+        vm.state = vm.normalStateStart;
+        vm.reset();
     }
 }
 
@@ -315,6 +339,8 @@ class DebugStateStopped extends AbstractInterpreterState {
                 await vm.execute(comm);
             }
         }
+        //if we are here then it means we cannot find any line to stop. we have gone all the way to the end of the program.
+        vm.reset();
     }
 
     async debug() {
@@ -325,13 +351,12 @@ class DebugStateStopped extends AbstractInterpreterState {
     }
 
     async run() {
-        this.vm.state = this.vm.normalStateRun;
-        await this.vm.normalStateRun.run();
+        this.vm.state = this.vm.normalStateStart;
+        await this.vm.normalStateStart.run();
     }
 
     async restartDebug() {
-        this.vm.commands.reset();
-        this.vm.callStack.reset();
+        this.vm.reset();
         this.vm.state = this.vm.debugStateStart;
         await this.vm.state.debug();
     }
@@ -349,25 +374,6 @@ class DebugStateStopped extends AbstractInterpreterState {
     }
 }
 
-class NormalStateRun extends AbstractInterpreterState {
-
-    vm: Interpreter;
-
-    constructor(interpreter: Interpreter) {
-        super();
-        this.vm = interpreter;
-    }
-
-    async run() {
-        const vm = this.vm;
-        //as long as there are commands, execute the commands
-        while (vm.commands.hasNext()) {
-            const comm = vm.commands.getNext();
-            await vm.execute(comm);
-        }
-    }
-}
-
 interface SendFunc {
     (data: any, returnAnswerCallback: (returnedAnswer: any) => void) : void;
 }
@@ -378,7 +384,7 @@ class Interpreter {
     breakPoints: Set<number>;
     debugStateStart: DebugStateStart;
     debugStateStopped: DebugStateStopped;
-    normalStateRun: NormalStateRun;
+    normalStateStart: NormalStateStart;
     state: InterpreterState;
     sendFunc: SendFunc;
     stringConstants: Array<string>;
@@ -390,8 +396,9 @@ class Interpreter {
         this.breakPoints = new Set();
         this.debugStateStart = new DebugStateStart(this);
         this.debugStateStopped = new DebugStateStopped(this);
-        this.normalStateRun = new NormalStateRun(this);
+        this.normalStateStart = new NormalStateStart(this);
         this.stringConstants = this.parseStringConstants(stringConstants);
+        this.state = this.normalStateStart;
         this.sendFunc = sendFunc;
         this.initBuiltInFunctions();
     }
@@ -576,7 +583,6 @@ class Interpreter {
         this.commands.setIndex(funcDef.startIndex);
         this.callStack.addFrame(newFrame);
     }
-
 
     private invokeMethod(comm: Command) {
         //for now we only allow invoking methods on built in objects
@@ -799,8 +805,12 @@ class Interpreter {
 
     }
 
+    reset(){
+        this.callStack.reset();
+        this.commands.reset();
+    }
+
     async run() {
-        this.state = this.normalStateRun;
         await this.state.run();
     }
 
@@ -818,6 +828,14 @@ class Interpreter {
 
     async consoleEval(commandsStr) {
         await this.state.consoleEval(commandsStr);
+    }
+
+    addBreakPoint(lineNumber: number) {
+        this.breakPoints.add(lineNumber);
+    }
+
+    deleteBreakPoint(lineNumber: number) {
+        this.breakPoints.delete(lineNumber);
     }
 
 }
