@@ -31,7 +31,7 @@ export class List {
     }
 
     addAllFirst(list:List) {
-        this._elements.splice(0, 0, ...list._elements);
+        this._elements.unshift(list._elements);
     }
 
     addAllLast(list:List) {
@@ -48,7 +48,7 @@ export class List {
     }
 
     removeFirst(){
-        this._elements.splice(0, 1);
+        this._elements.shift();
     }
 
     removeLast(){
@@ -66,6 +66,14 @@ export class List {
 
     clear(){
         this._elements = [];
+    }
+
+    randomize() {
+        this._elements.shift();
+    }
+
+    rotate() {
+
     }
 
     get size(): number {
