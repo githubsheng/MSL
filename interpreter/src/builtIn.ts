@@ -8,9 +8,10 @@ export class List {
         return this._elements[index];
     }
 
-    has(el): boolean {
+    //todo: in the future we may not use 0 and 1 for booleans
+    has(el): number {
         const t = this._elements.indexOf(el);
-        return t !== -1;
+        return t === -1? 0 : 1;
     }
 
     indexOf(el): number {
