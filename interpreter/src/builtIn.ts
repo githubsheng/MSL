@@ -69,11 +69,23 @@ export class List {
     }
 
     randomize() {
-        this._elements.shift();
+        //for each element in the list, swap its position with another random element.
+        for(let i = 0; i < this._elements.length; i++) {
+            const t1 = this._elements[i];
+            const t2i = _getRandomNumber(0, this._elements.length);
+            const t2 = this._elements[t2i];
+            this._elements[i] = t2;
+            this._elements[t2i] = t1;
+        }
     }
 
     rotate() {
-
+        let r = _getRandomNumber(0, this._elements.length);
+        while(r > 0) {
+            let h = this._elements.shift();
+            this._elements.push(h);
+            r--;
+        }
     }
 
     get size(): number {
