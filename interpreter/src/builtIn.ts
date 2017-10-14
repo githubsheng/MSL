@@ -29,13 +29,13 @@ export class List {
         this.add(el);
     }
 
-    addAllFirst(list) {
-        this._elements.splice(0, 0, ...list);
+    addAllFirst(list:List) {
+        this._elements.splice(0, 0, ...list._elements);
     }
 
-    addAllLast(list) {
+    addAllLast(list:List) {
         const s = this._elements.length;
-        this._elements.splice(s, 0, ...list);
+        this._elements.splice(s, 0, ...list._elements);
     }
 
     set(index: number, el) {
