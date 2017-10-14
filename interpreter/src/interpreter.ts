@@ -378,7 +378,7 @@ interface SendFunc {
     (data: any, returnAnswerCallback: (returnedAnswer: any) => void) : void;
 }
 
-class Interpreter {
+export class Interpreter {
     callStack: CallStack;
     commands: Commands;
     breakPoints: Set<number>;
