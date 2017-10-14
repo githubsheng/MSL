@@ -1,4 +1,4 @@
-import {Interpreter} from "../src/interpreter";
+import {Interpreter} from "../src/interpreter.js";
 
 let interpreter;
 
