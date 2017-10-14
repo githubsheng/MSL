@@ -10,6 +10,12 @@ public enum BuiltInFuncNames {
         it returns a random integer between the lower bound and higher bound
      */
     GetRandomNumber("_getRandomNumber"),
+    /*
+        This method creates a list object.
+        see ListMethods for more information about the methods of list object
+        list object has following properties:
+        1. size
+     */
     List("List"),
     PRINT("_print"),
     CLOCK("_clock");
