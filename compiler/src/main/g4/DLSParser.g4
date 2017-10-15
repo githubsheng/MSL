@@ -68,6 +68,7 @@ expression
 | expression And expression                                                         #LogicalAndExpression
 | expression Or expression                                                          #LogicalOrExpression
 | expression Assign expression                                                      #AssignmentExpression
+| Clock                                                                             #ClockExpression
 | Identifier                                                                        #IdentifierExpression
 | literal                                                                           #LiteralExpression
 | rowLiteral                                                                        #RowLiteralExpression

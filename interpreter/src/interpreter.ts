@@ -1,6 +1,6 @@
 import {Commands, Command} from "./commands.js";
 import {CallStack, FuncCallFrame, FuncDef} from "./callstack.js";
-import {List, _print, _list} from "./builtIn.js";
+import {List, _print, _list, _clock} from "./builtIn.js";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
 interface InterpreterState {
@@ -240,6 +240,7 @@ export class Interpreter {
         this.builtInFunctions.set("_print", _print);
         this.builtInFunctions.set("_getRandomNumber", _print);
         this.builtInFunctions.set("List", _list);
+        this.builtInFunctions.set("_clock", _clock);
     }
 
     private parseStringConstants(stringConstants: string) {

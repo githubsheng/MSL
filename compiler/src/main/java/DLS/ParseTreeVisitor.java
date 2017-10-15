@@ -487,10 +487,16 @@ class ParseTreeVisitor {
         } else if (ctx instanceof DLSParser.ParenthesizedExpressionContext) {
             //must be instance ParenthesizedExpression
             return visitParenthesizedExpression((DLSParser.ParenthesizedExpressionContext) ctx);
+        } else if (ctx instanceof DLSParser.ClockExpressionContext) {
+            return visitClockExpression((DLSParser.ClockExpressionContext)ctx);
         }
         throw new RuntimeException("unsupported expression");
     }
 
+    private CallNode visitClockExpression(DLSParser.ClockExpressionContext ctx) {
+        IdentifierNode funcNameIdentifier = new IdentifierNode(BuiltInFuncNames.CLOCK.getFuncName());
+        return new CallNode(funcNameIdentifier);
+    }
     
     private ExpressionNode visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
         return visitExpression(ctx.expression());
@@ -612,6 +618,19 @@ class ParseTreeVisitor {
         return Integer.valueOf(t);
     }
 
+    /**
+     * does the following conversion:
+     | 12am -> 0
+     | [1-9]am -> 1 ~ 9
+     | 10am -> 10
+     | 11am -> 11
+     | 12pm -> 12
+     | [1-9]pm -> 13 ~ 21
+     | 10pm -> 22
+     | 11pm -> 23
+     * @param t the clock string (1am, 2am, 3pm....)
+     * @return
+     */
     private NumberNode convertClockUnitStringToNumber(String t){
         int c;
         switch (t) {

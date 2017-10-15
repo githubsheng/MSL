@@ -278,6 +278,8 @@ BooleanLiteral
 
 StringLiteral: String;
 
+Clock: 'clock';
+
 //identifier
 Identifier
 : Name

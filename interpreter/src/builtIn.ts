@@ -106,3 +106,8 @@ export function _getRandomNumber(min, max) {
 export function _list() {
     return new List();
 }
+
+export function _clock(): number {
+    const now = new Date();
+    return now.getHours();
+}
