@@ -426,6 +426,7 @@ export class Interpreter {
         this.forEachParameters(param => {
             params.push(param);
         });
+        params.reverse();
         const thisArgReference = this.popOperandStack();
         const methodName = comm.firstOperand;
         const ret = thisArgReference[methodName].apply(thisArgReference, params);
