@@ -413,7 +413,7 @@ export class Interpreter {
         });
 
         const funcDef = <FuncDef>this.getFromLocalVarSpace(funcName);
-        // if(funcDef.noOfArgs !== newFrame.getOperandStack().length) throw new Error("wrong parameter numbers");
+        if(funcDef.noOfArgs !== newFrame.getOperandStack().length) throw new Error("wrong parameter numbers");
         this.commands.setIndex(funcDef.startIndex);
         this.callStack.addFrame(newFrame);
     }
