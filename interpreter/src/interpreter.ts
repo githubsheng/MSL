@@ -392,6 +392,7 @@ export class Interpreter {
             this.forEachParameters(param => {
                 params.push(param);
             });
+            params.reverse();
             const ret = this.builtInFunctions.get(funcName).apply(null, params);
             this.pushOperandStack(ret);
             return;
@@ -412,6 +413,7 @@ export class Interpreter {
         });
 
         const funcDef = <FuncDef>this.getFromLocalVarSpace(funcName);
+        // if(funcDef.noOfArgs !== newFrame.getOperandStack().length) throw new Error("wrong parameter numbers");
         this.commands.setIndex(funcDef.startIndex);
         this.callStack.addFrame(newFrame);
     }

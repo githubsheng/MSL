@@ -1,7 +1,7 @@
 export class List {
     private _elements: Array<any>;
-    constructor(){
-        this._elements = [];
+    constructor(elements){
+        this._elements = elements;
     }
 
     get(index: number){
@@ -103,8 +103,8 @@ export function _getRandomNumber(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
 
-export function _list() {
-    return new List();
+export function _list(...elements) {
+    return new List(elements);
 }
 
 export function _clock(): number {
