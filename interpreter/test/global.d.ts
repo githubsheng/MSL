@@ -1,6 +1,3 @@
-/**
- * Created by wangsheng on 14/10/17.
- */
 interface Window {
     init: Function;
     run: Function;
@@ -9,4 +6,5 @@ interface Window {
     displayBreakPoints: Function;
     addBreakPoints: Function;
     deleteBreakPoints: Function;
+    interpreter: any;
 }

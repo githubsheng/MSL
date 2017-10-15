@@ -6,6 +6,7 @@ function init(){
     const commandsStr = (<HTMLTextAreaElement>document.querySelector("#commands")).value;
     const stringConstStr = (<HTMLTextAreaElement>document.querySelector("#string-constants")).value;
     interpreter = new Interpreter(commandsStr, stringConstStr, sendFunc);
+    window.interpreter = interpreter;
 }
 
 function sendFunc(data, returnAnswerCallback) {
@@ -59,5 +60,6 @@ window.stepOver = stepOver;
 window.displayBreakPoints = displayBreakPoints;
 window.addBreakPoints = addBreakPoints;
 window.deleteBreakPoints = deleteBreakPoints;
+
 
 
