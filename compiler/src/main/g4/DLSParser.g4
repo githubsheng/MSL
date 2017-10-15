@@ -15,7 +15,7 @@ pageGroup
 ;
 
 page
-: PageStart attributes Close script question+ SubmitButton script PageEnd
+: (PageStart|ScriptPageStart) attributes Close script question+ SubmitButton script PageEnd
 ;
 
 attributes

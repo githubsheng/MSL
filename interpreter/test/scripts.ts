@@ -10,7 +10,7 @@ function init(){
 }
 
 function sendFunc(data, returnAnswerCallback) {
-    console.log(data);
+    // console.log(data);
     returnAnswerCallback(null);
 }
 

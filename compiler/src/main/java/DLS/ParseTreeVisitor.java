@@ -107,6 +107,8 @@ class ParseTreeVisitor {
         List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
         pageGroupFuncBodyStatNodes.addAll(attribStats);
 
+        pageGroupFuncBodyStatNodes.addAll(getScriptStatements(ctx.script()));
+
         List<FuncDefNode> pageDefFuncs = ctx.page().stream()
                 .map(this::visitPage)
                 .flatMap(List::stream)
