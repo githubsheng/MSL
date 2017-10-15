@@ -196,7 +196,7 @@ public class Generator {
             store $index
             load $index                     #3
             load arr_ref
-            readField length
+            readField size
             cmpge   #closeScope
             inc $index
             load arr_ref
@@ -218,10 +218,9 @@ public class Generator {
         CLoad load = new CLoad(LOOP_INDEX);
         commands.add(load);
         commands.add(new CLoad(lon.getListName().name));
-        commands.add(new CReadField("length"));
+        commands.add(new CReadField("size"));
         CCmpge cmpge = new CCmpge();
         commands.add(cmpge);
-        commands.add(new CInc(LOOP_INDEX));
         commands.add(new CLoad(lon.getListName().name));
         commands.add(new CLoad(LOOP_INDEX));
         commands.add(new CALoad());
@@ -229,6 +228,7 @@ public class Generator {
 
         commands.addAll(generate(lon.getStatements()));
 
+        commands.add(new CInc(LOOP_INDEX));
         CGoTo goTo = new CGoTo();
         goTo.setGoToCommand(load);
         commands.add(goTo);
