@@ -15,7 +15,7 @@ pageGroup
 ;
 
 page
-: PageStart attributes Close script question+ SubmitButton script PageEnd
+: (PageStart|ScriptPageStart) attributes Close script question+ SubmitButton script PageEnd
 ;
 
 attributes
@@ -68,6 +68,7 @@ expression
 | expression And expression                                                         #LogicalAndExpression
 | expression Or expression                                                          #LogicalOrExpression
 | expression Assign expression                                                      #AssignmentExpression
+| Clock                                                                             #ClockExpression
 | Identifier                                                                        #IdentifierExpression
 | literal                                                                           #LiteralExpression
 | rowLiteral                                                                        #RowLiteralExpression

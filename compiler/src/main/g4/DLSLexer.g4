@@ -6,7 +6,7 @@ lexer grammar DLSLexer;
 
 PageGroupStart
 : '[PageGroup'
--> pushMode(TagMode)
+-> pushMode(ScriptMode), pushMode(TagMode)
 ;
 
 PageGroupEnd: '[PageGroupEnd]';
@@ -278,6 +278,8 @@ BooleanLiteral
 
 StringLiteral: String;
 
+Clock: 'clock';
+
 //identifier
 Identifier
 : Name
@@ -304,6 +306,14 @@ MultipleChoiceStart
 SingleChoiceMatrixStart
 : '[SingleChoiceMatrix'
 -> popMode, pushMode(TextAreaMode), pushMode(TagMode)
+;
+
+//if a page is inside a page group, it would appear after the page group script..
+//it is different than PageStart in that it does not need to push a ScriptMode because
+//PageGroupStart already does that.
+ScriptPageStart
+: '[Page'
+-> pushMode(TagMode)
 ;
 
 PageEnd

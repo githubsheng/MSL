@@ -1,176 +1,7 @@
+import {Commands, Command} from "./commands.js";
+import {CallStack, FuncCallFrame, FuncDef} from "./callstack.js";
+import {List, _print, _list, _clock} from "./builtIn.js";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
-
-class FuncCallFrame {
-    returnIndex: number;
-    parent: FuncCallFrame;
-    private localVarSpace: Map<string, any>;
-    private operandStack: Array<any>;
-    private tempOperandStack: Array<any>;
-    private isUsingTempOperandStack: boolean;
-
-    constructor(parent?: FuncCallFrame, returnIndex?: number) {
-        this.localVarSpace = new Map();
-        this.returnIndex = returnIndex;
-        this.parent = parent;
-        this.operandStack = [];
-        this.tempOperandStack = [];
-    }
-
-    enableTempOperandStack() {
-        this.isUsingTempOperandStack = true;
-    }
-
-    disableTempOperandStack() {
-        this.isUsingTempOperandStack = false;
-    }
-
-    getOperandStack() {
-        return this.isUsingTempOperandStack ? this.tempOperandStack : this.operandStack;
-    }
-
-    getFromSpace(key: string): any {
-        const ret = this.localVarSpace.get(key);
-        if(ret === undefined && this.parent) return this.parent.getFromSpace(key);
-        return ret;
-    }
-
-    putInSpace(key: string, value: any) {
-        this.localVarSpace.set(key, value);
-    }
-}
-
-class Command {
-    lineNumber: number;
-    name: string;
-    firstOperand: string;
-    secondOperand: string;
-    thirdOperand: string;
-
-    constructor(lineNumber, name, firstOperand, secondOperand, thirdOperand) {
-        this.lineNumber = lineNumber;
-        this.name = name;
-        this.firstOperand = firstOperand;
-        this.secondOperand = secondOperand;
-        this.thirdOperand = thirdOperand;
-    }
-}
-
-class FuncDef {
-    startIndex: number;
-    noOfArgs: number;
-
-    constructor(startIndex, noOfArgs) {
-        this.startIndex = startIndex;
-        this.noOfArgs = noOfArgs;
-    }
-}
-
-class CallStack {
-    stack: Array<FuncCallFrame>;
-    global: FuncCallFrame;
-
-    constructor() {
-        this.reset();
-    }
-
-    addFrame(frame: FuncCallFrame) {
-        this.stack.push(frame);
-    }
-
-    popFrame(): FuncCallFrame {
-        return this.stack.pop();
-    }
-
-    getCurrentFrame(): FuncCallFrame {
-        return this.stack[this.stack.length - 1];
-    }
-
-    getGlobal(): FuncCallFrame {
-        return this.global;
-    }
-
-    reset() {
-        this.stack = [];
-        this.global = new FuncCallFrame();
-        this.stack.push(this.global);
-    }
-
-}
-
-class Commands {
-    //the original commands when script loads
-    originalCommArrayLength: number;
-    //we may append commands (generated from scripts typed in the console) to this command array
-    commArray: Array<Command>;
-    execIndex: number;
-
-    constructor(commands: string) {
-        this.execIndex = 0;
-        this.commArray = [];
-        this.parseCommandsAndAppend(commands);
-        this.originalCommArrayLength = this.commArray.length;
-    }
-
-    hasNext(): boolean {
-        //when we call get next we already advance the index to point to next command.
-        return this.execIndex < this.commArray.length;
-    }
-
-    peekNext(): Command {
-        //when we call get next we already advance the index to point to next command.
-        return this.commArray[this.execIndex];
-    }
-
-    getNext(): Command {
-        return this.commArray[this.execIndex++];
-    }
-
-    setIndex(index: number) {
-        this.execIndex = index;
-    }
-
-    setIndexUsingStr (index: string) {
-        this.execIndex = +(index);
-    }
-
-    getNextCommandIndex(): number {
-        return this.execIndex;
-    }
-
-    advanceIndex() {
-        this.execIndex++;
-    }
-
-    advanceIndexForNewCommands() {
-        this.execIndex = this.commArray.length;
-    }
-
-    parseCommandsAndAppend(commandsStr: string) {
-        this.commArray = commandsStr.split('\n')
-            /*
-                any command would at least have a name so it cannot be an empty line
-                we need to filter out the empty lines because sometimes when pasting the
-                the commands string manually we accidentally introduce some empty lines.
-             */
-            .filter(line => line.trim() !== "")
-            .map(line => {
-            const comps = line.split('\t');
-            const lineNumber = comps[0] === "" ? undefined : +(comps[0]);
-            return new Command(lineNumber, comps[1], comps[2], comps[3], comps[4]);
-        });
-    }
-
-    reset() {
-        this.execIndex = 0;
-        this.commArray = this.commArray.slice(0, this.originalCommArrayLength);
-    }
-
-    end(){
-        //index for next command points at undefined.
-        //this allows hasNext() to properly return false when we exit the program.
-        this.execIndex = this.commArray.length;
-    }
-}
 
 interface InterpreterState {
     //run the script from start to end
@@ -378,7 +209,7 @@ interface SendFunc {
     (data: any, returnAnswerCallback: (returnedAnswer: any) => void) : void;
 }
 
-class Interpreter {
+export class Interpreter {
     callStack: CallStack;
     commands: Commands;
     breakPoints: Set<number>;
@@ -405,17 +236,11 @@ class Interpreter {
 
     private initBuiltInFunctions(){
         this.builtInFunctions = new Map();
-        function _print(something) {
-            console.log(something);
-        }
-        function _getRandomNumber(min, max) {
-            min = Math.ceil(min);
-            max = Math.floor(max);
-            return Math.floor(Math.random() * (max - min)) + min;
-        }
 
         this.builtInFunctions.set("_print", _print);
-        this.builtInFunctions.set("_getRandomNumber", _getRandomNumber);
+        this.builtInFunctions.set("_getRandomNumber", _print);
+        this.builtInFunctions.set("List", _list);
+        this.builtInFunctions.set("_clock", _clock);
     }
 
     private parseStringConstants(stringConstants: string) {
@@ -567,6 +392,7 @@ class Interpreter {
             this.forEachParameters(param => {
                 params.push(param);
             });
+            params.reverse();
             const ret = this.builtInFunctions.get(funcName).apply(null, params);
             this.pushOperandStack(ret);
             return;
@@ -587,6 +413,7 @@ class Interpreter {
         });
 
         const funcDef = <FuncDef>this.getFromLocalVarSpace(funcName);
+        if(funcDef.noOfArgs !== newFrame.getOperandStack().length) throw new Error("wrong parameter numbers");
         this.commands.setIndex(funcDef.startIndex);
         this.callStack.addFrame(newFrame);
     }
@@ -599,6 +426,7 @@ class Interpreter {
         this.forEachParameters(param => {
             params.push(param);
         });
+        params.reverse();
         const thisArgReference = this.popOperandStack();
         const methodName = comm.firstOperand;
         const ret = thisArgReference[methodName].apply(thisArgReference, params);

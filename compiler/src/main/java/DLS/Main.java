@@ -64,8 +64,7 @@ public class Main {
                     "    <meta charset=\"UTF-8\">\n" +
                     "    <title>Title</title>\n" +
                     "    <link rel=\"stylesheet\" href=\"styles.css\"/>\n" +
-                    "    <script src=\"../src/interpreter.js\"></script>\n" +
-                    "    <script src=\"scripts.js\"></script>\n" +
+                    "    <script src=\"scripts.js\" type=\"module\"></script>\n" +
                     "</head>\n" +
                     "<body onload=\"init()\">\n" +
                     "<fieldset>\n" +

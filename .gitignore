@@ -2,6 +2,7 @@
 **/*.iml
 **/.DS_Store
 interpreter/src/*.js
+interpreter/test/*.js
 **/*.js.map
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
