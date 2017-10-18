@@ -1,6 +1,7 @@
 **/.idea
 **/*.iml
 **/.DS_Store
+**/node_modules
 interpreter/src/*.js
 interpreter/test/*.js
 **/*.js.map

@@ -1,6 +1,6 @@
-import {Commands, Command} from "./commands.js";
-import {CallStack, FuncCallFrame, FuncDef} from "./callstack.js";
-import {List, _print, _list, _clock} from "./builtIn.js";
+import {Commands, Command} from "./commands";
+import {CallStack, FuncCallFrame, FuncDef} from "./callstack";
+import {List, _print, _list, _clock} from "./builtIn";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
 interface InterpreterState {

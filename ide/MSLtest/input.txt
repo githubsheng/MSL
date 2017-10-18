@@ -1,0 +1,32 @@
+[Page]
+def a = 100
+def b = 200
+
+if a + b > 1000 then
+    print "not going to happen"
+else if a < 10 or b > 100 then
+    print "nooop"
+else if a < 1 then
+    print "not going to happen either"
+else
+    print "default gets displayed..."
+end
+
+chance
+50%:
+    print "first 50%"
+50%:
+    print "second 50%"
+end
+
+def someEmbeddedText = "world"
+
+print [Row id="myRow"] hello ${someEmbeddedText} how are you here [End]
+
+print row1
+
+[SingleChoice id="q3" randomize={ a + b > 2}] some question text
+[Row] aa
+[Row] bb
+[Submit]
+[PageEnd]

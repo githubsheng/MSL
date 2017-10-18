@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="jquery/jquery.js"></script>
+    <script>
+        function send(){
+            var src = document.querySelector("#source").value;
+            var dataSend = {data: src};
+            $.post("exec", dataSend, function(res){
+                console.log(res);
+            });
+        }
+    </script>
+</head>
+<body>
+    <textarea id="source"></textarea>
+    <button onclick="send()">send</button>
+</body>
+</html>
