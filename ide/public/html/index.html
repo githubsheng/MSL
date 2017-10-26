@@ -4,18 +4,42 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="jquery/jquery.js"></script>
+    <script src="../javascripts/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../javascripts/interpreter/bundle.js"></script>
     <script>
+        let editor;
+
+        function init(){
+            editor = ace.edit("editor");
+            editor.setTheme("ace/theme/monokai");
+        }
+
         function send(){
-            var src = document.querySelector("#source").value;
-            var dataSend = {data: src};
+            const src = editor.getValue(); // or session.getValue
+            const dataSend = {data: src};
+
+            function sendFunc(data, returnAnswerCallback) {
+                // console.log(data);
+                returnAnswerCallback(null);
+            }
+
             $.post("exec", dataSend, function(res){
-                console.log(res);
+                //todo: handle error messages.
+                const interpreter = new Interpreter(res.commsStrs, res.strsConsts, sendFunc);
+                window.interpreter = interpreter;
+                interpreter.run();
             });
         }
     </script>
+    <style type="text/css" media="screen">
+        #editor {
+            width: 800px;
+            height: 600px;
+        }
+    </style>
 </head>
-<body>
-    <textarea id="source"></textarea>
+<body onload="init()">
+    <div id="editor"></div>
     <button onclick="send()">send</button>
 </body>
 </html>

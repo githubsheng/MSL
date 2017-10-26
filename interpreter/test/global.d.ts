@@ -7,4 +7,5 @@ interface Window {
     addBreakPoints: Function;
     deleteBreakPoints: Function;
     interpreter: any;
+    Interpreter: Function;
 }

@@ -674,3 +674,5 @@ export class Interpreter {
     }
 
 }
+
+window.Interpreter = Interpreter;

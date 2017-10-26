@@ -614,3 +614,4 @@ class Interpreter {
     }
 }
 exports.Interpreter = Interpreter;
+window.Interpreter = Interpreter;
