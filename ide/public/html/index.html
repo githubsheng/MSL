@@ -11,7 +11,8 @@
 
         function init(){
             editor = ace.edit("editor");
-            editor.setTheme("ace/theme/monokai");
+//            editor.setTheme("ace/theme/monokai");
+            editor.$blockScrolling = Infinity;
         }
 
         function send(){
