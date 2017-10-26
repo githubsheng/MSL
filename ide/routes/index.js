@@ -20,47 +20,45 @@ router.get('/', function (req, res, next) {
 
 router.post('/exec', function (req, res, next) {
     const src = req.body.data;
-
     fs.writeFile(inputPath, src, (error) => {
-
-    });
-
-    exec(`java -jar ${jarPath} ${inputPath} ${outputPath}`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`exec error: ${error.trim()}`);
-            return;
-        }
-        const compileSuccessMessage = stdout.trim();
-        const compileErrorMessage = stderr.trim();
-        if(compileSuccessMessage === "successful") {
-            //todo: read the two files and return them
-            let commsStrs = null;
-            let strsConsts = null;
-            fs.readFile(commandsStrPath, encoding, (err, data) => {
-                if (err) throw err;
-                commsStrs = data;
-                trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
-            });
-            fs.readFile(stringConstantsPath, encoding, (err, data) => {
-                if (err) throw err;
-                strsConsts = data;
-                trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
-            });
-        } else {
-            res.json({
-                errMsg: compileErrorMessage
-            });
-        }
-
-        function trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts) {
-            if(commsStrs && strsConsts) {
+        exec(`java -jar ${jarPath} ${inputPath} ${outputPath}`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error.trim()}`);
+                return;
+            }
+            const compileSuccessMessage = stdout.trim();
+            const compileErrorMessage = stderr.trim();
+            if(compileSuccessMessage === "successful") {
+                //todo: read the two files and return them
+                let commsStrs = null;
+                let strsConsts = null;
+                fs.readFile(commandsStrPath, encoding, (err, data) => {
+                    if (err) throw err;
+                    commsStrs = data;
+                    trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
+                });
+                fs.readFile(stringConstantsPath, encoding, (err, data) => {
+                    if (err) throw err;
+                    strsConsts = data;
+                    trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
+                });
+            } else {
                 res.json({
-                    commsStrs,
-                    strsConsts
+                    errMsg: compileErrorMessage
                 });
             }
-        }
+
+            function trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts) {
+                if(commsStrs && strsConsts) {
+                    res.json({
+                        commsStrs,
+                        strsConsts
+                    });
+                }
+            }
+        });
     });
+
 });
 
 module.exports = router;
