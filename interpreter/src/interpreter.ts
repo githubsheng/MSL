@@ -18,23 +18,23 @@ interface InterpreterState {
 
 abstract class AbstractInterpreterState implements InterpreterState {
 
-    async run() {
+    run() {
         console.log("operation not supported under such state");
     }
 
-    async debug() {
+    debug() {
         console.log("operation not supported under such state");
     }
 
-    async stepOver() {
+    stepOver() {
         console.log("operation not supported under such state");
     }
 
-    async restartDebug() {
+    restartDebug() {
         console.log("operation not supported under such state");
     }
 
-    async consoleEval(commandsStr: string) {
+    consoleEval(commandsStr: string) {
         console.log("operation not supported under such state");
     }
 }
@@ -48,25 +48,27 @@ class NormalStateStart extends AbstractInterpreterState {
         this.vm = interpreter;
     }
 
-    async run() {
+    //todo: here run should have the resume function..and should be able to accept an answer data.
+    run() {
         const vm = this.vm;
         //as long as there are commands, execute the commands
         while (vm.commands.hasNext()) {
             const comm = vm.commands.getNext();
-            await vm.execute(comm);
+            const ret = vm.execute(comm);
+            if(ret !== undefined) return ret;
         }
         //just so after we are done running the program user can run again.
         vm.reset();
     }
 
-    async debug() {
+    debug() {
         const vm = this.vm;
         vm.state = vm.debugStateStart;
-        await vm.state.debug();
+        vm.state.debug();
     }
 
-    async restartDebug() {
-        await this.debug();
+    restartDebug() {
+        this.debug();
     }
 }
 
@@ -79,7 +81,7 @@ class DebugStateStart extends AbstractInterpreterState {
         this.vm = interpreter;
     }
 
-    async debug() {
+    debug() {
         const vm = this.vm;
         while (vm.commands.hasNext()) {
             const comm = vm.commands.peekNext();
@@ -89,7 +91,7 @@ class DebugStateStart extends AbstractInterpreterState {
                 return;
             } else {
                 vm.commands.advanceIndex();
-                await vm.execute(comm);
+                vm.execute(comm);
             }
         }
         //just so after we are done running the entire program in debug mode user can run again.
@@ -113,7 +115,7 @@ class DebugStateStopped extends AbstractInterpreterState {
      * @returns {Promise<void>}
      * @private
      */
-    private async _stepOver() {
+    private _stepOver() {
         const vm = this.vm;
         const stoppedAt = this.stoppedAt;
         while(vm.commands.hasNext()) {
@@ -141,7 +143,7 @@ class DebugStateStopped extends AbstractInterpreterState {
                  here flow control may branch back to (comm6, line2). But it is certain there must be some other commands in between these two line 2 blocks.
                  */
                 vm.commands.advanceIndex();
-                await vm.execute(comm);
+                vm.execute(comm);
             } else {
                 /*
                  we have stepped over the current break point.
@@ -155,9 +157,9 @@ class DebugStateStopped extends AbstractInterpreterState {
      * steps over the current line and continue to execute until it reaches another line that we can set a break point.
      * @returns {Promise<void>}
      */
-    async stepOver(){
+    stepOver(){
         const vm = this.vm;
-        await this._stepOver();
+        this._stepOver();
         while(vm.commands.hasNext()) {
             const comm = vm.commands.peekNext();
             if(comm.lineNumber >= 0) {
@@ -167,38 +169,38 @@ class DebugStateStopped extends AbstractInterpreterState {
             } else {
                 //we cannot set a break point here, do not stop.
                 vm.commands.advanceIndex();
-                await vm.execute(comm);
+                vm.execute(comm);
             }
         }
         //if we are here then it means we cannot find any line to stop. we have gone all the way to the end of the program.
         vm.reset();
     }
 
-    async debug() {
-        await this._stepOver();
+    debug() {
+        this._stepOver();
         //continue to execute until it stops at another break point
         this.vm.state = this.vm.debugStateStart;
-        await this.vm.state.debug();
+        this.vm.state.debug();
     }
-
-    async run() {
+    
+    run() {
         this.vm.state = this.vm.normalStateStart;
-        await this.vm.normalStateStart.run();
+        this.vm.normalStateStart.run();
     }
 
-    async restartDebug() {
+    restartDebug() {
         this.vm.reset();
         this.vm.state = this.vm.debugStateStart;
-        await this.vm.state.debug();
+        this.vm.state.debug();
     }
 
-    async consoleEval(commandsStr: string){
+    consoleEval(commandsStr: string){
         const vm = this.vm;
         vm.commands.parseCommandsAndAppend(commandsStr);
         const preIdx = vm.commands.getNextCommandIndex();
         vm.commands.advanceIndexForNewCommands();
         vm.callStack.getCurrentFrame().enableTempOperandStack();
-        await this.run();
+        this.run();
         vm.callStack.getCurrentFrame().disableTempOperandStack();
         vm.state = this;
         vm.commands.setIndex(preIdx);
@@ -217,7 +219,7 @@ export class Interpreter {
     debugStateStopped: DebugStateStopped;
     normalStateStart: NormalStateStart;
     state: InterpreterState;
-    sendFunc: SendFunc;
+    sendFunc: SendFunc; //todo: this is not needed anymore
     stringConstants: Array<string>;
     builtInFunctions: Map<string, Function>;
 
@@ -345,24 +347,13 @@ export class Interpreter {
         if(t !== 0) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
-    private mergeAnswerData(answerData: any){
-        //todo:
-    }
-
-    private async sendQuestion() {
+    private sendQuestion() {
         const questionData = [];
         this.forEachParameters((param) => {
             //here params being question references..
             questionData.push(param);
         });
-        const sendFunc = this.sendFunc.bind(this);
-        const answerData = await new Promise(function(resolve, reject) {
-            sendFunc(questionData, returnAnswerCallback);
-            function returnAnswerCallback(answerData: any) {
-                resolve(answerData);
-            }
-        });
-        this.mergeAnswerData(answerData);
+        return questionData;
     }
 
     private newScope(){
@@ -554,7 +545,7 @@ export class Interpreter {
         this.pushOperandStack(string.replace('\\n', '\n'));
     }
 
-    async execute(comm: Command) {
+    public execute(comm: Command): any {
         //todo: big giant switch case...
         switch (comm.name) {
             case "await":
@@ -645,24 +636,24 @@ export class Interpreter {
         this.commands.reset();
     }
 
-    async run() {
-        await this.state.run();
+    run() {
+        this.state.run();
     }
 
-    async debug() {
-        await this.state.debug();
+    debug() {
+        this.state.debug();
     }
 
-    async restartDebug() {
-        await this.state.restartDebug();
+    restartDebug() {
+        this.state.restartDebug();
     }
 
-    async stepOver(){
-        await this.state.stepOver();
+    stepOver(){
+        this.state.stepOver();
     }
 
-    async consoleEval(commandsStr) {
-        await this.state.consoleEval(commandsStr);
+    consoleEval(commandsStr) {
+        this.state.consoleEval(commandsStr);
     }
 
     addBreakPoint(lineNumber: number) {
