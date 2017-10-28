@@ -13,3 +13,4 @@ compiler/src/main/g4/input.txt
 compiler/src/main/resources/input.txt
 compiler/stringConstants.txt
 interpreter/test/main.html
+ide/compiler
