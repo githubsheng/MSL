@@ -306,6 +306,10 @@ class ParseTreeVisitor {
         return new ObjectLiteralNode.Field("_type", new StringNode("multiple-choice"));
     }
 
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleMatrixQuestionContext smc) {
+        return new ObjectLiteralNode.Field("_type", new StringNode("single-matrix"));
+    }
+
     private ObjectLiteralNode.Field getRowTypeField() {
         return new ObjectLiteralNode.Field("_type", new StringNode("row"));
     }
