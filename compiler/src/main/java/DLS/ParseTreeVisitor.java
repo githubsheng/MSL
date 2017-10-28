@@ -291,10 +291,15 @@ class ParseTreeVisitor {
         //todo: add other question types.
         if (questionCtx.singleChoiceQuestion() != null) {
             DLSParser.SingleChoiceQuestionContext sc = questionCtx.singleChoiceQuestion();
-            return getSingleQuestionStatements(sc);
-        } else {
+            return getCommonQuestionStatements(sc.attributes(), sc.textArea(), getQuestionTypeField(sc), sc.rows, null);
+        } else if (questionCtx.multipleChoiceQuestion() != null) {
             DLSParser.MultipleChoiceQuestionContext mc = questionCtx.multipleChoiceQuestion();
-            return getMultipleQuestionStatements(mc);
+            return getCommonQuestionStatements(mc.attributes(), mc.textArea(), getQuestionTypeField(mc), mc.rows, null);
+        } else if (questionCtx.singleMatrixQuestion() != null) {
+            DLSParser.SingleMatrixQuestionContext sm = questionCtx.singleMatrixQuestion();
+            return getCommonQuestionStatements(sm.attributes(), sm.textArea(), getQuestionTypeField(sm), sm.rows, sm.cols);
+        } else {
+            throw new RuntimeException("cannot generate question statements: unknown question types");
         }
     }
 
@@ -306,6 +311,10 @@ class ParseTreeVisitor {
         return new ObjectLiteralNode.Field("_type", new StringNode("multiple-choice"));
     }
 
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleMatrixQuestionContext smc) {
+        return new ObjectLiteralNode.Field("_type", new StringNode("single-matrix"));
+    }
+
     private ObjectLiteralNode.Field getRowTypeField() {
         return new ObjectLiteralNode.Field("_type", new StringNode("row"));
     }
@@ -314,39 +323,24 @@ class ParseTreeVisitor {
         return new ObjectLiteralNode.Field("_type", new StringNode("col"));
     }
 
-    //todo: review
-    private StatementNode getSingleQuestionStatements(DLSParser.SingleChoiceQuestionContext sc) {
-        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(sc.attributes(), questionImplicitValues);
+    private StatementNode getCommonQuestionStatements(DLSParser.AttributesContext attribs, DLSParser.TextAreaContext textArea, ObjectLiteralNode.Field questionType,
+                                                      List<DLSParser.RowContext> rowCtxes, List<DLSParser.ColContext> colCtxes) {
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(attribs, questionImplicitValues);
 
-        fields.add(getQuestionTypeField(sc));
-        fields.add(getTextField(sc.textArea()));
+        fields.add(questionType);
+        fields.add(getTextField(textArea));
 
-        ObjectLiteralNode rows = getQuestionRowsField(sc.rows);
+        ObjectLiteralNode rows = getQuestionRowsField(rowCtxes);
         ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
         fields.add(rowsField);
 
-        Optional<String> maybeId = getIdStrVal(sc.attributes());
-        String identifierName = maybeId.orElse(generateRandomIdentifierName());
-        IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
-        return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
-    }
+        if(colCtxes != null && !colCtxes.isEmpty()) {
+            ObjectLiteralNode cols = getQuestionColumnsField(colCtxes);
+            ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field("cols", cols);
+            fields.add(colsField);
+        }
 
-    private StatementNode getMultipleQuestionStatements(DLSParser.MultipleChoiceQuestionContext mc) {
-        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(mc.attributes(), questionImplicitValues);
-
-        fields.add(getQuestionTypeField(mc));
-        fields.add(getTextField(mc.textArea()));
-
-        ObjectLiteralNode rows = getQuestionRowsField(mc.rows);
-        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
-
-        ObjectLiteralNode cols = getQuestionColumnsField(mc.cols);
-        ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field("cols", cols);
-
-        fields.add(rowsField);
-        fields.add(colsField);
-
-        Optional<String> maybeId = getIdStrVal(mc.attributes());
+        Optional<String> maybeId = getIdStrVal(attribs);
         String identifierName = maybeId.orElse(generateRandomIdentifierName());
         IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
         return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));

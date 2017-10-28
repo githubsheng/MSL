@@ -146,6 +146,7 @@ functionBody: statement*;
 question
 : singleChoiceQuestion
 | multipleChoiceQuestion
+| singleMatrixQuestion
 ;
 
 singleChoiceQuestion
@@ -153,7 +154,11 @@ singleChoiceQuestion
 ;
 
 multipleChoiceQuestion
-: MultipleChoiceStart attributes Close textArea rows+=row+ cols+=col+
+: MultipleChoiceStart attributes Close textArea rows+=row+
+;
+
+singleMatrixQuestion
+: SingleChoiceMatrixStart attributes Close textArea rows+=row+ cols+=col+
 ;
 
 row
