@@ -1,15 +1,18 @@
 import {Commands, Command} from "./commands";
 import {CallStack, FuncCallFrame, FuncDef} from "./callstack";
 import {List, _print, _list, _clock} from "./builtIn";
+import {RowsOnly, Matrix, Question, AnswerData} from "./questionTypes";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
 interface InterpreterState {
     //run the script from start to end
-    run: () => void;
+    run: (answerData: Array<AnswerData>) => void;
     //run the script and stop at a break point. when stopped, call this method to run until it stops at another break point.
     debug: () => void;
     //steps over the current line and then stop.
     stepOver: () => void;
+    //start to run from the first line.
+    restartRun: () => void;
     //start to debug from the first line.
     restartDebug: () => void;
     //eval console input
@@ -18,7 +21,7 @@ interface InterpreterState {
 
 abstract class AbstractInterpreterState implements InterpreterState {
 
-    run() {
+    run(answerData: any) {
         console.log("operation not supported under such state");
     }
 
@@ -27,6 +30,10 @@ abstract class AbstractInterpreterState implements InterpreterState {
     }
 
     stepOver() {
+        console.log("operation not supported under such state");
+    }
+
+    restartRun() {
         console.log("operation not supported under such state");
     }
 
@@ -49,13 +56,23 @@ class NormalStateStart extends AbstractInterpreterState {
     }
 
     //todo: here run should have the resume function..and should be able to accept an answer data.
-    run() {
+    run(answerData?) {
         const vm = this.vm;
+        //store the answer data.
+        if(vm.isWaitingForAnswer && !answerData) return;
+        if(vm.isWaitingForAnswer) {
+            answerData.forEach(data => vm.mergeAnswerData(data));
+            vm.isWaitingForAnswer = false;
+        }
+
         //as long as there are commands, execute the commands
         while (vm.commands.hasNext()) {
             const comm = vm.commands.getNext();
             const ret = vm.execute(comm);
-            if(ret !== undefined) return ret;
+            if(ret !== undefined) return {
+                ret,
+                resume: this.run.bind(this);
+            }
         }
         //just so after we are done running the program user can run again.
         vm.reset();
@@ -65,6 +82,11 @@ class NormalStateStart extends AbstractInterpreterState {
         const vm = this.vm;
         vm.state = vm.debugStateStart;
         vm.state.debug();
+    }
+
+    restartRun() {
+        this.vm.reset();
+        this.vm.run();
     }
 
     restartDebug() {
@@ -222,6 +244,7 @@ export class Interpreter {
     sendFunc: SendFunc; //todo: this is not needed anymore
     stringConstants: Array<string>;
     builtInFunctions: Map<string, Function>;
+    isWaitingForAnswer: boolean;
 
     constructor(commandsStr: string, stringConstants: string, sendFunc: SendFunc) {
         this.commands = new Commands(commandsStr);
@@ -234,6 +257,7 @@ export class Interpreter {
         this.state = this.normalStateStart;
         this.sendFunc = sendFunc;
         this.initBuiltInFunctions();
+        this.isWaitingForAnswer = false;
     }
 
     private initBuiltInFunctions(){
@@ -353,6 +377,7 @@ export class Interpreter {
             //here params being question references..
             questionData.push(param);
         });
+        this.isWaitingForAnswer = true;
         return questionData;
     }
 
@@ -631,7 +656,37 @@ export class Interpreter {
 
     }
 
+    public mergeAnswerData(answerData: AnswerData) {
+        const {questionId, answers, stats} = answerData;
+        const question = <Question>this.getFromGlobalVarSpace(questionId);
+        switch (question._type) {
+            case "single-choice":
+            case "multiple-choice":
+                const rowsOnly = <RowsOnly>question;
+                rowsOnly.rows.forEach(row => row.isSelected = false);
+                answers.forEach(rowId => {
+                    rowsOnly[rowId].isSelected = true;
+                });
+                break;
+            case "single-matrix":
+                const matrix = <Matrix>question;
+                matrix.rows.forEach(rowId => {
+                    matrix.cols.forEach(colId => {
+                        matrix[`${rowId}_${colId}`] = {isSelected: false};
+                    });
+                });
+                answers.forEach(row_col => {
+                    matrix[row_col] = {isSelected: true};
+                });
+                break;
+            default:
+                throw new Error("cannot merge answer, unknown question type.")
+        }
+        question.stats = stats;
+    }
+
     reset(){
+        this.isWaitingForAnswer = false;
         this.callStack.reset();
         this.commands.reset();
     }
