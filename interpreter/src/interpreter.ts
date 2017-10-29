@@ -4,41 +4,126 @@ import {List, _print, _list, _clock} from "./builtIn";
 import {RowsOnly, Matrix, Question, AnswerData} from "./questionTypes";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
+/*
+ flow examples:
+ 1. restartDebug -> hit a break point -> return promise -> run -> sees sendQuestion -> resolves promise -> submit answer...
+ 2. restartDebug -> hit a break point -> return promise -> step over -> run -> sees sendQuestion -> resolves promise -> submit answer...
+ 3. restartDebug -> hit a break point -> return promise -> debug -> hit a break point -> run -> sees sendQuestion
+ -> resolves promise -> submit answer...
+ 4. restartDebug -> hit a break point -> return promise#1 -> step over -> sees sendQuestion -> resolves promise#1 -> submit answer
+ -> hit a potential break point (line which we can set a beak point) -> return promise#2 -> step over -> step over -> run
+ -> sees sendQuestion -> resolves promise#2 -> submit answer...
+ 5. restartDebug -> sees sendQuestion -> return resolved promise#1 -> submit answer -> hit a break point -> return promise#2
+ -> run -> sees sendQuestion -> resolves promise#2 -> submit answer...
+ 6. restartRun -> sees sendQuestion -> return resolved promise -> submit answer -> sees sendQuestion -> return resolved promise -> submit answer....
+ */
 interface InterpreterState {
-    //run the script from start to end
-    run: (answerData: Array<AnswerData>) => void;
-    //run the script and stop at a break point. when stopped, call this method to run until it stops at another break point.
+    /*
+     continue to run after we stopped at a break point, or after we stepped over. (the name is a bit confusing, it might be better to call it `resumeRunning`)
+     basically, these are the following cases we can resume running (* means any times):
+     1. restartDebug -> hit a break point -> returns the promise of first question -> (debug + hit a break point | step over)*
+     -> run -> sendQuestion -> resolves promise -> (in NormalStateStart) submit answer
+     2. ... -> (in DebugStateStart) submit answer -> hit a break point -> returns the promise of next question -> (debug + hit a break point | step over)*
+     -> run -> sendQuestion -> resolves promise -> (in NormalStateStart) submit answer
+     3. ... -> (in DebugStateStopped) submit answer -> hit a line where we can set a break point -> returns the promise of next question
+     -> (debug + hit a break point | step over)* -> run -> sendQuestion -> resolves promise -> (in NormalStateStart) submit answer
+
+
+     in all above cases, there are only one possibilities following a debug
+     1. sendQuestion: we need to resolve the previous promise.
+
+     this api is only intended to be used by debugger.
+     */
+    run: () => void;
+    /*
+     continue to debug after we stopped at a break point, or after we stepped over. (the name is a bit confusing, it might be better to call it `resumeDebugging`)
+     basically, these are the following cases we can resume debug (* means any times):
+     1. restartDebug -> hit a break point -> returns the promise of first question -> (debug + hit a break point | step over)*
+     -> debug -> sendQuestion -> resolves promise -> (in DebugStateStart) submit answer
+     2. ... -> (in DebugStateStart) submit answer -> hit a break point -> returns the promise of next question -> (debug + hit a break point | step over)*
+     -> debug -> sendQuestion -> resolves promise -> (in DebugStateStart) submit answer
+     3. ... -> (in DebugStateStopped) submit answer -> hit a line where we can set a break point -> returns the promise of next question
+     -> (debug + hit a break point | step over)* -> debug -> sendQuestion -> resolves promise -> (in DebugStateStart) submit answer
+
+
+     in all above cases, there are only two possibilities following a debug
+     1. hit a break point: we simply stop
+     2. sendQuestion: we need to resolve the previous promise.
+
+     this api is only intended to be used by debugger.
+     */
     debug: () => void;
-    //steps over the current line and then stop.
+    /*
+     step over after we stopped at a break point, or after we stepped over.
+     basically, these are the following cases we can resume debug (* means any times):
+     1. restartDebug -> hit a break point -> returns the promise of first question -> (debug + hit a break point | step over)*
+     -> step over -> sendQuestion -> resolves promise -> (in DebugStateStopped) submit answer
+     2. ... -> (in DebugStateStart) submit answer -> hit a break point -> returns the promise of next question -> (debug + hit a break point | step over)*
+     -> step over -> sendQuestion -> resolves promise -> (in DebugStateStopped) submit answer
+     3. ... -> (in DebugStateStopped) submit answer -> hit a line where we can set a break point -> returns the promise of next question
+     -> (debug + hit a break point | step over)* -> step over -> sendQuestion -> resolves promise -> (in DebugStateStopped) submit answer
+
+
+     in all above cases, there are only two possibilities following a step over
+     1. it stops at a line which we can set a break point. in this case it simply stops.
+     2. sendQuestion: we need to resolve the previous promise.
+
+     this api is only intended to be used by debugger.
+     */
     stepOver: () => void;
-    //start to run from the first line.
-    restartRun: () => void;
-    //start to debug from the first line.
-    restartDebug: () => void;
+    //the behavior of this api is different in different states. check its documentations in those states.
+    submitAnswer: (answerData: Array<AnswerData>) => Promise<Array<Question>>;
+    //start to run from the first line. returns the promise of first question. use this api to start a survey.
+    restartRun: () => Promise<Array<Question>>;
+    //start to debug from the first line. returns the promise of first question when it sees the first `sendQuestion`, or when it sees a break point.
+    restartDebug: () => Promise<Array<Question>>;
     //eval console input
     consoleEval: (commandsStr: string) => void;
 }
 
 abstract class AbstractInterpreterState implements InterpreterState {
 
-    run(answerData: any) {
-        console.log("operation not supported under such state");
+    vm: Interpreter;
+
+    constructor(interpreter: Interpreter) {
+        this.vm = interpreter;
+    }
+
+    _getUnresolvedQuestionDataPromise(){
+        return new Promise((resolve, reject) => {
+            this.vm.toResolveNextQuestionData = resolve;
+        });
+    }
+
+    _getResolvedQuestionDataPromise(questionData: Array<Question>){
+        return Promise.resolve(questionData);
+    }
+
+    run() {
+        if(this.vm.isWaitingForAnswer) return;
     }
 
     debug() {
-        console.log("operation not supported under such state");
+        if(this.vm.isWaitingForAnswer) return;
     }
 
     stepOver() {
-        console.log("operation not supported under such state");
+        if(this.vm.isWaitingForAnswer) return;
     }
 
-    restartRun() {
-        console.log("operation not supported under such state");
+    submitAnswer(answerData: Array<AnswerData>) {
+        console.log("operation not implemented!!");
+        return null;
     }
 
-    restartDebug() {
-        console.log("operation not supported under such state");
+    restartRun(): Promise<Array<Question>> {
+        this.vm.state = this.vm.normalStateStart;
+        return this.vm.state.restartRun();
+    }
+
+    restartDebug(): Promise<Array<Question>> {
+        this.vm.state = this.vm.debugStateStart;
+        return this.vm.state.restartDebug();
     }
 
     consoleEval(commandsStr: string) {
@@ -48,88 +133,97 @@ abstract class AbstractInterpreterState implements InterpreterState {
 
 class NormalStateStart extends AbstractInterpreterState {
 
-    vm: Interpreter;
-
     constructor(interpreter: Interpreter) {
-        super();
-        this.vm = interpreter;
+        super(interpreter);
     }
 
-    //todo: here run should have the resume function..and should be able to accept an answer data.
-    run(answerData?) {
+    _run(sendQuestionCommListener): Promise<Array<Question>> {
         const vm = this.vm;
-        //store the answer data.
-        if(vm.isWaitingForAnswer && !answerData) return;
-        if(vm.isWaitingForAnswer) {
-            answerData.forEach(data => vm.mergeAnswerData(data));
-            vm.isWaitingForAnswer = false;
-        }
-
         //as long as there are commands, execute the commands
         while (vm.commands.hasNext()) {
             const comm = vm.commands.getNext();
             const ret = vm.execute(comm);
-            if(ret !== undefined) return {
-                ret,
-                resume: this.run.bind(this);
-            }
+            if (ret) return sendQuestionCommListener(ret);
         }
-        //just so after we are done running the program user can run again.
-        vm.reset();
+        //to signal UI that there is no more next question.
+        return Promise.resolve(null);
     }
 
-    debug() {
+    run() {
         const vm = this.vm;
-        vm.state = vm.debugStateStart;
-        vm.state.debug();
+        if (vm.isWaitingForAnswer) return;
+        return this._run(vm.resolvePreviousPromise.bind(vm));
     }
 
-    restartRun() {
+    /*
+    (in NormalStateStart) submit answer -> send question -> return promise of next question (resolved, since we already have the question data now)
+     */
+    submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
+        if (!this.vm.isWaitingForAnswer) return;
+        answerData.forEach(this.vm.mergeAnswerData.bind(this.vm));
+        return this._run(questionData => Promise.resolve(questionData));
+    }
+
+    restartRun():Promise<Array<Question>> {
         this.vm.reset();
-        this.vm.run();
+        return this._run(this._getResolvedQuestionDataPromise.bind(this));
     }
 
-    restartDebug() {
-        this.debug();
-    }
+
 }
 
 class DebugStateStart extends AbstractInterpreterState {
 
-    vm: Interpreter;
-
     constructor(interpreter: Interpreter) {
-        super();
-        this.vm = interpreter;
+        super(interpreter);
     }
 
-    debug() {
+    _debug(breakPointListener, sendQuestionCommListener) {
         const vm = this.vm;
         while (vm.commands.hasNext()) {
             const comm = vm.commands.peekNext();
             if (vm.breakPoints.has(comm.lineNumber)) {
                 vm.state = vm.debugStateStopped;
                 vm.debugStateStopped.stoppedAt = comm.lineNumber;
-                return;
+                if(breakPointListener) breakPointListener();
             } else {
                 vm.commands.advanceIndex();
-                vm.execute(comm);
+                const ret = vm.execute(comm);
+                if (ret && sendQuestionCommListener) return sendQuestionCommListener(ret);
             }
         }
-        //just so after we are done running the entire program in debug mode user can run again.
-        vm.state = vm.normalStateStart;
-        vm.reset();
+        //indicate that there is no more questions.
+        return Promise.resolve(null);
+    }
+
+    debug() {
+        if (this.vm.isWaitingForAnswer) return;
+        //when sees a break point, do nothing, when sees a sendQuestion, resolve the previous promise.
+        return this._debug(null, this.vm.resolvePreviousPromise.bind(this.vm));
+    }
+
+    /*
+    (In DebugStateStart) submit answer -> hit a break point -> return promise of next question  -> run / debug / step over
+    (In DebugStateStart) submit answer -> sendQuestion -> return resolved promise of next question (since we already have the data of next question)
+     */
+    submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
+        if (!this.vm.isWaitingForAnswer) return;
+        answerData.forEach(this.vm.mergeAnswerData.bind(this.vm));
+        return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
+    }
+
+    restartDebug() {
+        this.vm.reset();
+        return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
     }
 }
 
 class DebugStateStopped extends AbstractInterpreterState {
 
-    vm: Interpreter;
     stoppedAt: number;
 
     constructor(interpreter: Interpreter) {
-        super();
-        this.vm = interpreter;
+        super(interpreter);
     }
 
     /**
@@ -137,12 +231,12 @@ class DebugStateStopped extends AbstractInterpreterState {
      * @returns {Promise<void>}
      * @private
      */
-    private _stepOver() {
+    private _stepOverCurrentLine() {
         const vm = this.vm;
         const stoppedAt = this.stoppedAt;
-        while(vm.commands.hasNext()) {
+        while (vm.commands.hasNext()) {
             const comm = vm.commands.peekNext();
-            if(comm.lineNumber === stoppedAt) {
+            if (comm.lineNumber === stoppedAt) {
                 /*
                  execute all commands that originates from the same line we have stopped at.
                  the line number pattern for commands would be like this:
@@ -163,6 +257,8 @@ class DebugStateStopped extends AbstractInterpreterState {
 
                  @1
                  here flow control may branch back to (comm6, line2). But it is certain there must be some other commands in between these two line 2 blocks.
+
+                 notice that we can never set a break point at question definition so that we do not need to concern about sending question data.
                  */
                 vm.commands.advanceIndex();
                 vm.execute(comm);
@@ -175,48 +271,67 @@ class DebugStateStopped extends AbstractInterpreterState {
         }
     }
 
-    /**
-     * steps over the current line and continue to execute until it reaches another line that we can set a break point.
-     * @returns {Promise<void>}
-     */
-    stepOver(){
+    _stopAtNextStoppableLine(breakPointListener, sendQuestionCommListener) {
         const vm = this.vm;
-        this._stepOver();
-        while(vm.commands.hasNext()) {
+        while (vm.commands.hasNext()) {
             const comm = vm.commands.peekNext();
-            if(comm.lineNumber >= 0) {
+            if (comm.lineNumber >= 0) {
                 //this is a line where we can set a break point, stop at this line (do not execute this line)
                 this.stoppedAt = comm.lineNumber;
-                return;
+                if(breakPointListener) breakPointListener();
             } else {
                 //we cannot set a break point here, do not stop.
                 vm.commands.advanceIndex();
-                vm.execute(comm);
+                const ret = vm.execute(comm);
+                if (ret) return sendQuestionCommListener(ret);
             }
         }
         //if we are here then it means we cannot find any line to stop. we have gone all the way to the end of the program.
         vm.reset();
+        //indicate that there is no more questions.
+        return Promise.resolve(null);
     }
 
+    /**
+     * steps over the current line and continue to execute until it reaches another line that we can set a break point.
+     * @returns {Promise<void>}
+     */
+    stepOver() {
+        if (this.vm.isWaitingForAnswer) return;
+
+        this._stepOverCurrentLine();
+        this._stopAtNextStoppableLine(null, this.vm.resolvePreviousPromise.bind(this.vm));
+    }
+
+    //when we stopped at a beak point we can choose to resume debug
     debug() {
-        this._stepOver();
+        const vm = this.vm;
+        if (vm.isWaitingForAnswer) return;
+        this._stepOverCurrentLine();
         //continue to execute until it stops at another break point
-        this.vm.state = this.vm.debugStateStart;
-        this.vm.state.debug();
+        vm.state = vm.debugStateStart;
+        return vm.state.debug();
     }
-    
+
     run() {
-        this.vm.state = this.vm.normalStateStart;
-        this.vm.normalStateStart.run();
+        const vm = this.vm;
+        if(vm.isWaitingForAnswer) return;
+        this._stepOverCurrentLine();
+        vm.state = vm.normalStateStart;
+        return vm.state.run();
     }
 
-    restartDebug() {
-        this.vm.reset();
-        this.vm.state = this.vm.debugStateStart;
-        this.vm.state.debug();
+    /*
+    (in DebugStateStopped) submit answer -> hit a line where we can set a break point -> returns the promise of next question -> run / debug / step over
+    (in DebugStateStopped) submit answer -> sendQuestion -> returns a resolved promise of next question (since we already know the question data)
+     */
+    submitAnswer(answerData: Array<AnswerData>) {
+        if (!this.vm.isWaitingForAnswer) return;
+        answerData.forEach(this.vm.mergeAnswerData.bind(this.vm));
+        return this._stopAtNextStoppableLine(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
     }
 
-    consoleEval(commandsStr: string){
+    consoleEval(commandsStr: string) {
         const vm = this.vm;
         vm.commands.parseCommandsAndAppend(commandsStr);
         const preIdx = vm.commands.getNextCommandIndex();
@@ -229,10 +344,6 @@ class DebugStateStopped extends AbstractInterpreterState {
     }
 }
 
-interface SendFunc {
-    (data: any, returnAnswerCallback: (returnedAnswer: any) => void) : void;
-}
-
 export class Interpreter {
     callStack: CallStack;
     commands: Commands;
@@ -241,12 +352,12 @@ export class Interpreter {
     debugStateStopped: DebugStateStopped;
     normalStateStart: NormalStateStart;
     state: InterpreterState;
-    sendFunc: SendFunc; //todo: this is not needed anymore
     stringConstants: Array<string>;
     builtInFunctions: Map<string, Function>;
     isWaitingForAnswer: boolean;
+    toResolveNextQuestionData: Function;
 
-    constructor(commandsStr: string, stringConstants: string, sendFunc: SendFunc) {
+    constructor(commandsStr: string, stringConstants: string) {
         this.commands = new Commands(commandsStr);
         this.callStack = new CallStack();
         this.breakPoints = new Set();
@@ -255,14 +366,12 @@ export class Interpreter {
         this.normalStateStart = new NormalStateStart(this);
         this.stringConstants = this.parseStringConstants(stringConstants);
         this.state = this.normalStateStart;
-        this.sendFunc = sendFunc;
         this.initBuiltInFunctions();
         this.isWaitingForAnswer = false;
     }
 
-    private initBuiltInFunctions(){
+    private initBuiltInFunctions() {
         this.builtInFunctions = new Map();
-
         this.builtInFunctions.set("_print", _print);
         this.builtInFunctions.set("_getRandomNumber", _print);
         this.builtInFunctions.set("List", _list);
@@ -271,17 +380,17 @@ export class Interpreter {
 
     private parseStringConstants(stringConstants: string) {
         return stringConstants.split('\n')
-            /*
-                an empty string constant would at least have two " symbol because
-                a string constant is always surrounded by double quotes.
-                we need to filter out the empty lines because sometimes when pasting the
-                the string constants string manually we accidentally introduce some empty lines.
-             */
+        /*
+         an empty string constant would at least have two " symbol because
+         a string constant is always surrounded by double quotes.
+         we need to filter out the empty lines because sometimes when pasting the
+         the string constants string manually we accidentally introduce some empty lines.
+         */
             .filter(line => line.trim() !== "")
             .map(str => {
                 //remove the first and last " symbol
                 return str.substring(1, str.length - 1);
-            })
+            });
     }
 
     private popOperandStack() {
@@ -292,7 +401,7 @@ export class Interpreter {
         return this.callStack.getCurrentFrame().getOperandStack().push(val);
     }
 
-    private getFromLocalVarSpace(key: string){
+    private getFromLocalVarSpace(key: string) {
         return this.callStack.getCurrentFrame().getFromSpace(key);
     }
 
@@ -312,44 +421,44 @@ export class Interpreter {
         let t;
         do {
             t = this.popOperandStack();
-            if( t !== PARAM_BOUND) func(t);
+            if (t !== PARAM_BOUND) func(t);
         } while (t !== PARAM_BOUND);
     }
 
-    private cmpEq(comm: Command){
+    private cmpEq(comm: Command) {
         const t1 = this.popOperandStack();
         const t2 = this.popOperandStack();
-        if(t1 === t2) this.commands.setIndexUsingStr(comm.firstOperand);
+        if (t1 === t2) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private cmpGe(comm: Command) {
         const right = this.popOperandStack();
         const left = this.popOperandStack();
-        if(left >= right) this.commands.setIndexUsingStr(comm.firstOperand);
+        if (left >= right) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private cmpGt(comm: Command) {
         const right = this.popOperandStack();
         const left = this.popOperandStack();
-        if(left > right) this.commands.setIndexUsingStr(comm.firstOperand);
+        if (left > right) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private cmpLe(comm: Command) {
         const right = this.popOperandStack();
         const left = this.popOperandStack();
-        if(left <= right) this.commands.setIndexUsingStr(comm.firstOperand);
+        if (left <= right) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private cmpLt(comm: Command) {
         const right = this.popOperandStack();
         const left = this.popOperandStack();
-        if(left < right) this.commands.setIndexUsingStr(comm.firstOperand)
+        if (left < right) this.commands.setIndexUsingStr(comm.firstOperand)
     }
 
     private cmpNe(comm: Command) {
         const t1 = this.popOperandStack();
         const t2 = this.popOperandStack();
-        if(t1 !== t2) this.commands.setIndexUsingStr(comm.firstOperand);
+        if (t1 !== t2) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private end() {
@@ -358,17 +467,17 @@ export class Interpreter {
     }
 
     private goTo(comm: Command) {
-         this.commands.setIndexUsingStr(comm.firstOperand);
+        this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private ifEq(comm: Command) {
         const t = this.popOperandStack();
-        if(t === 0) this.commands.setIndexUsingStr(comm.firstOperand);
+        if (t === 0) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private ifNe(comm: Command) {
         const t = this.popOperandStack();
-        if(t !== 0) this.commands.setIndexUsingStr(comm.firstOperand);
+        if (t !== 0) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
     private sendQuestion() {
@@ -381,7 +490,7 @@ export class Interpreter {
         return questionData;
     }
 
-    private newScope(){
+    private newScope() {
         const parent = this.callStack.getCurrentFrame();
         const newFrame = new FuncCallFrame(parent);
         this.callStack.addFrame(newFrame);
@@ -403,7 +512,7 @@ export class Interpreter {
         const funcName = comm.firstOperand;
 
         //test if the func name is a built in function, if it is, we skips the rest and just make a direct call
-        if(this.builtInFunctions.has(funcName)) {
+        if (this.builtInFunctions.has(funcName)) {
             const params = [];
             this.forEachParameters(param => {
                 params.push(param);
@@ -429,7 +538,7 @@ export class Interpreter {
         });
 
         const funcDef = <FuncDef>this.getFromLocalVarSpace(funcName);
-        if(funcDef.noOfArgs !== newFrame.getOperandStack().length) throw new Error("wrong parameter numbers");
+        if (funcDef.noOfArgs !== newFrame.getOperandStack().length) throw new Error("wrong parameter numbers");
         this.commands.setIndex(funcDef.startIndex);
         this.callStack.addFrame(newFrame);
     }
@@ -459,33 +568,33 @@ export class Interpreter {
         this.commands.setIndex(frame.returnIndex);
     }
 
-    private returnVal(){
+    private returnVal() {
         const ret = this.popOperandStack();
         const frame = this.callStack.popFrame();
         this.pushOperandStack(ret);
         this.commands.setIndex(frame.returnIndex);
     }
 
-    private add(){
+    private add() {
         /*
-            we have to respect the order because when you add two strings a + b is
-            very different from b + a
-            the way the compiler generates commands is that it always first generates
-            a push command to push the left operand of an add operation into the stack,
-            and then generates a push command to push the right operand of the add operation
-            into the stack.
-            so when we pop the stack we would get the right first and then the left.
+         we have to respect the order because when you add two strings a + b is
+         very different from b + a
+         the way the compiler generates commands is that it always first generates
+         a push command to push the left operand of an add operation into the stack,
+         and then generates a push command to push the right operand of the add operation
+         into the stack.
+         so when we pop the stack we would get the right first and then the left.
          */
         const right = this.popOperandStack();
         const left = this.popOperandStack();
         this.pushOperandStack(left + right);
     }
 
-    private div(){
+    private div() {
         this.pushOperandStack(this.popOperandStack() / this.popOperandStack());
     }
 
-    private inc(comm: Command){
+    private inc(comm: Command) {
         const incremented = this.getFromLocalVarSpace(comm.firstOperand) + 1;
         this.setInLocalVarSpace(comm.firstOperand, incremented);
     }
@@ -494,7 +603,7 @@ export class Interpreter {
         this.pushOperandStack(this.popOperandStack() % this.popOperandStack());
     }
 
-    private mul(){
+    private mul() {
         this.pushOperandStack(this.popOperandStack() * this.popOperandStack());
     }
 
@@ -513,7 +622,7 @@ export class Interpreter {
         this.pushOperandStack(t);
     }
 
-    private newObj(){
+    private newObj() {
         this.pushOperandStack({});
     }
 
@@ -536,11 +645,11 @@ export class Interpreter {
         this.pushOperandStack(list.get(index));
     }
 
-    private empty(){
+    private empty() {
         return;
     }
 
-    private gStore(comm: Command){
+    private gStore(comm: Command) {
         const name = comm.firstOperand;
         const value = this.popOperandStack();
         this.setInGlobalVarSpace(name, value);
@@ -685,26 +794,35 @@ export class Interpreter {
         question.stats = stats;
     }
 
-    reset(){
+    reset(): void {
         this.isWaitingForAnswer = false;
+        if (this.toResolveNextQuestionData) this.toResolveNextQuestionData(null);
         this.callStack.reset();
         this.commands.reset();
     }
 
-    run() {
+    run(): void {
         this.state.run();
     }
 
-    debug() {
+    debug(): void {
         this.state.debug();
     }
 
-    restartDebug() {
-        this.state.restartDebug();
+    stepOver(): void {
+        this.state.stepOver();
     }
 
-    stepOver(){
-        this.state.stepOver();
+    restartRun(): Promise<Array<Question>> {
+        return this.state.restartRun();
+    }
+
+    restartDebug(): Promise<Array<Question>> {
+        return this.state.restartDebug();
+    }
+
+    submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
+        return this.state.submitAnswer(answerData);
     }
 
     consoleEval(commandsStr) {
@@ -717,6 +835,11 @@ export class Interpreter {
 
     deleteBreakPoint(lineNumber: number) {
         this.breakPoints.delete(lineNumber);
+    }
+
+    resolvePreviousPromise(questionData: Question){
+        this.toResolveNextQuestionData(questionData);
+        this.toResolveNextQuestionData = null;
     }
 
 }

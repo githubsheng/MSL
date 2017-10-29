@@ -1,6 +1,3 @@
-/**
- * Created by wangsheng on 28/10/17.
- */
 //todo: I want these interfaces to be like a documentations about questions... I need to add details to it.. like stats...
 
 export interface Question {
@@ -23,11 +20,11 @@ export interface Row extends Option {
 export interface Col extends Option {}
 
 export interface RowsOnly extends Question {
-    rows: Array<Row>;
+    rows: any;
 }
 
 export interface Matrix extends RowsOnly {
-    cols: Array<Col>;
+    cols: any;
 }
 
 export interface AnswerData {

@@ -98,6 +98,13 @@ public class Main {
                 for (String strConst : ret.stringConstants) out.println(strConst);
                 out.println("    </textarea>\n" +
                         "</fieldset>\n" +
+                        "<fieldset>\n" +
+                        "<legend>Dummy UI</legend>\n" +
+                        "<pre id=\"page\" style=\"height: 380px;\"><span class=\"null\">null</span></pre>\n" +
+                        "<textarea id=\"answers\" style=\"height: 200px;\">\n" +
+                        "</textarea>\n" +
+                        "<button id=\"submitAnswer\">submit answer</button>\n" +
+                        "</fieldset>\n" +
                         "<div class=\"clear\"></div>\n" +
                         "<input id=\"add-break-points\" placeholder=\"add break points\"/>\n" +
                         "<button onclick=\"addBreakPoints()\">Add break points</button>\n" +

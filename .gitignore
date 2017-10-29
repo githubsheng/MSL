@@ -4,6 +4,7 @@
 **/node_modules
 interpreter/src/*.js
 interpreter/test/*.js
+interpreter/dist/
 **/*.js.map
 compiler/src/main/java/DLS/generated
 compiler/src/playground/generated
