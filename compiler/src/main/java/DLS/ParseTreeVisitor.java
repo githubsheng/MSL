@@ -13,10 +13,7 @@ import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
 import DLS.ASTNodes.statement.built.in.commands.SendDataNode;
 import DLS.ASTNodes.statement.expression.*;
 import DLS.ASTNodes.statement.expression.literal.*;
-import DLS.ASTNodes.statement.expression.logical.AndNode;
-import DLS.ASTNodes.statement.expression.logical.EqualsNode;
-import DLS.ASTNodes.statement.expression.logical.NotNode;
-import DLS.ASTNodes.statement.expression.logical.OrNode;
+import DLS.ASTNodes.statement.expression.logical.*;
 import DLS.ASTNodes.statement.expression.math.AddNode;
 import DLS.ASTNodes.statement.expression.math.MinusNode;
 import DLS.ASTNodes.statement.expression.math.MultiplyNode;
@@ -695,7 +692,11 @@ class ParseTreeVisitor {
     private ExpressionNode visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
-        return new EqualsNode(left, right);
+        if(ctx.Equals() != null) {
+            return new EqualsNode(left, right);
+        } else {
+            return new NotEqualsNode(left, right);
+        }
     }
 
     

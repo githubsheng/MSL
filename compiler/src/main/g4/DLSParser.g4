@@ -64,7 +64,7 @@ expression
 | expression ( Multiply | Divide | Modulus ) expression                             #MultiplicativeExpression
 | expression ( Plus | Minus ) expression                                            #AdditiveExpression
 | expression ( LessThan | MoreThan | LessThanEquals | MoreThanEquals ) expression   #RelationalExpression
-| expression Equals expression                                                      #EqualityExpression
+| expression (Equals | NotEquals) expression                                        #EqualityExpression
 | expression And expression                                                         #LogicalAndExpression
 | expression Or expression                                                          #LogicalOrExpression
 | expression Assign expression                                                      #AssignmentExpression
