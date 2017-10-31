@@ -111,9 +111,10 @@ public class Main {
                         "<input id=\"remove-break-points\" placeholder=\"delete break points\"/>\n" +
                         "<button onclick=\"deleteBreakPoints()\">Delete break points</button>\n" +
                         "<br/><br/>\n" +
-                        "<button onclick=\"run()\">Run</button>\n" +
-                        "<button onclick=\"debug()\">Debug/Resume</button>\n" +
-                        "<button onclick=\"restartDebug()\">Restart debug</button>\n" +
+                        "<button onclick=\"restartRun()\">restart run</button>\n" +
+                        "<button onclick=\"restartDebug()\">restart debug</button>\n" +
+                        "<button onclick=\"resumeDebug()\">resume debug</button>\n" +
+                        "<button onclick=\"resumeRun()\">resume run</button>\n" +
                         "<button onclick=\"stepOver()\">Step over</button>\n" +
                         "<div id=\"break-points\"></div>");
             } catch (IOException e) {

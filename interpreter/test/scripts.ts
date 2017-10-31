@@ -24,22 +24,35 @@ function displayQuestion(questionData: Array<Question>) {
 }
 
 function submitAnswer(){
-    //todo: get the answer data in the text area..... and make it a json.
     submitBtn.disabled = true;
     const t = JSON.parse(answers.value);
     const p = interpreter.submitAnswer(t);
     p.then(displayQuestion);
 }
 
-function run(){
-    //reset ui
+function resetPageUI(){
     while(page.lastChild) page.removeChild(page.lastChild);
+}
+
+function restartRun(){
+    resetPageUI();
     const p = interpreter.restartRun();
     submitBtn.disabled = true;
     p.then(displayQuestion);
 }
 
-function debug(){
+function restartDebug(){
+    resetPageUI();
+    const p = interpreter.restartDebug();
+    submitBtn.disabled = true;
+    p.then(displayQuestion);
+}
+
+function resumeRun(){
+    interpreter.run();
+}
+
+function resumeDebug(){
     interpreter.debug();
 }
 
@@ -94,8 +107,10 @@ function syntaxHighlight(json) {
 }
 
 window.init = init;
-window.run = run;
-window.debug = debug;
+window.restartRun = restartRun;
+window.restartDebug = restartDebug;
+window.resumeDebug = resumeDebug;
+window.resumeRun = resumeRun;
 window.stepOver = stepOver;
 window.displayBreakPoints = displayBreakPoints;
 window.addBreakPoints = addBreakPoints;

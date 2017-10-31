@@ -1,7 +1,9 @@
 interface Window {
     init: Function;
-    run: Function;
-    debug: Function;
+    restartRun: Function;
+    restartDebug: Function;
+    resumeRun: Function;
+    resumeDebug: Function;
     stepOver: Function;
     displayBreakPoints: Function;
     addBreakPoints: Function;
