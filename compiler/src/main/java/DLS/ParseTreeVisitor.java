@@ -434,17 +434,16 @@ class ParseTreeVisitor {
                 .collect(Collectors.toList());
     }
 
-    
     private StatementNode visitVariableStatement(DLSParser.VariableStatementContext ctx) {
         IdentifierNode name = new IdentifierNode(ctx.Identifier().getText());
-        ExpressionNode initializer = visitExpression(ctx.initialiser().expression());
+        ExpressionNode initializer = null;
+        if(ctx.initialiser() != null) initializer = visitExpression(ctx.initialiser().expression());
         boolean isGlobal = ctx.Global() != null;
         DefNode ret = new DefNode(isGlobal, name, initializer);
         if(needsTokenAssociation)ret.setToken(ctx.getStart());
         return ret;
     }
 
-    
     private StatementNode visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
         ExpressionStatementNode est = new ExpressionStatementNode(visitExpression(ctx.expression()));
         if(needsTokenAssociation) est.setToken(ctx.getStart());
