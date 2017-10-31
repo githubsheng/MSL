@@ -33,6 +33,9 @@ export class FuncCallFrame {
     }
 
     putInSpace(key: string, value: any) {
+        const ret = this.localVarSpace.get(key);
+        //if this variable is not defined in the current scope, try its parent scope.
+        if(ret === undefined && this.parent) return this.parent.putInSpace(key, value);
         this.localVarSpace.set(key, value);
     }
 }
