@@ -185,7 +185,7 @@ class DebugStateStart extends AbstractInterpreterState {
             if (vm.breakPoints.has(comm.lineNumber)) {
                 vm.state = vm.debugStateStopped;
                 vm.debugStateStopped.stoppedAt = comm.lineNumber;
-                if(breakPointListener) breakPointListener();
+                if(breakPointListener) return breakPointListener();
             } else {
                 vm.commands.advanceIndex();
                 const ret = vm.execute(comm);
@@ -278,7 +278,7 @@ class DebugStateStopped extends AbstractInterpreterState {
             if (comm.lineNumber >= 0) {
                 //this is a line where we can set a break point, stop at this line (do not execute this line)
                 this.stoppedAt = comm.lineNumber;
-                if(breakPointListener) breakPointListener();
+                if(breakPointListener) return breakPointListener();
             } else {
                 //we cannot set a break point here, do not stop.
                 vm.commands.advanceIndex();
