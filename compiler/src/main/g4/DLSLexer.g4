@@ -108,7 +108,7 @@ ColStart: '[Col';
 
 mode TextAreaMode;
 
-TextArea: .+? TextAreaEnd {
+TextArea: .*? TextAreaEnd {
      int offSet = 0;
      String matched = getText();
      if(matched.endsWith("[Row")) {
