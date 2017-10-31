@@ -1,7 +1,7 @@
 import {Commands, Command} from "./commands";
 import {CallStack, FuncCallFrame, FuncDef} from "./callstack";
 import {List, _print, _list, _clock} from "./builtIn";
-import {RowsOnly, Matrix, Question, AnswerData} from "./questionTypes";
+import {RowsOnly, Matrix, Question, AnswerData, Row, Col} from "./questionTypes";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
 /*
@@ -768,25 +768,68 @@ export class Interpreter {
     public mergeAnswerData(answerData: AnswerData) {
         const {questionId, answers, stats} = answerData;
         const question = <Question>this.getFromGlobalVarSpace(questionId);
+
+        function handleRowsOnly(){
+            const rowsOnly = <RowsOnly>question;
+            //rows with user defined ids.
+            const rows = Object.keys(rowsOnly.rows)
+                .filter(key => key !== "_type")
+                .filter(key => !key.startsWith("_"))
+                .map(key => <Row>(rowsOnly.rows[key]));
+
+            question.answers = {};
+            rows.forEach(row => {
+                //internally we use 0 for false
+                question.answers[row.id] = {isSelected: 0};
+            });
+
+            answers.forEach(rowId => {
+                const t = question.answers[rowId];
+                //internally we use 1 for true
+                if(t) t.isSelected = 1;
+            });
+        }
+
+        function handleMatrix(){
+            const matrix = <Matrix>question;
+            //we want those rows who have user defined id. they cannot use generated id anyway...
+            const rows = Object.keys(matrix.rows)
+                .filter(key => key !== "_type")
+                .map(key => <Row>(matrix.rows[key]))
+                .filter(row => !row.id.startsWith('_'));
+            //we want those cols who have user defined id. they cannot use generated id anyway...
+            const cols = Object.keys(matrix.cols)
+                .filter(key => key !== "_type")
+                .map(key => <Col>(matrix.cols[key]))
+                .filter(col => !col.id.startsWith('_'));
+
+            const ret: Map<string, {isSelected: number}> = new Map();
+            rows.forEach(row => {
+                cols.forEach(col => {
+                    //internally we use 0 for false
+                    ret.set(`${row.id}_${col.id}`, {isSelected: 0});
+                });
+            });
+
+            matrix.answers = {};
+            ret.forEach((value, key, map) => {
+                matrix.answers[key] = value;
+            });
+
+            answers.forEach(comId => {
+                const t = matrix.answers[comId];
+                //internally we use 1 for true.
+                if(t) t.isSelected = 1;
+            });
+        }
+
         switch (question._type) {
             case "single-choice":
             case "multiple-choice":
-                const rowsOnly = <RowsOnly>question;
-                rowsOnly.rows.forEach(row => row.isSelected = false);
-                answers.forEach(rowId => {
-                    rowsOnly[rowId].isSelected = true;
-                });
+                handleRowsOnly();
                 break;
             case "single-matrix":
-                const matrix = <Matrix>question;
-                matrix.rows.forEach(rowId => {
-                    matrix.cols.forEach(colId => {
-                        matrix[`${rowId}_${colId}`] = {isSelected: false};
-                    });
-                });
-                answers.forEach(row_col => {
-                    matrix[row_col] = {isSelected: true};
-                });
+                handleMatrix();
                 break;
             default:
                 throw new Error("cannot merge answer, unknown question type.")
