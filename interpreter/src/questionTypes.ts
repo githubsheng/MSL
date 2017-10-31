@@ -5,6 +5,7 @@ export interface Question {
     _type: string;
     text: string;
     stats: any;
+    answers: any;
 }
 
 interface Option {
