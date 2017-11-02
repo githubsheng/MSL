@@ -45,213 +45,264 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-	    return new (P || (P = Promise))(function (resolve, reject) {
-	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
-	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-	        step((generator = generator.apply(thisArg, _arguments)).next());
-	    });
-	};
 	const commands_1 = __webpack_require__(1);
 	const callstack_1 = __webpack_require__(2);
 	const builtIn_1 = __webpack_require__(3);
 	const PARAM_BOUND = { specialCommandName: "param_bound" };
 	class AbstractInterpreterState {
-	    run() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            console.log("operation not supported under such state");
+	    constructor(interpreter) {
+	        this.vm = interpreter;
+	    }
+	    _getUnresolvedQuestionDataPromise() {
+	        return new Promise((resolve, reject) => {
+	            this.vm.toResolveNextQuestionData = resolve;
 	        });
+	    }
+	    _getResolvedQuestionDataPromise(questionData) {
+	        return Promise.resolve(questionData);
+	    }
+	    run() {
+	        if (this.vm.isWaitingForAnswer)
+	            return;
 	    }
 	    debug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            console.log("operation not supported under such state");
-	        });
+	        if (this.vm.isWaitingForAnswer)
+	            return;
 	    }
 	    stepOver() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            console.log("operation not supported under such state");
-	        });
+	        if (this.vm.isWaitingForAnswer)
+	            return;
+	    }
+	    submitAnswer(answerData) {
+	        console.log("operation not implemented!!");
+	        return null;
+	    }
+	    restartRun() {
+	        this.vm.state = this.vm.normalStateStart;
+	        return this.vm.state.restartRun();
 	    }
 	    restartDebug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            console.log("operation not supported under such state");
-	        });
+	        this.vm.state = this.vm.debugStateStart;
+	        return this.vm.state.restartDebug();
 	    }
 	    consoleEval(commandsStr) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            console.log("operation not supported under such state");
-	        });
+	        console.log("operation not supported under such state");
 	    }
 	}
 	class NormalStateStart extends AbstractInterpreterState {
 	    constructor(interpreter) {
-	        super();
-	        this.vm = interpreter;
+	        super(interpreter);
+	    }
+	    _run(sendQuestionCommListener) {
+	        const vm = this.vm;
+	        //as long as there are commands, execute the commands
+	        while (vm.commands.hasNext()) {
+	            const comm = vm.commands.getNext();
+	            const ret = vm.execute(comm);
+	            if (ret)
+	                return sendQuestionCommListener(ret);
+	        }
+	        //to signal UI that there is no more next question.
+	        return Promise.resolve(null);
 	    }
 	    run() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            const vm = this.vm;
-	            //as long as there are commands, execute the commands
-	            while (vm.commands.hasNext()) {
-	                const comm = vm.commands.getNext();
-	                yield vm.execute(comm);
-	            }
-	            //just so after we are done running the program user can run again.
-	            vm.reset();
-	        });
+	        const vm = this.vm;
+	        if (vm.isWaitingForAnswer)
+	            return;
+	        return this._run(vm.resolvePreviousPromise.bind(vm));
 	    }
-	    debug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            const vm = this.vm;
-	            vm.state = vm.debugStateStart;
-	            yield vm.state.debug();
-	        });
+	    /*
+	    (in NormalStateStart) submit answer -> send question -> return promise of next question (resolved, since we already have the question data now)
+	     */
+	    submitAnswer(answerData) {
+	        if (!this.vm.isWaitingForAnswer)
+	            return;
+	        this.vm.mergeAnswerData(answerData);
+	        return this._run(questionData => Promise.resolve(questionData));
 	    }
-	    restartDebug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            yield this.debug();
-	        });
+	    restartRun() {
+	        this.vm.reset();
+	        return this._run(this._getResolvedQuestionDataPromise.bind(this));
 	    }
 	}
 	class DebugStateStart extends AbstractInterpreterState {
 	    constructor(interpreter) {
-	        super();
-	        this.vm = interpreter;
+	        super(interpreter);
 	    }
-	    debug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            const vm = this.vm;
-	            while (vm.commands.hasNext()) {
-	                const comm = vm.commands.peekNext();
-	                if (vm.breakPoints.has(comm.lineNumber)) {
-	                    vm.state = vm.debugStateStopped;
-	                    vm.debugStateStopped.stoppedAt = comm.lineNumber;
-	                    return;
+	    _debug(breakPointListener, sendQuestionCommListener) {
+	        const vm = this.vm;
+	        while (vm.commands.hasNext()) {
+	            const comm = vm.commands.peekNext();
+	            if (vm.breakPoints.has(comm.lineNumber)) {
+	                vm.state = vm.debugStateStopped;
+	                vm.debugStateStopped.stoppedAt = comm.lineNumber;
+	                if (breakPointListener) {
+	                    return breakPointListener();
 	                }
 	                else {
-	                    vm.commands.advanceIndex();
-	                    yield vm.execute(comm);
+	                    return;
 	                }
 	            }
-	            //just so after we are done running the entire program in debug mode user can run again.
-	            vm.state = vm.normalStateStart;
-	            vm.reset();
-	        });
+	            else {
+	                vm.commands.advanceIndex();
+	                const ret = vm.execute(comm);
+	                if (ret && sendQuestionCommListener)
+	                    return sendQuestionCommListener(ret);
+	            }
+	        }
+	        //indicate that there is no more questions.
+	        return Promise.resolve(null);
+	    }
+	    debug() {
+	        if (this.vm.isWaitingForAnswer)
+	            return;
+	        //when sees a break point, do nothing, when sees a sendQuestion, resolve the previous promise.
+	        return this._debug(null, this.vm.resolvePreviousPromise.bind(this.vm));
+	    }
+	    /*
+	    (In DebugStateStart) submit answer -> hit a break point -> return promise of next question  -> run / debug / step over
+	    (In DebugStateStart) submit answer -> sendQuestion -> return resolved promise of next question (since we already have the data of next question)
+	     */
+	    submitAnswer(answerData) {
+	        if (!this.vm.isWaitingForAnswer)
+	            return;
+	        this.vm.mergeAnswerData(answerData);
+	        return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
+	    }
+	    restartDebug() {
+	        this.vm.reset();
+	        return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
 	    }
 	}
 	class DebugStateStopped extends AbstractInterpreterState {
 	    constructor(interpreter) {
-	        super();
-	        this.vm = interpreter;
+	        super(interpreter);
 	    }
 	    /**
 	     * steps over the current line.
 	     * @returns {Promise<void>}
 	     * @private
 	     */
-	    _stepOver() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            const vm = this.vm;
-	            const stoppedAt = this.stoppedAt;
-	            while (vm.commands.hasNext()) {
-	                const comm = vm.commands.peekNext();
-	                if (comm.lineNumber === stoppedAt) {
-	                    /*
-	                     execute all commands that originates from the same line we have stopped at.
-	                     the line number pattern for commands would be like this:
-	                     comm1 : line 1
-	                     comm2 : line 1
-	                     comm3 : line 1
-	                     comm4 : <<no line number, we cannot set break points here>>
-	                     comm5 : <<no line number, we cannot set break points here>>
-	                     comm6 : line 2
-	                     comm7 : line 2
-	                     comm8 : line 7
-	                     comm9 : line 7
-	                     comm6 : line 2 -> @1
-	                     comm7 : line 2
-	                     If we set a break point of 2, then at the beginning of this state we are at comm5. At this stage, `stoppedAt` will be 2, meaning that
-	                     we have stopped at line 2 (stopped at line 2 meaning stop and don't execute line 2 yet). Now if we step over, we need to execute all
-	                     immediately following commands that originate from line 2.
-	    
-	                     @1
-	                     here flow control may branch back to (comm6, line2). But it is certain there must be some other commands in between these two line 2 blocks.
-	                     */
-	                    vm.commands.advanceIndex();
-	                    yield vm.execute(comm);
+	    _stepOverCurrentLine() {
+	        const vm = this.vm;
+	        const stoppedAt = this.stoppedAt;
+	        while (vm.commands.hasNext()) {
+	            const comm = vm.commands.peekNext();
+	            if (comm.lineNumber === stoppedAt) {
+	                /*
+	                 execute all commands that originates from the same line we have stopped at.
+	                 the line number pattern for commands would be like this:
+	                 comm1 : line 1
+	                 comm2 : line 1
+	                 comm3 : line 1
+	                 comm4 : <<no line number, we cannot set break points here>>
+	                 comm5 : <<no line number, we cannot set break points here>>
+	                 comm6 : line 2
+	                 comm7 : line 2
+	                 comm8 : line 7
+	                 comm9 : line 7
+	                 comm6 : line 2 -> @1
+	                 comm7 : line 2
+	                 If we set a break point of 2, then at the beginning of this state we are at comm5. At this stage, `stoppedAt` will be 2, meaning that
+	                 we have stopped at line 2 (stopped at line 2 meaning stop and don't execute line 2 yet). Now if we step over, we need to execute all
+	                 immediately following commands that originate from line 2.
+
+	                 @1
+	                 here flow control may branch back to (comm6, line2). But it is certain there must be some other commands in between these two line 2 blocks.
+
+	                 notice that we can never set a break point at question definition so that we do not need to concern about sending question data.
+	                 */
+	                vm.commands.advanceIndex();
+	                vm.execute(comm);
+	            }
+	            else {
+	                /*
+	                 we have stepped over the current break point.
+	                 */
+	                return;
+	            }
+	        }
+	    }
+	    _stopAtNextStoppableLine(breakPointListener, sendQuestionCommListener) {
+	        const vm = this.vm;
+	        while (vm.commands.hasNext()) {
+	            const comm = vm.commands.peekNext();
+	            if (comm.lineNumber >= 0) {
+	                //this is a line where we can set a break point, stop at this line (do not execute this line)
+	                this.stoppedAt = comm.lineNumber;
+	                if (breakPointListener) {
+	                    return breakPointListener();
 	                }
 	                else {
-	                    /*
-	                     we have stepped over the current break point.
-	                     */
 	                    return;
 	                }
 	            }
-	        });
+	            else {
+	                //we cannot set a break point here, do not stop.
+	                vm.commands.advanceIndex();
+	                const ret = vm.execute(comm);
+	                ``;
+	                if (ret)
+	                    return sendQuestionCommListener(ret);
+	            }
+	        }
+	        //if we are here then it means we cannot find any line to stop. we have gone all the way to the end of the program.
+	        vm.reset();
+	        //indicate that there is no more questions.
+	        return Promise.resolve(null);
 	    }
 	    /**
 	     * steps over the current line and continue to execute until it reaches another line that we can set a break point.
 	     * @returns {Promise<void>}
 	     */
 	    stepOver() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            const vm = this.vm;
-	            yield this._stepOver();
-	            while (vm.commands.hasNext()) {
-	                const comm = vm.commands.peekNext();
-	                if (comm.lineNumber >= 0) {
-	                    //this is a line where we can set a break point, stop at this line (do not execute this line)
-	                    this.stoppedAt = comm.lineNumber;
-	                    return;
-	                }
-	                else {
-	                    //we cannot set a break point here, do not stop.
-	                    vm.commands.advanceIndex();
-	                    yield vm.execute(comm);
-	                }
-	            }
-	            //if we are here then it means we cannot find any line to stop. we have gone all the way to the end of the program.
-	            vm.reset();
-	        });
+	        if (this.vm.isWaitingForAnswer)
+	            return;
+	        this._stepOverCurrentLine();
+	        this._stopAtNextStoppableLine(null, this.vm.resolvePreviousPromise.bind(this.vm));
 	    }
+	    //when we stopped at a beak point we can choose to resume debug
 	    debug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            yield this._stepOver();
-	            //continue to execute until it stops at another break point
-	            this.vm.state = this.vm.debugStateStart;
-	            yield this.vm.state.debug();
-	        });
+	        const vm = this.vm;
+	        if (vm.isWaitingForAnswer)
+	            return;
+	        this._stepOverCurrentLine();
+	        //continue to execute until it stops at another break point
+	        vm.state = vm.debugStateStart;
+	        return vm.state.debug();
 	    }
 	    run() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            this.vm.state = this.vm.normalStateStart;
-	            yield this.vm.normalStateStart.run();
-	        });
+	        const vm = this.vm;
+	        if (vm.isWaitingForAnswer)
+	            return;
+	        this._stepOverCurrentLine();
+	        vm.state = vm.normalStateStart;
+	        return vm.state.run();
 	    }
-	    restartDebug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            this.vm.reset();
-	            this.vm.state = this.vm.debugStateStart;
-	            yield this.vm.state.debug();
-	        });
+	    /*
+	    (in DebugStateStopped) submit answer -> hit a line where we can set a break point -> returns the promise of next question -> run / debug / step over
+	    (in DebugStateStopped) submit answer -> sendQuestion -> returns a resolved promise of next question (since we already know the question data)
+	     */
+	    submitAnswer(answerData) {
+	        if (!this.vm.isWaitingForAnswer)
+	            return;
+	        this.vm.mergeAnswerData(answerData);
+	        return this._stopAtNextStoppableLine(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
 	    }
 	    consoleEval(commandsStr) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            const vm = this.vm;
-	            vm.commands.parseCommandsAndAppend(commandsStr);
-	            const preIdx = vm.commands.getNextCommandIndex();
-	            vm.commands.advanceIndexForNewCommands();
-	            vm.callStack.getCurrentFrame().enableTempOperandStack();
-	            yield this.run();
-	            vm.callStack.getCurrentFrame().disableTempOperandStack();
-	            vm.state = this;
-	            vm.commands.setIndex(preIdx);
-	        });
+	        const vm = this.vm;
+	        vm.commands.parseCommandsAndAppend(commandsStr);
+	        const preIdx = vm.commands.getNextCommandIndex();
+	        vm.commands.advanceIndexForNewCommands();
+	        vm.callStack.getCurrentFrame().enableTempOperandStack();
+	        this.run();
+	        vm.callStack.getCurrentFrame().disableTempOperandStack();
+	        vm.state = this;
+	        vm.commands.setIndex(preIdx);
 	    }
 	}
 	class Interpreter {
-	    constructor(commandsStr, stringConstants, sendFunc) {
+	    constructor(commandsStr, stringConstants) {
 	        this.commands = new commands_1.Commands(commandsStr);
 	        this.callStack = new callstack_1.CallStack();
 	        this.breakPoints = new Set();
@@ -260,8 +311,8 @@
 	        this.normalStateStart = new NormalStateStart(this);
 	        this.stringConstants = this.parseStringConstants(stringConstants);
 	        this.state = this.normalStateStart;
-	        this.sendFunc = sendFunc;
 	        this.initBuiltInFunctions();
+	        this.isWaitingForAnswer = false;
 	    }
 	    initBuiltInFunctions() {
 	        this.builtInFunctions = new Map();
@@ -357,25 +408,14 @@
 	        if (t !== 0)
 	            this.commands.setIndexUsingStr(comm.firstOperand);
 	    }
-	    mergeAnswerData(answerData) {
-	        //todo:
-	    }
 	    sendQuestion() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            const questionData = [];
-	            this.forEachParameters((param) => {
-	                //here params being question references..
-	                questionData.push(param);
-	            });
-	            const sendFunc = this.sendFunc.bind(this);
-	            const answerData = yield new Promise(function (resolve, reject) {
-	                sendFunc(questionData, returnAnswerCallback);
-	                function returnAnswerCallback(answerData) {
-	                    resolve(answerData);
-	                }
-	            });
-	            this.mergeAnswerData(answerData);
+	        const questionData = [];
+	        this.forEachParameters((param) => {
+	            //here params being question references..
+	            questionData.push(param);
 	        });
+	        this.isWaitingForAnswer = true;
+	        return questionData;
 	    }
 	    newScope() {
 	        const parent = this.callStack.getCurrentFrame();
@@ -454,13 +494,13 @@
 	    }
 	    add() {
 	        /*
-	            we have to respect the order because when you add two strings a + b is
-	            very different from b + a
-	            the way the compiler generates commands is that it always first generates
-	            a push command to push the left operand of an add operation into the stack,
-	            and then generates a push command to push the right operand of the add operation
-	            into the stack.
-	            so when we pop the stack we would get the right first and then the left.
+	         we have to respect the order because when you add two strings a + b is
+	         very different from b + a
+	         the way the compiler generates commands is that it always first generates
+	         a push command to push the left operand of an add operation into the stack,
+	         and then generates a push command to push the right operand of the add operation
+	         into the stack.
+	         so when we pop the stack we would get the right first and then the left.
 	         */
 	        const right = this.popOperandStack();
 	        const left = this.popOperandStack();
@@ -538,125 +578,195 @@
 	        this.pushOperandStack(string.replace('\\n', '\n'));
 	    }
 	    execute(comm) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            //todo: big giant switch case...
-	            switch (comm.name) {
-	                case "await":
-	                    //todo: this command is not useful, remove it from compiler
-	                    return;
-	                case "cmp_eq":
-	                    return this.cmpEq(comm);
-	                case "cmp_ge":
-	                    return this.cmpGe(comm);
-	                case "cmp_gt":
-	                    return this.cmpGt(comm);
-	                case "cmp_le":
-	                    return this.cmpLe(comm);
-	                case "cmp_lt":
-	                    return this.cmpLt(comm);
-	                case "cmp_ne":
-	                    return this.cmpNe(comm);
-	                case "exit_program":
-	                    return this.end();
-	                case "go_to":
-	                    return this.goTo(comm);
-	                case "if_eq_0":
-	                    return this.ifEq(comm);
-	                case "if_ne_0":
-	                    return this.ifNe(comm);
-	                case "send_question":
-	                    return this.sendQuestion();
-	                case "new_scope":
-	                    return this.newScope();
-	                case "close_scope":
-	                    return this.closeScope();
-	                case "def_func":
-	                    return this.defineFunc(comm);
-	                case "invoke_func":
-	                    return this.invokeFunc(comm);
-	                case "invoke_method":
-	                    return this.invokeMethod(comm);
-	                case "param_bound":
-	                    return this.paramBound();
-	                case "return_null":
-	                    return this.returnNull();
-	                case "return_val":
-	                    return this.returnVal();
-	                case "add":
-	                    return this.add();
-	                case "div":
-	                    return this.div();
-	                case "inc":
-	                    return this.inc(comm);
-	                case "mod":
-	                    return this.mod();
-	                case "mul":
-	                    return this.mul();
-	                case "neg":
-	                    return this.neg(comm);
-	                case "sub":
-	                    return this.sub();
-	                case "dup":
-	                    return this.dup();
-	                case "new":
-	                    return this.newObj();
-	                case "put_field":
-	                    return this.putField(comm);
-	                case "read_field":
-	                    return this.readField(comm);
-	                case "a_load":
-	                    return this.aLoad();
-	                case "empty":
-	                    return this.empty();
-	                case "g_store":
-	                    return this.gStore(comm);
-	                case "load":
-	                    return this.load(comm);
-	                case "null":
-	                    return this.pushNull();
-	                case "number":
-	                    return this.number(comm);
-	                case "store":
-	                    return this.store(comm);
-	                case "string":
-	                    return this.string(comm);
-	            }
-	        });
+	        //todo: big giant switch case...
+	        switch (comm.name) {
+	            case "await":
+	                //todo: this command is not useful, remove it from compiler
+	                return;
+	            case "cmp_eq":
+	                return this.cmpEq(comm);
+	            case "cmp_ge":
+	                return this.cmpGe(comm);
+	            case "cmp_gt":
+	                return this.cmpGt(comm);
+	            case "cmp_le":
+	                return this.cmpLe(comm);
+	            case "cmp_lt":
+	                return this.cmpLt(comm);
+	            case "cmp_ne":
+	                return this.cmpNe(comm);
+	            case "exit_program":
+	                return this.end();
+	            case "go_to":
+	                return this.goTo(comm);
+	            case "if_eq_0":
+	                return this.ifEq(comm);
+	            case "if_ne_0":
+	                return this.ifNe(comm);
+	            case "send_question":
+	                return this.sendQuestion();
+	            case "new_scope":
+	                return this.newScope();
+	            case "close_scope":
+	                return this.closeScope();
+	            case "def_func":
+	                return this.defineFunc(comm);
+	            case "invoke_func":
+	                return this.invokeFunc(comm);
+	            case "invoke_method":
+	                return this.invokeMethod(comm);
+	            case "param_bound":
+	                return this.paramBound();
+	            case "return_null":
+	                return this.returnNull();
+	            case "return_val":
+	                return this.returnVal();
+	            case "add":
+	                return this.add();
+	            case "div":
+	                return this.div();
+	            case "inc":
+	                return this.inc(comm);
+	            case "mod":
+	                return this.mod();
+	            case "mul":
+	                return this.mul();
+	            case "neg":
+	                return this.neg(comm);
+	            case "sub":
+	                return this.sub();
+	            case "dup":
+	                return this.dup();
+	            case "new":
+	                return this.newObj();
+	            case "put_field":
+	                return this.putField(comm);
+	            case "read_field":
+	                return this.readField(comm);
+	            case "a_load":
+	                return this.aLoad();
+	            case "empty":
+	                return this.empty();
+	            case "g_store":
+	                return this.gStore(comm);
+	            case "load":
+	                return this.load(comm);
+	            case "null":
+	                return this.pushNull();
+	            case "number":
+	                return this.number(comm);
+	            case "store":
+	                return this.store(comm);
+	            case "string":
+	                return this.string(comm);
+	        }
+	    }
+	    _mergeAnswerData(answerData) {
+	        const { questionId, answers, stats } = answerData;
+	        const question = this.getFromGlobalVarSpace(questionId);
+	        function handleRowsOnly() {
+	            const rowsOnly = question;
+	            //rows with user defined ids.
+	            const rows = Object.keys(rowsOnly.rows)
+	                .filter(key => key !== "_type")
+	                .filter(key => !key.startsWith("_"))
+	                .map(key => (rowsOnly.rows[key]));
+	            question.answers = {};
+	            rows.forEach(row => {
+	                //internally we use 0 for false
+	                question.answers[row.id] = { isSelected: 0 };
+	            });
+	            answers.forEach(rowId => {
+	                const t = question.answers[rowId];
+	                //internally we use 1 for true
+	                if (t)
+	                    t.isSelected = 1;
+	            });
+	        }
+	        function handleMatrix() {
+	            const matrix = question;
+	            //we want those rows who have user defined id. they cannot use generated id anyway...
+	            const rows = Object.keys(matrix.rows)
+	                .filter(key => key !== "_type")
+	                .map(key => (matrix.rows[key]))
+	                .filter(row => !row.id.startsWith('_'));
+	            //we want those cols who have user defined id. they cannot use generated id anyway...
+	            const cols = Object.keys(matrix.cols)
+	                .filter(key => key !== "_type")
+	                .map(key => (matrix.cols[key]))
+	                .filter(col => !col.id.startsWith('_'));
+	            const ret = new Map();
+	            rows.forEach(row => {
+	                cols.forEach(col => {
+	                    //internally we use 0 for false
+	                    ret.set(`${row.id}_${col.id}`, { isSelected: 0 });
+	                });
+	            });
+	            matrix.answers = {};
+	            ret.forEach((value, key, map) => {
+	                matrix.answers[key] = value;
+	            });
+	            answers.forEach(comId => {
+	                const t = matrix.answers[comId];
+	                //internally we use 1 for true.
+	                if (t)
+	                    t.isSelected = 1;
+	            });
+	        }
+	        switch (question._type) {
+	            case "single-choice":
+	            case "multiple-choice":
+	                handleRowsOnly();
+	                break;
+	            case "single-matrix":
+	                handleMatrix();
+	                break;
+	            default:
+	                throw new Error("cannot merge answer, unknown question type.");
+	        }
+	        question.stats = stats;
+	    }
+	    mergeAnswerData(answerData) {
+	        answerData.forEach(this._mergeAnswerData.bind(this));
+	        this.isWaitingForAnswer = false;
 	    }
 	    reset() {
+	        this.isWaitingForAnswer = false;
+	        if (this.toResolveNextQuestionData)
+	            this.toResolveNextQuestionData(null);
 	        this.callStack.reset();
 	        this.commands.reset();
 	    }
 	    run() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            yield this.state.run();
-	        });
+	        this.state.run();
 	    }
 	    debug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            yield this.state.debug();
-	        });
-	    }
-	    restartDebug() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            yield this.state.restartDebug();
-	        });
+	        this.state.debug();
 	    }
 	    stepOver() {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            yield this.state.stepOver();
-	        });
+	        this.state.stepOver();
+	    }
+	    restartRun() {
+	        return this.state.restartRun();
+	    }
+	    restartDebug() {
+	        return this.state.restartDebug();
+	    }
+	    submitAnswer(answerData) {
+	        return this.state.submitAnswer(answerData);
 	    }
 	    consoleEval(commandsStr) {
-	        return __awaiter(this, void 0, void 0, function* () {
-	            yield this.state.consoleEval(commandsStr);
-	        });
+	        this.state.consoleEval(commandsStr);
 	    }
 	    addBreakPoint(lineNumber) {
 	        this.breakPoints.add(lineNumber);
 	    }
 	    deleteBreakPoint(lineNumber) {
 	        this.breakPoints.delete(lineNumber);
+	    }
+	    resolvePreviousPromise(questionData) {
+	        this.toResolveNextQuestionData(questionData);
+	        this.toResolveNextQuestionData = null;
 	    }
 	}
 	exports.Interpreter = Interpreter;
@@ -765,6 +875,10 @@
 	        return ret;
 	    }
 	    putInSpace(key, value) {
+	        const ret = this.localVarSpace.get(key);
+	        //if this variable is not defined in the current scope, try its parent scope.
+	        if (ret === undefined && this.parent)
+	            return this.parent.putInSpace(key, value);
 	        this.localVarSpace.set(key, value);
 	    }
 	}
