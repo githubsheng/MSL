@@ -1,0 +1,75 @@
+#container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 700px;
+    min-width: 900px;
+}
+
+#editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 110px;
+    border: 1px solid lightgray;
+}
+
+#compile-message {
+    position: absolute;
+    height: 100px;
+    width: 100%;
+    bottom: 0;
+    background: lightseagreen;
+    overflow: auto;
+}
+
+#editor div.breakPoint {
+    background: #a8daef;
+}
+
+#left {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 40%;
+    bottom: 0;
+    background: lightcoral;
+}
+
+#right {
+    position: absolute;
+    top: 0;
+    left: 60%;
+    right: 0;
+    bottom: 0;
+    background: lightgoldenrodyellow;
+}
+
+#debugger-controller {
+    height: 40px;
+    width: 100%;
+    background: pink;
+    display: flex;
+    align-items: center;
+}
+
+#debugger-controller > button {
+    margin: 0 5px;
+}
+
+#preview-ui {
+    height: 560px;
+    width: 100%;
+    background: green;
+}
+
+#terminal {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    top: 600px;
+    background: lightblue;
+}

@@ -2,45 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>MSL IDE</title>
+    <link rel="stylesheet" href="../css/index.css"/>
     <script src="jquery/jquery.js"></script>
     <script src="../javascripts/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="../javascripts/interpreter/bundle.js"></script>
-    <script>
-        let editor;
-
-        function init(){
-            editor = ace.edit("editor");
-//            editor.setTheme("ace/theme/monokai");
-            editor.$blockScrolling = Infinity;
-        }
-
-        function send(){
-            const src = editor.getValue(); // or session.getValue
-            const dataSend = {data: src};
-
-            function sendFunc(data, returnAnswerCallback) {
-                // console.log(data);
-                returnAnswerCallback(null);
-            }
-
-            $.post("exec", dataSend, function(res){
-                //todo: handle error messages.
-                const interpreter = new Interpreter(res.commsStrs, res.strsConsts, sendFunc);
-                window.interpreter = interpreter;
-                interpreter.run();
-            });
-        }
-    </script>
-    <style type="text/css" media="screen">
-        #editor {
-            width: 800px;
-            height: 600px;
-        }
-    </style>
+    <script src="../javascripts/editor.js"></script>
 </head>
 <body onload="init()">
-    <div id="editor"></div>
-    <button onclick="send()">send</button>
+<div id="container">
+    <div id="left" style="float: left">
+        <div id="editor"></div>
+        <div id="compile-message"></div>
+    </div>
+    <div id="right" style="float: left">
+        <div id="debugger-controller">
+            <button>Run</button>
+            <button>Debug</button>
+            <button>Resume debugging</button>
+            <button>Step over</button>
+        </div>
+        <div id="preview-ui"></div>
+        <div id="terminal"></div>
+    </div>
+</div>
 </body>
 </html>
