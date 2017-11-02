@@ -160,7 +160,7 @@ class NormalStateStart extends AbstractInterpreterState {
      */
     submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
         if (!this.vm.isWaitingForAnswer) return;
-        answerData.forEach(this.vm.mergeAnswerData.bind(this.vm));
+        this.vm.mergeAnswerData(answerData);
         return this._run(questionData => Promise.resolve(questionData));
     }
 
@@ -212,7 +212,7 @@ class DebugStateStart extends AbstractInterpreterState {
      */
     submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
         if (!this.vm.isWaitingForAnswer) return;
-        answerData.forEach(this.vm.mergeAnswerData.bind(this.vm));
+        this.vm.mergeAnswerData(answerData);
         return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
     }
 
@@ -290,7 +290,7 @@ class DebugStateStopped extends AbstractInterpreterState {
             } else {
                 //we cannot set a break point here, do not stop.
                 vm.commands.advanceIndex();
-                const ret = vm.execute(comm);
+                const ret = vm.execute(comm);``
                 if (ret) return sendQuestionCommListener(ret);
             }
         }
@@ -334,7 +334,7 @@ class DebugStateStopped extends AbstractInterpreterState {
      */
     submitAnswer(answerData: Array<AnswerData>) {
         if (!this.vm.isWaitingForAnswer) return;
-        answerData.forEach(this.vm.mergeAnswerData.bind(this.vm));
+        this.vm.mergeAnswerData(answerData);
         return this._stopAtNextStoppableLine(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
     }
 
@@ -772,7 +772,7 @@ export class Interpreter {
 
     }
 
-    public mergeAnswerData(answerData: AnswerData) {
+    private _mergeAnswerData(answerData: AnswerData) {
         const {questionId, answers, stats} = answerData;
         const question = <Question>this.getFromGlobalVarSpace(questionId);
 
@@ -842,6 +842,11 @@ export class Interpreter {
                 throw new Error("cannot merge answer, unknown question type.")
         }
         question.stats = stats;
+    }
+
+    public mergeAnswerData(answerData: Array<AnswerData>) {
+        answerData.forEach(this._mergeAnswerData.bind(this));
+        this.isWaitingForAnswer = false;
     }
 
     reset(): void {
