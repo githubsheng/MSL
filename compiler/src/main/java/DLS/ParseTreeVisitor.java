@@ -4,6 +4,7 @@ import DLS.ASTNodes.*;
 import DLS.ASTNodes.enums.attributes.PageGroupAttribute;
 import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
 import DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames;
+import DLS.ASTNodes.enums.obj.props.QuestionProps;
 import DLS.ASTNodes.statement.FuncDefNode;
 import DLS.ASTNodes.enums.attributes.*;
 import DLS.ASTNodes.enums.methods.*;
@@ -301,15 +302,15 @@ class ParseTreeVisitor {
     }
 
     private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleChoiceQuestionContext sc) {
-        return new ObjectLiteralNode.Field("_type", new StringNode("single-choice"));
+        return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.SINGLE_CHOICE.getName()));
     }
 
     private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.MultipleChoiceQuestionContext mc) {
-        return new ObjectLiteralNode.Field("_type", new StringNode("multiple-choice"));
+        return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.MULTIPLE_CHOICE.getName()));
     }
 
     private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleMatrixQuestionContext smc) {
-        return new ObjectLiteralNode.Field("_type", new StringNode("single-matrix"));
+        return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.SINGLE_MATRIX.getName()));
     }
 
     private ObjectLiteralNode.Field getRowTypeField() {
