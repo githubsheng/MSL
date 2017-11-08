@@ -1,49 +1,14 @@
-import {actionTypeSubmitAnswer} from "../actions/AnswerActions";
-import {pageDataAction, actionTypePageData} from "../actions/PageActions";
+import {actionTypePageData} from "../actions/PageActions";
+import {answersReducer, isLockedReducer, submitAnswersReducer} from "./AnswerReducer";
+import {questionsReducer} from "./QuestionReducer";
 
-function sendAnswerToInterpreter() {
-    return new Promise(function (resolve, reject) {
-        setTimeout(function () {
-            resolve([
-                {
-                    "id": "q1",
-                    "_type": "single-choice",
-                    "text": "q1 text",
-                    "rows": {
-                        "_generatedIdentifierName2": {
-                            "text": " aa"
-                        },
-                        "_generatedIdentifierName3": {
-                            "text": " bb"
-                        },
-                        "_type": "row"
-                    }
-                },
-                {
-                    "id": "q2",
-                    "_type": "single-choice",
-                    "text": "q2 text",
-                    "rows": {
-                        "_generatedIdentifierName2": {
-                            "text": " aa"
-                        },
-                        "_generatedIdentifierName3": {
-                            "text": " bb"
-                        },
-                        "_type": "row"
-                    }
-                }
-            ])
-        }, 100);
-    });
-}
-
+//todo: this is fake
 const defaultState = {
     //todo: add description here.
-    isLock: false,
+    isLocked: false,
     questions: [{
         "id": "q0",
-        "_type": "single-choice",
+        "type": "single-choice",
         "text": "q0 text",
         "rows": {
             "_generatedIdentifierName2": {
@@ -54,39 +19,45 @@ const defaultState = {
             },
             "_type": "row"
         }
-    }]
+    }],
+    answers: [
+        {
+            questionId: 'q0',
+            selections: ['_generatedIdentifierName2'],
+            textInputs: [],
+            status: {
+                answerTimeInSeconds: 3,
+                answeredWhen: Date.now(),
+                totalClicks: 3,
+                geoLocation: "tokyo..."
+            }
+        }
+    ]
 };
 
-const mainReducer = (state = defaultState, action) => {
-    //todo: add description here.
-    if(action.type !== actionTypePageData && state.isLock) return state;
-
-    if (action.type === actionTypeSubmitAnswer) {
-        //todo: replace this dummy answers
-        const answers = state.questions.map(question => {
-            return {
-                questionId: question.id,
-                answers: [],
-                stats: {}
-            }
-        });
-        const questionsPromise = sendAnswerToInterpreter(answers);
-        questionsPromise.then(function (questions) {
-            action.asyncDispatch(pageDataAction(questions));
-        });
+//todo: this is fake.
+function createFakeAnswers(state){
+    return state.questions.map(question => {
         return {
-            isLock: true,
-            questions: state.questions
-        };
-    }
-    if (action.type === actionTypePageData) {
-        return {
-            isLock: false,
-            questions: action.questions
+            questionId: question.id,
+            selections: []
         }
-    }
-    console.log("unrecognized action type...");
-    return state;
+    });
+}
+
+const mainReducer = (state = defaultState, action) => {
+    /*
+        senario: user clicks submit, UI send the answer data to vm, vm hit a break point, it returns a question data promise
+        in this case, the entire process will pause until the promise resolves, then we render the next question/page.
+        before the promise resolves, user may again click on the submit button, in this case, we don't want the answer data
+        to be sent again.
+     */
+    if(action.type !== actionTypePageData && state.isLocked) return state;
+    const questions = questionsReducer(state, action);
+    const answers = answersReducer(state, action);
+    const isLocked = isLockedReducer(state, action);
+    submitAnswersReducer(state, action);
+    return {questions, answers, isLocked};
 };
 
 export default mainReducer;
