@@ -290,7 +290,7 @@ class DebugStateStopped extends AbstractInterpreterState {
             } else {
                 //we cannot set a break point here, do not stop.
                 vm.commands.advanceIndex();
-                const ret = vm.execute(comm);``
+                const ret = vm.execute(comm);
                 if (ret) return sendQuestionCommListener(ret);
             }
         }
