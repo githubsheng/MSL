@@ -5,7 +5,8 @@ export interface Question {
     _type: string;
     text: string;
     stats: any;
-    answers: any;
+    selections: any;
+    textInputs: any;
 }
 
 interface Option {
@@ -30,6 +31,7 @@ export interface Matrix extends RowsOnly {
 
 export interface AnswerData {
     questionId: string;
-    answers: Array<string>;
+    selections: Array<string>;
+    textInputs: Array<string>;
     stats: any;
 }

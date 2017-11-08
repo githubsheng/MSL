@@ -773,7 +773,7 @@ export class Interpreter {
     }
 
     private _mergeAnswerData(answerData: AnswerData) {
-        const {questionId, answers, stats} = answerData;
+        const {questionId, selections, stats} = answerData;
         const question = <Question>this.getFromGlobalVarSpace(questionId);
 
         function handleRowsOnly(){
@@ -784,14 +784,14 @@ export class Interpreter {
                 .filter(key => !key.startsWith("_"))
                 .map(key => <Row>(rowsOnly.rows[key]));
 
-            question.answers = {};
+            question.selections = {};
             rows.forEach(row => {
                 //internally we use 0 for false
-                question.answers[row.id] = {isSelected: 0};
+                question.selections[row.id] = {isSelected: 0};
             });
 
-            answers.forEach(rowId => {
-                const t = question.answers[rowId];
+            selections.forEach(rowId => {
+                const t = question.selections[rowId];
                 //internally we use 1 for true
                 if(t) t.isSelected = 1;
             });
@@ -818,13 +818,13 @@ export class Interpreter {
                 });
             });
 
-            matrix.answers = {};
+            matrix.selections = {};
             ret.forEach((value, key, map) => {
-                matrix.answers[key] = value;
+                matrix.selections[key] = value;
             });
 
-            answers.forEach(comId => {
-                const t = matrix.answers[comId];
+            selections.forEach(comId => {
+                const t = matrix.selections[comId];
                 //internally we use 1 for true.
                 if(t) t.isSelected = 1;
             });
@@ -841,6 +841,7 @@ export class Interpreter {
             default:
                 throw new Error("cannot merge answer, unknown question type.")
         }
+        
         question.stats = stats;
     }
 
