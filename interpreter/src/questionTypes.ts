@@ -29,9 +29,14 @@ export interface Matrix extends RowsOnly {
     cols: any;
 }
 
+export interface TextInputValue {
+    inputId: string;
+    value: string;
+}
+
 export interface AnswerData {
     questionId: string;
     selections: Array<string>;
-    textInputs: Array<string>;
+    textInputs: Array<TextInputValue>;
     stats: any;
 }

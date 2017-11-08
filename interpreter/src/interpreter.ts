@@ -841,7 +841,7 @@ export class Interpreter {
             default:
                 throw new Error("cannot merge answer, unknown question type.")
         }
-        
+
         question.stats = stats;
     }
 
