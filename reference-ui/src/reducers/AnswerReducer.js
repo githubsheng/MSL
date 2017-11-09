@@ -1,67 +1,46 @@
 import {actionTypePageData, pageDataAction} from "../actions/PageActions";
-import {actionTypeSubmitAnswer, actionTypeSelectRow, actionTypeSelectCol, actionTypeTextInput} from "../actions/AnswerActions";
-import * as _ from "lodash";
+import {actionTypeSubmitAnswer} from "../actions/AnswerActions";
 
 export function answersReducer(state, action){
-    const question = _.find(state.questions, q => q.id === action.questionId);
-    switch (action.type) {
-        case actionTypeSelectRow:
-            return selectRowReducer(question, state.answers, action);
-        case actionTypeSelectCol:
-            return selectColReducer(question, state.answers, action);
-        case actionTypeTextInput:
-            throw new Error("text input not supported yet");
-        default:
-            return state.answers;
-    }
+
 }
 
-function selectRowReducer(question, answers, action) {
-    const answerData = _.find(answers, ans => ans.questionId === action.questionId);
-    let selections;
-    switch(question.type) {
-        case "single-choice":
-            selections = [action.rowId];
-            break;
-        case "multiple-choice":
-            selections = answerData.selections.concat([action.rowId]);
-            break;
-        default:
-            throw new Error("unsupported question type");
-    }
-    const newAnswerData = Object.assign({}, answerData, {selections});
-    return answers.filter(ad => ad.questionId !== action.questionId)
-        .concat([newAnswerData]);
+function selectReducer(state, action) {
+
 }
 
-function selectColReducer(question, answers, action) {
-    const answerData = _.find(answers, ans => ans.questionId === action.questionId);
-    const comId = `${action.rowId}_${action.colId}`;
-    let selections;
-    switch(question.type) {
-        case "single-matrix":
-            selections = [comId];
-            break;
-        case "multiple-matrix":
-            selections = answerData.selections.concat([comId]);
-            break;
-        default:
-            throw new Error("unsupported question type");
-    }
-    const newAnswerData = Object.assign({}, answerData, {selections});
-    return answers.filter(ad => ad.questionId !== action.questionId)
-        .concat([newAnswerData]);
+function deselectReducer(state, action) {
+
 }
 
-//todo: this is to be used in answersReducer...
-export function statsReducer(state, action) {
-    return state.stats;
+function answeredWhenReducer(state, action) {
+
+}
+
+function totalClickReducer(state, action) {
+
+}
+
+function geoLocationReducer(state, action) {
+
+}
+
+function answerTimeInSecondsReducer(state, action) {
+
+}
+
+function delayedStatsReducer(state, action) {
+
 }
 
 export function submitAnswersReducer(state, action) {
     if (action.type === actionTypeSubmitAnswer) {
         //todo: replace this dummy answers
-        const questionsPromise = sendAnswerToInterpreter(state.answers);
+        const answeredWhen = answeredWhenReducer(state);
+        const geoLocation = geoLocationReducer(state);
+        const answerTimeInSeconds = answerTimeInSecondsReducer(state);
+        const questionsWithAnswers = delayedStatsReducer(state, answeredWhen, geoLocation, answerTimeInSeconds);
+        const questionsPromise = sendAnswerToInterpreter(questionsWithAnswers);
         questionsPromise.then(function (questions) {
             action.asyncDispatch(pageDataAction(questions));
         });
@@ -83,7 +62,7 @@ function sendAnswerToInterpreter() {
             resolve([
                 {
                     "id": "q1",
-                    "_type": "single-choice",
+                    "type": "single-choice",
                     "text": "q1 text",
                     "rows": {
                         "_generatedIdentifierName2": {
@@ -97,7 +76,7 @@ function sendAnswerToInterpreter() {
                 },
                 {
                     "id": "q2",
-                    "_type": "single-choice",
+                    "type": "single-choice",
                     "text": "q2 text",
                     "rows": {
                         "_generatedIdentifierName2": {
