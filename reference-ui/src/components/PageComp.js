@@ -1,10 +1,11 @@
 import {PureComponent} from "react/lib/ReactBaseClasses";
-import {Question} from "./QuestionComp";
 import React from 'react';
+import Question from './QuestionComp';
 
 class Page extends PureComponent {
     render() {
         const {
+            pageInfo,
             questions,
             submitAnswersHandler
         } = this.props;

@@ -1,33 +1,51 @@
+import {actionTypePageData} from "../actions/PageActions";
+
+export function augmentQuestions(questions, action) {
+    if(action.type === actionTypePageData) {
+        return questions.map(augmentQuestion);
+    }
+    return questions;
+}
+
 //this reducer augment a vm passed in question. see reference/questionData for more information.
-export function questionsReducer(question, action){
-    //todo: for each question, do this...
+function augmentQuestion(question){
     question = augmentWithStatsFields(question);
     question = augmentRows(question);
     question = directAccessToRows(question);
     return question;
 }
 
+function augmentWithStatsFields(question) {
+    const statsFields = {
+        displayedWhen: Date.now(),
+        answeredWhen: null,
+        duration: 0,
+        totalClicks: 0,
+        geoLocation: null
+    };
+    return Object.assign({}, question, statsFields);
+}
+
 function augmentRows(question) {
-    //todo: if question is none matrix questions, add selected: false to each row
     switch (question.type) {
         case "single-choice":
         case "multiple-choice":
-            return augmentNoneMatrixQuestions();
+            return augmentNoneMatrixQuestions(question);
         case "single-matrix":
         case "multiple-matrix":
-            return augmentMatrixQuestions();
+            return augmentMatrixQuestions(question);
     }
 
-    function augmentNoneMatrixQuestions(){
+    function augmentNoneMatrixQuestions(question){
         const newRows = {};
         Object.entries(question.rows).map(kv => {
             const [rowId, row] = kv;
-            newRows[rowId] = Object.assign({}, row, {selected});
+            newRows[rowId] = Object.assign({}, row, {selected: false});
         });
         return Object.assign({}, question, {rows: newRows});
     }
 
-    function augmentMatrixQuestions(){
+    function augmentMatrixQuestions(question){
         const rowKVs = Object.entries(question.rows);
         const colKVs = Object.entries(question.cols);
 
@@ -53,13 +71,4 @@ function directAccessToRows(question) {
     return Object.assign({}, question, question.rows);
 }
 
-function augmentWithStatsFields(question) {
-    const statsFields = {
-        displayedWhen: Date.now(),
-        answeredWhen: null,
-        time: null,
-        totalClicks: 0,
-        geoLocation: null
-    };
-    return Object.assign({}, question, statsFields);
-}
+

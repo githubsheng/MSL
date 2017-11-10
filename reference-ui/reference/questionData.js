@@ -1,7 +1,3 @@
-/**
- * Created by sheng.wang on 2017/11/09.
- */
-
 //this is the data we would receive from vm
 const questions = [{
     id: "q0",
@@ -111,7 +107,7 @@ const augmentedQuestions = [{
     //set when user submit answer
     answeredWhen: null,
     //calculated when user submit answer
-    time: null,
+    duration: null,
     totalClicks: 0,
     //set when user submit answer...
     geoLocation: null,
@@ -160,7 +156,7 @@ const augmentedQuestions = [{
     },
     displayedWhen: Date.now(),
     answeredWhen: null,
-    time: null,
+    duration: null,
     totalClicks: 0,
     geoLocation: null
     //rows direct references omitted..see single choice for example..

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../node_modules/ramda/dist/ramda.js"></script>
+</head>
+<body>
+    <script>
+        const q = {
+            id: "q0",
+            type: "single-choice",
+            text: "q0 text",
+            rows: {
+                rowId1: {
+                    text: " row1",
+                    selected: false
+                },
+                rowId2: {
+                    text: " row2",
+                    selected: false
+                }
+            },
+            cols: {
+                colId1: {
+                    text: " col1",
+                    selected: false
+                },
+                colId2: {
+                    text: " col2",
+                    selected: false
+                }
+            }
+        };
+
+        const change = {
+            text: "change text",
+            rows: {
+                rowId2: {
+                    selected: true
+                }
+            }
+        };
+
+        const questions = [{}, {}, q, {}];
+        const arrayChange = {2: change};
+
+
+        const ret = R.mergeDeepRight(questions, arrayChange);
+        console.log(ret);
+    </script>
+</body>
+</html>
