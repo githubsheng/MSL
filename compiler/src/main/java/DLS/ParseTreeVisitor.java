@@ -22,6 +22,7 @@ import DLS.ASTNodes.statement.expression.relational.LessThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.LessThanNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanEqualsNode;
 import DLS.ASTNodes.statement.expression.relational.MoreThanNode;
+import DLS.Util.Util;
 import DLS.generated.DLSParser;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -41,6 +42,8 @@ class ParseTreeVisitor {
 
     //I don't like making it stateful but this requires least code changes so guess will just have to live with it for now.
     private boolean needsTokenAssociation = false;
+
+    private Util util = new Util();
 
     ParseTreeVisitor() {
         super();
@@ -196,7 +199,7 @@ class ParseTreeVisitor {
 
     private List<StatementNode> getAttributeStatements(DLSParser.AttributeWithAssignedStringValueContext ac) {
         IdentifierNode identifier = convertAttributeNameToIdentifier(ac.Name().getText());
-        String strVal = removeDoubleQuotes(ac.String().getText());
+        String strVal = util.removeDoubleQuotes(ac.String().getText());
         DefNode def = new DefNode(identifier, new StringNode(strVal));
         return Collections.singletonList(def);
     }
@@ -313,28 +316,42 @@ class ParseTreeVisitor {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.SINGLE_MATRIX.getName()));
     }
 
-    private ObjectLiteralNode.Field getRowTypeField() {
-        return new ObjectLiteralNode.Field("_type", new StringNode("row"));
-    }
-
-    private ObjectLiteralNode.Field getColTypeField() {
-        return new ObjectLiteralNode.Field("_type", new StringNode("col"));
-    }
-
-    private StatementNode getCommonQuestionStatements(DLSParser.AttributesContext attribs, DLSParser.TextAreaContext textArea, ObjectLiteralNode.Field questionType,
-                                                      List<DLSParser.RowContext> rowCtxes, List<DLSParser.ColContext> colCtxes) {
+    private StatementNode getCommonQuestionStatements(DLSParser.AttributesContext attribs, DLSParser.TextAreaContext textArea,
+                                                      ObjectLiteralNode.Field questionType, List<DLSParser.RowContext> rowCtxes,
+                                                      List<DLSParser.ColContext> colCtxes) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(attribs, questionImplicitValues);
 
         fields.add(questionType);
         fields.add(getTextField(textArea));
 
+        /*
+            here we are creating an object whose property keys are row ids, and whose property values are rows, for instance:
+            {
+                rowId1: {text: "red", ....},
+                rowId2: {text: "blue", ....}
+            }
+         */
         ObjectLiteralNode rows = getQuestionRowsField(rowCtxes);
-        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field("rows", rows);
+        /*
+            here we are adding the above object to be a property of the question, the property name is "rows"
+            {
+                //question object
+                text: "....",
+                rows: {
+                    //object shown above
+                    ....
+                }
+            }
+
+            when a question gets answered, some significant changes usually happen to the question object..
+            see comments in reference-ui/reference/questionData for more details.
+         */
+        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field(QuestionProps.ROWS.getName(), rows);
         fields.add(rowsField);
 
         if(colCtxes != null && !colCtxes.isEmpty()) {
             ObjectLiteralNode cols = getQuestionColumnsField(colCtxes);
-            ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field("cols", cols);
+            ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field(QuestionProps.COLS.getName(), cols);
             fields.add(colsField);
         }
 
@@ -350,9 +367,6 @@ class ParseTreeVisitor {
             String referenceName = getIdStrVal(rc.attributes()).orElse(generateRandomIdentifierName());
             return new ObjectLiteralNode.Field(referenceName, rowLiteral);
         }).collect(Collectors.toList());
-
-        rowLiteralsAsFields.add(getRowTypeField());
-
         return new ObjectLiteralNode(rowLiteralsAsFields);
     }
 
@@ -362,9 +376,6 @@ class ParseTreeVisitor {
             String referenceName = getIdStrVal(cc.attributes()).orElse(generateRandomIdentifierName());
             return new ObjectLiteralNode.Field(referenceName, colLiteral);
         }).collect(Collectors.toList());
-
-        colLiteralsAsFields.add(getColTypeField());
-
         return new ObjectLiteralNode(colLiteralsAsFields);
 
     }
@@ -498,7 +509,6 @@ class ParseTreeVisitor {
 
     private ExpressionNode visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
-        fields.add(getColTypeField());
         fields.add(getTextField(ctx.colLiteral().scriptTextArea()));
         return new ObjectLiteralNode(fields);
     }
@@ -506,7 +516,6 @@ class ParseTreeVisitor {
 
     private ExpressionNode visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
-        fields.add(getRowTypeField());
         fields.add(getTextField(ctx.rowLiteral().scriptTextArea()));
         return new ObjectLiteralNode(fields);
     }
@@ -516,7 +525,7 @@ class ParseTreeVisitor {
             if (attrb instanceof DLSParser.AttributeWithAssignedStringValueContext) {
                 DLSParser.AttributeWithAssignedStringValueContext c = (DLSParser.AttributeWithAssignedStringValueContext) attrb;
                 String fieldName = c.Name().getText();
-                String val = removeDoubleQuotes(c.String().getText());
+                String val = util.removeDoubleQuotes(c.String().getText());
                 return new ObjectLiteralNode.Field(fieldName, new StringNode(val));
             } else if (attrb instanceof DLSParser.AttributeWithAssignedExpressionContext) {
                 DLSParser.AttributeWithAssignedExpressionContext c = (DLSParser.AttributeWithAssignedExpressionContext) attrb;
@@ -578,7 +587,7 @@ class ParseTreeVisitor {
             return new BooleanNode(Boolean.valueOf(isTrue));
         } else if (lctx instanceof DLSParser.StringLiteralContext) {
             String str = lctx.getText();
-            return new StringNode(removeDoubleQuotes(str));
+            return new StringNode(util.removeDoubleQuotes(str));
         } else if (lctx instanceof DLSParser.HoursLiteralContext) {
             DLSParser.HoursLiteralContext hcx = (DLSParser.HoursLiteralContext)lctx;
             int hours = hcx.Hours() != null ? removeLastCharacter(hcx.Hours().getText()) : 0;
@@ -761,6 +770,7 @@ class ParseTreeVisitor {
         }
     }
 
+
     private List<StatementNode> createListOfStatementNodes(DLSParser.StatementsContext ctx) {
         return ctx.statement()
                 .stream()
@@ -926,14 +936,6 @@ class ParseTreeVisitor {
         return Integer.valueOf(str.substring(0, str.length() - 1));
     }
 
-    private String removeDoubleQuotes(String str) {
-        if (str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"') {
-            return str.substring(1, str.length() - 1);
-        } else {
-            return str;
-        }
-    }
-
     private Optional<String> getIdStrVal(DLSParser.AttributesContext ctx) {
         return ctx.attribute()
                 .stream()
@@ -941,7 +943,7 @@ class ParseTreeVisitor {
                 .map(DLSParser.AttributeWithAssignedStringValueContext.class::cast)
                 .filter(strValAttr -> strValAttr.Name().getText().equals(PageAttributes.ID.getName()))
                 .map(strValAttr -> strValAttr.String().getText())
-                .map(this::removeDoubleQuotes)
+                .map(util::removeDoubleQuotes)
                 .findFirst();
     }
 

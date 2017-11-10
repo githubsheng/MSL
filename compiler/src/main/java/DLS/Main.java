@@ -6,8 +6,10 @@ import DLS.CommandGenerator.Generator;
 import DLS.CommandGenerator.Result;
 import DLS.generated.DLSLexer;
 import DLS.generated.DLSParser;
+import DLS.validation.PropertyValidator;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.*;
 import java.util.List;
@@ -42,8 +44,16 @@ public class Main {
 
         DLSParser.FileContext fileContext = parser.file(); // begin parsing at init rule
 
+        //check whether properties are correct..
+        ParseTreeWalker walker = new ParseTreeWalker();
+        PropertyValidator propertyValidator = new PropertyValidator();
+        walker.walk(propertyValidator, fileContext);
+
+        //generate abstract syntax tree...
         ParseTreeVisitor ptv = new ParseTreeVisitor();
         List<StatementNode> statements = ptv.visitFile(fileContext);
+
+        //generate commands...
         Generator cmdGen = new Generator();
         Result ret = cmdGen.getCommands(statements);
 

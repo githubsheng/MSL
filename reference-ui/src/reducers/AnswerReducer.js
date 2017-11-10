@@ -70,8 +70,7 @@ function sendAnswerToInterpreter() {
                         },
                         "_generatedIdentifierName3": {
                             "text": " bb"
-                        },
-                        "_type": "row"
+                        }
                     }
                 },
                 {
@@ -84,8 +83,7 @@ function sendAnswerToInterpreter() {
                         },
                         "_generatedIdentifierName3": {
                             "text": " bb"
-                        },
-                        "_type": "row"
+                        }
                     }
                 }
             ])

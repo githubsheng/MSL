@@ -2,7 +2,7 @@ package DLS.ASTNodes.enums.attributes;
 
 public enum QuestionAttributes {
 
-    ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate"), REQUIRED("true");
+    ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate"), REQUIRED("required");
 
     private String name;
     QuestionAttributes(String name) {
