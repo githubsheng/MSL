@@ -1,4 +1,4 @@
-import {submitAnswersAction} from "../actions/AnswerActions";
+import {submitAnswersAction, setSelectAction} from "../actions/AnswerActions";
 import Page from "../components/PageComp";
 import connect from "react-redux/es/connect/connect";
 
@@ -12,13 +12,17 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
 
     //todo: handlers for selecting rows / cols
+    function setSelect(questionId, rowId, colId, val) {
+        dispatch(setSelectAction(questionId, rowId, colId, val));
+    }
 
     function submitAnswersHandler() {
         dispatch(submitAnswersAction())
     }
 
     return {
-        submitAnswersHandler
+        submitAnswersHandler,
+        setSelect
     }
 }
 

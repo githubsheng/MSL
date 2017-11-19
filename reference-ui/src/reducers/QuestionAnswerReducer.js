@@ -1,21 +1,24 @@
-import {actionTypePageData, pageDataAction} from "../actions/PageActions";
-import {actionTypeDeselect, actionTypeSelect, actionTypeSubmitAnswer} from "../actions/AnswerActions";
+import {pageDataAction} from "../actions/PageActions";
+import {actionTypeSetSelect, actionTypeSubmitAnswer} from "../actions/AnswerActions";
 import * as R from "ramda";
 
-function setSelected(state, action, val) {
+export function setSelect(state, action) {
+    if(action.type !== actionTypeSetSelect) return state.questions;
     const questions = state.questions;
-    const {rowId, colId, questionId} = action;
+    const {rowId, colId, questionId, val} = action;
     const questionIndex = getQuestionIndexById(questions, questionId);
     const question = questions.get(questionIndex);
     const questionChanges = {
         rows: {}
     };
 
-    if (colId === undefined) {
-        questionChanges.rows[rowId] = {select: val};
+    if (colId === undefined || colId === null) {
+        //todo: for single choices, we need to first set selected in other rows to be false.
+        questionChanges.rows[rowId] = {selected: val};
     } else {
         questionChanges.rows[rowId] = {};
-        questionChanges.rows[rowId][colId] = {select: val};
+        //todo: for single matrix, we need to first set selected in other cols under this row to be false.
+        questionChanges.rows[rowId][colId] = {selected: val};
     }
 
     const c1 = questionTimeRecordChanges(state.lastInteractionTime);
@@ -88,14 +91,6 @@ function questionTotalClickChanges(currentClicks) {
     return {
         totalClicks: ++currentClicks
     }
-}
-
-export function select(questions, action) {
-    return action.type === actionTypeSelect ? setSelected(questions, action, true) : questions;
-}
-
-export function deselect(questions, action) {
-    return action.type === actionTypeDeselect ? setSelected(questions, action, false) : questions;
 }
 
 function getQuestionsById(questions, id) {

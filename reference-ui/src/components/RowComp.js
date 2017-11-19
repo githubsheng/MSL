@@ -5,17 +5,17 @@
 import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 
-class Row extends PureComponent {
+export class Row extends PureComponent {
 
     render(){
-        const {row} = this.props;
-        console.log(row);
+        const {row, type, question, setSelect} = this.props;
         return (
-            <div>{row.text}</div>
+            <div className="row">
+                <input type={type} checked={row.selected}
+                       onClick={evt => setSelect(question.id, row.id, null, !row.selected)}/>
+                <span className="text">{row.text}</span>
+            </div>
         )
-
     }
 
 }
-
-export default Row;

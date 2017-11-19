@@ -4,8 +4,7 @@
 
 const prefix = "answer_";
 export const actionTypeSubmitAnswer = `${prefix}submitAnswers`;
-export const actionTypeSelect = `${prefix}select`;
-export const actionTypeDeselect = `${prefix}deselect`;
+export const actionTypeSetSelect = `${prefix}setSelect`;
 
 export function submitAnswersAction(){
     return {
@@ -13,20 +12,12 @@ export function submitAnswersAction(){
     }
 }
 
-export function select(questionId, rowId, colId){
+export function setSelectAction(questionId, rowId, colId, val){
     return {
-        type: actionTypeSelect,
+        type: actionTypeSetSelect,
         questionId,
         rowId,
-        colId
-    }
-}
-
-export function deselect(questionId, rowId, colId) {
-    return {
-        type: actionTypeDeselect,
-        questionId,
-        rowId,
-        colId
+        colId,
+        val
     }
 }
