@@ -1,0 +1,217 @@
+import {actionTypePageData, pageDataAction} from "../actions/PageActions";
+import {actionTypeDeselect, actionTypeSelect, actionTypeSubmitAnswer} from "../actions/AnswerActions";
+import * as R from "ramda";
+
+function setSelected(state, action, val) {
+    const questions = state.questions;
+    const {rowId, colId, questionId} = action;
+    const questionIndex = getQuestionIndexById(questions, questionId);
+    const question = questions.get(questionIndex);
+    const questionChanges = {
+        rows: {}
+    };
+
+    if (colId === undefined) {
+        questionChanges.rows[rowId] = {select: val};
+    } else {
+        questionChanges.rows[rowId] = {};
+        questionChanges.rows[rowId][colId] = {select: val};
+    }
+
+    const c1 = questionTimeRecordChanges(state.lastInteractionTime);
+    const c2 = questionTotalClickChanges(question.totalClicks);
+    Object.assign(questionChanges, c1, c2);
+
+    const newQuestion = R.mergeDeepRight(question, questionChanges);
+
+    return questions.set(questionIndex, newQuestion);
+}
+
+/*
+ the answeredWhen will be the last time user select/deselect any options, rather than the time user hit submit button
+ for instance, when a page displays 2 single choice
+ when user selects row 1 in question 1 -> time user answered question 1
+ when user selects row 3 in question 2 -> time user answered question 2
+ when user goes back to change question 1's answer to row 2 -> (new) time user answered question 1.
+
+ how to calculate the time it takes to answer (duration) each question?
+
+ for every question
+
+ //initially
+ question.duration = 0
+
+ //when user selects/deselects an option (interact with the question), we update its answeredWhen
+ //the last question user interacted with, we called it lastQuestion
+ question.duration = question.duration + (question.answeredWhen - lastQuestion.answeredWhen)
+
+ //if question is the first question user interacts with, ie, there is lastQuestion, then
+ question.duration = question.duration + (question.answeredWhen - pageDisplayedWhen)
+
+ the above equations can be summarized to be:
+ user interacts with questionX
+ questionX.answeredWhen = now
+ questionX.duration = questionX.duration + (questionX.answeredWhen - lastInteractionTime)
+ lastInteractionTime = questionX.answeredWhen
+
+ we record lastInteractionTime in the root state.
+
+ using the one page two single choices questions example above:
+ page displayed -> time 1 (we assuming user starts to see question 1)
+ user selects row 1 in question 1 -> time 2 (question1.answeredWhen = time 2)
+
+ //so user starts to look at question 1 at time 1, and made a choice at time 2. duration is time 2 - time 1
+ question1.duration = 0 + (time 2 - time 1)
+
+ user selects row 3 in question 2 -> time 3 (question2.answeredWhen = time 3)
+
+ //we assumes user finishes question 1 at time 2, and then starts to do question 2, so duration of question 2 is time 3 - time 2
+ question2.duration = 0 + (time 3 - time 2)
+
+ user goes back to selects row 2 in question 1 -> time 4
+ question1.answeredWhen = time 4
+
+ //the total duration of question 1 should be (time it takes to select row 1) + (time it takes to change mind and select row 2)
+ //we assumes, after answering the last question (last question user interacted with, question2 in this case), user starts to review question 1
+ //so the time it takes to review question 1 is time 4 - time 3
+ question1.duration = question1.duration + (time 4 - time 3)
+ */
+function questionTimeRecordChanges(lastInteractionTime) {
+    const now = new Date();
+    return {
+        answeredWhen: now,
+        duration: (now.getTime() - lastInteractionTime.getTime()) / 1000
+    };
+}
+
+function questionTotalClickChanges(currentClicks) {
+    return {
+        totalClicks: ++currentClicks
+    }
+}
+
+export function select(questions, action) {
+    return action.type === actionTypeSelect ? setSelected(questions, action, true) : questions;
+}
+
+export function deselect(questions, action) {
+    return action.type === actionTypeDeselect ? setSelected(questions, action, false) : questions;
+}
+
+function getQuestionsById(questions, id) {
+    return questions.find(q => q.id === id);
+}
+
+function getQuestionIndexById(questions, id) {
+    return questions.findIndex(q => q.id === id);
+}
+
+export function submitAnswersReducer(state, action) {
+    if (action.type === actionTypeSubmitAnswer) {
+        const questionsPromise = sendAnswerToInterpreter(state.questions.toArray());
+        questionsPromise.then(function (response) {
+            action.asyncDispatch(pageDataAction(response));
+        });
+    }
+}
+
+
+//todo: connect to vm and get back the real questions data
+function sendAnswerToInterpreter() {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            /*
+             right now the vm will send all the questions on the next page in an array. the result
+             is something like this:
+
+             [question1Data, question2Data.....]
+
+             this is slightly problematic as the page information and page group information
+             is lost
+
+             in the early design, page and page group are converted to functions. for instance,
+             when we see a page, we actually calls the page function, and the page function will
+             gives us an array of question objects. the page only has `randomize` and `rotate`
+             attributes.
+
+             when running the page function, we evaluate the `randomize` and `rotate` attribute
+             and based on the result, we return questions in different order. so, all attributes
+             (only two in the early design) take effect before vm returns the data, and ui do not
+             need to concern about it. so, nothing about the page needed to be passed to ui according
+             to the early design.
+
+             but in the late design, we introduced plugins. and we want to allow plugins to work
+             with pages. for instance, i can have a background image plugin, that changes the background
+             image of a page.
+
+             it may look like this:
+             use "background-image"
+
+             [Page background={bgUrl}]
+             [SingleChoice].....
+             [SingleChoice].....
+             [Submit]
+             [PageEnd]
+
+             so in this case, the vm needs to pass the evaluated background url to ui. ui can then loads the
+             the background image.
+
+             obviously, with [question1Data, question2Data.....] as the result passed from vm to ui, there is
+             no place the page information.
+
+             to keep the page and page group as functions (we don't want to change that...too much effort...),
+             we will create a special object called pageInfo (pageGroupInfo will be introduced later), this object carries all page information that needs to be passed
+             to ui.
+
+             this is what vm will pass to ui when we introduce pageInfo
+             {
+             pageInfo: {
+             //randomize and rotate, as discussed above, won't be passed...
+             attrib1: "evaluated result"
+             attrib2: "evaluated result"
+             },
+             questions: [
+             question1Data,
+             question2Data....
+             ]
+             }
+             */
+
+            const questions = [
+                {
+                    "id": "q1",
+                    "type": "single-choice",
+                    "text": "q1 text" + Date.now(),
+                    "rows": {
+                        "_generatedIdentifierName2": {
+                            "text": " aa"
+                        },
+                        "_generatedIdentifierName3": {
+                            "text": " bb"
+                        }
+                    }
+                },
+                {
+                    "id": "q2",
+                    "type": "single-choice",
+                    "text": "q2 text",
+                    "rows": {
+                        "_generatedIdentifierName2": {
+                            "text": " aa"
+                        },
+                        "_generatedIdentifierName3": {
+                            "text": " bb"
+                        }
+                    }
+                }
+            ];
+
+            resolve({
+                pageInfo: {
+                    attrib1: "evaluated attrib1"
+                },
+                questions
+            });
+        }, 100);
+    });
+}

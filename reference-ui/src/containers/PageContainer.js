@@ -4,11 +4,14 @@ import connect from "react-redux/es/connect/connect";
 
 function mapStateToProps(state) {
     return {
+        pageInfo: state.pageInfo,
         questions: state.questions
     }
 }
 
 function mapDispatchToProps(dispatch) {
+
+    //todo: handlers for selecting rows / cols
 
     function submitAnswersHandler() {
         dispatch(submitAnswersAction())

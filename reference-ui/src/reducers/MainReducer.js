@@ -1,49 +1,17 @@
 import {actionTypePageData} from "../actions/PageActions";
-import {answersReducer, isLockedReducer, submitAnswersReducer} from "./AnswerReducer";
-import {questionsReducer} from "./QuestionReducer";
+import {submitAnswersReducer} from "./QuestionAnswerReducer";
+import {List} from "../../node_modules/immutable/dist/immutable";
+import {isLockedReducer} from "./LockReducer";
+import {lastInteractionTimeReducer} from "./InteractionTimeReducer";
+import {questionsReducer} from "./QuestionsReducer";
 
-//todo: this is fake
+//todo: for default state we need to display a welcome page...
 const defaultState = {
-    //todo: add description here.
+    //see comments in mainReducer
     isLocked: false,
-    questions: [{
-        "id": "q0",
-        "type": "single-choice",
-        "text": "q0 text",
-        "rows": {
-            "_generatedIdentifierName2": {
-                "text": " aa"
-            },
-            "_generatedIdentifierName3": {
-                "text": " bb"
-            },
-            "_type": "row"
-        }
-    }],
-    answers: [
-        {
-            questionId: 'q0',
-            selections: ['_generatedIdentifierName2'],
-            textInputs: [],
-            status: {
-                answerTimeInSeconds: 3,
-                answeredWhen: Date.now(),
-                totalClicks: 3,
-                geoLocation: "tokyo..."
-            }
-        }
-    ]
+    lastInteractionTime: new Date(),
+    questions: List()
 };
-
-//todo: this is fake.
-function createFakeAnswers(state){
-    return state.questions.map(question => {
-        return {
-            questionId: question.id,
-            selections: []
-        }
-    });
-}
 
 const mainReducer = (state = defaultState, action) => {
     /*
@@ -53,11 +21,12 @@ const mainReducer = (state = defaultState, action) => {
         to be sent again.
      */
     if(action.type !== actionTypePageData && state.isLocked) return state;
-    const questions = questionsReducer(state, action);
-    const answers = answersReducer(state, action);
-    const isLocked = isLockedReducer(state, action);
     submitAnswersReducer(state, action);
-    return {questions, answers, isLocked};
+    const isLocked = isLockedReducer(state, action);
+    const lastInteractionTime = lastInteractionTimeReducer(state, action);
+    const questions = questionsReducer(state, action);
+    const pageInfo = state.pageInfo;
+    return {pageInfo, questions, isLocked, lastInteractionTime};
 };
 
 export default mainReducer;

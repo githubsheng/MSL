@@ -4,9 +4,8 @@
 
 const prefix = "answer_";
 export const actionTypeSubmitAnswer = `${prefix}submitAnswers`;
-export const actionTypeSelectRow = `${prefix}selectRow`;
-export const actionTypeSelectCol = `${prefix}selectCol`;
-export const actionTypeTextInput = `${prefix}textInput`;
+export const actionTypeSelect = `${prefix}select`;
+export const actionTypeDeselect = `${prefix}deselect`;
 
 export function submitAnswersAction(){
     return {
@@ -14,28 +13,20 @@ export function submitAnswersAction(){
     }
 }
 
-export function selectRow(questionId, rowId){
+export function select(questionId, rowId, colId){
     return {
-        type: actionTypeSelectRow,
-        questionId,
-        rowId
-    }
-}
-
-export function selectCol(questionId, rowId, colId) {
-    return {
-        type: actionTypeSelectCol,
+        type: actionTypeSelect,
         questionId,
         rowId,
         colId
     }
 }
 
-export function selectTextInput(questionId, inputId, value) {
+export function deselect(questionId, rowId, colId) {
     return {
-        type: actionTypeTextInput,
+        type: actionTypeDeselect,
         questionId,
-        inputId,
-        value
+        rowId,
+        colId
     }
 }

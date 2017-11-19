@@ -1,9 +1,11 @@
+import {List} from "../../node_modules/immutable/dist/immutable";
 const prefix = "page_";
 export const actionTypePageData = `${prefix}pageData`;
 
-export function pageDataAction(questions){
+export function pageDataAction(response){
     return {
         type: actionTypePageData,
-        questions
+        pageInfo: response.pageInfo,
+        questions: List(response.questions)
     }
 }

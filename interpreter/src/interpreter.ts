@@ -1,7 +1,7 @@
 import {Commands, Command} from "./commands";
 import {CallStack, FuncCallFrame, FuncDef} from "./callstack";
 import {List, _print, _list, _clock} from "./builtIn";
-import {RowsOnly, Matrix, Question, AnswerData, Row, Col} from "./questionTypes";
+import {RowsOnly, Matrix, Question, Row, Col} from "./questionTypes";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
 /*
@@ -72,7 +72,7 @@ interface InterpreterState {
      */
     stepOver: () => void;
     //the behavior of this api is different in different states. check its documentations in those states.
-    submitAnswer: (answerData: Array<AnswerData>) => Promise<Array<Question>>;
+    submitAnswer: (answerData: Array<Question>) => Promise<Array<Question>>;
     //start to run from the first line. returns the promise of first question. use this api to start a survey.
     restartRun: () => Promise<Array<Question>>;
     //start to debug from the first line. returns the promise of first question when it sees the first `sendQuestion`, or when it sees a break point.
@@ -111,7 +111,7 @@ abstract class AbstractInterpreterState implements InterpreterState {
         if(this.vm.isWaitingForAnswer) return;
     }
 
-    submitAnswer(answerData: Array<AnswerData>) {
+    submitAnswer(answerData: Array<Question>) {
         console.log("operation not implemented!!");
         return null;
     }
@@ -158,7 +158,7 @@ class NormalStateStart extends AbstractInterpreterState {
     /*
     (in NormalStateStart) submit answer -> send question -> return promise of next question (resolved, since we already have the question data now)
      */
-    submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
+    submitAnswer(answerData: Array<Question>): Promise<Array<Question>> {
         if (!this.vm.isWaitingForAnswer) return;
         this.vm.mergeAnswerData(answerData);
         return this._run(questionData => Promise.resolve(questionData));
@@ -210,7 +210,7 @@ class DebugStateStart extends AbstractInterpreterState {
     (In DebugStateStart) submit answer -> hit a break point -> return promise of next question  -> run / debug / step over
     (In DebugStateStart) submit answer -> sendQuestion -> return resolved promise of next question (since we already have the data of next question)
      */
-    submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
+    submitAnswer(answerData: Array<Question>): Promise<Array<Question>> {
         if (!this.vm.isWaitingForAnswer) return;
         this.vm.mergeAnswerData(answerData);
         return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
@@ -332,7 +332,7 @@ class DebugStateStopped extends AbstractInterpreterState {
     (in DebugStateStopped) submit answer -> hit a line where we can set a break point -> returns the promise of next question -> run / debug / step over
     (in DebugStateStopped) submit answer -> sendQuestion -> returns a resolved promise of next question (since we already know the question data)
      */
-    submitAnswer(answerData: Array<AnswerData>) {
+    submitAnswer(answerData: Array<Question>) {
         if (!this.vm.isWaitingForAnswer) return;
         this.vm.mergeAnswerData(answerData);
         return this._stopAtNextStoppableLine(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
@@ -772,81 +772,8 @@ export class Interpreter {
 
     }
 
-    private _mergeAnswerData(answerData: AnswerData) {
-        const {questionId, selections, stats} = answerData;
-        const question = <Question>this.getFromGlobalVarSpace(questionId);
-
-        function handleRowsOnly(){
-            const rowsOnly = <RowsOnly>question;
-            //rows with user defined ids.
-            const rows = Object.keys(rowsOnly.rows)
-                .filter(key => key !== "_type")
-                .filter(key => !key.startsWith("_"))
-                .map(key => <Row>(rowsOnly.rows[key]));
-
-            question.selections = {};
-            rows.forEach(row => {
-                //internally we use 0 for false
-                question.selections[row.id] = {isSelected: 0};
-            });
-
-            selections.forEach(rowId => {
-                const t = question.selections[rowId];
-                //internally we use 1 for true
-                if(t) t.isSelected = 1;
-            });
-        }
-
-        function handleMatrix(){
-            const matrix = <Matrix>question;
-            //we want those rows who have user defined id. they cannot use generated id anyway...
-            const rows = Object.keys(matrix.rows)
-                .filter(key => key !== "_type")
-                .map(key => <Row>(matrix.rows[key]))
-                .filter(row => !row.id.startsWith('_'));
-            //we want those cols who have user defined id. they cannot use generated id anyway...
-            const cols = Object.keys(matrix.cols)
-                .filter(key => key !== "_type")
-                .map(key => <Col>(matrix.cols[key]))
-                .filter(col => !col.id.startsWith('_'));
-
-            const ret: Map<string, {isSelected: number}> = new Map();
-            rows.forEach(row => {
-                cols.forEach(col => {
-                    //internally we use 0 for false
-                    ret.set(`${row.id}_${col.id}`, {isSelected: 0});
-                });
-            });
-
-            matrix.selections = {};
-            ret.forEach((value, key, map) => {
-                matrix.selections[key] = value;
-            });
-
-            selections.forEach(comId => {
-                const t = matrix.selections[comId];
-                //internally we use 1 for true.
-                if(t) t.isSelected = 1;
-            });
-        }
-
-        switch (question._type) {
-            case "single-choice":
-            case "multiple-choice":
-                handleRowsOnly();
-                break;
-            case "single-matrix":
-                handleMatrix();
-                break;
-            default:
-                throw new Error("cannot merge answer, unknown question type.")
-        }
-        
-        question.stats = stats;
-    }
-
-    public mergeAnswerData(answerData: Array<AnswerData>) {
-        answerData.forEach(this._mergeAnswerData.bind(this));
+    public mergeAnswerData(answerData: Array<Question>) {
+        answerData.forEach(q => this.setInGlobalVarSpace(q.id, q));
         this.isWaitingForAnswer = false;
     }
 
@@ -877,7 +804,7 @@ export class Interpreter {
         return this.state.restartDebug();
     }
 
-    submitAnswer(answerData: Array<AnswerData>): Promise<Array<Question>> {
+    submitAnswer(answerData: Array<Question>): Promise<Array<Question>> {
         return this.state.submitAnswer(answerData);
     }
 
