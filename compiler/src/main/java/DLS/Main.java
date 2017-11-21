@@ -71,6 +71,7 @@ public class Main {
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
             for (String cmdStr : ret.commands) out.println(cmdStr);
+            out.close();
         } catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
@@ -79,6 +80,7 @@ public class Main {
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
             for (String strConst : ret.stringConstants) out.println(strConst);
+            out.close();
         } catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
@@ -127,6 +129,7 @@ public class Main {
                         "<button onclick=\"resumeRun()\">resume run</button>\n" +
                         "<button onclick=\"stepOver()\">Step over</button>\n" +
                         "<div id=\"break-points\"></div>");
+                out.close();
             } catch (IOException e) {
                 //exception handling left as an exercise for the reader
             }
