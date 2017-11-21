@@ -40,7 +40,7 @@ function augmentRows(question) {
         const newRows = {};
         Object.entries(question.rows).map(kv => {
             const [rowId, row] = kv;
-            newRows[rowId] = Object.assign({}, row, {selected: false});
+            newRows[rowId] = Object.assign({}, row, {id: rowId, selected: false});
         });
         return Object.assign({}, question, {rows: newRows});
     }
@@ -53,11 +53,11 @@ function augmentRows(question) {
 
         rowKVs.forEach(rowKV => {
             const [rowId, row] = rowKV;
-            const newRow = Object.assign({}, row);
+            const newRow = Object.assign({}, row, {id: rowId});
 
             colKVs.forEach(colKV => {
                 const [colId, col] = colKV;
-                newRow[colId] = Object.assign({}, col, {selected: false});
+                newRow[colId] = Object.assign({}, col, {id: colId, selected: false});
             });
 
             newRows[rowId] = newRow;

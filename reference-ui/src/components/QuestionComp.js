@@ -1,30 +1,23 @@
 import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 
-import {Row} from './RowComp';
+import {Row, RowWithColumns} from './RowComp';
 
 class Question extends PureComponent {
     render (){
 
         const {question, setSelect} = this.props;
 
-        let colsWithId = null;
-        if(question.cols) {
-            colsWithId = Object.entries(question.cols).map(colKV => {
-               const [colId, col] = colKV;
-               return Object.assign({}, col, {id: colId});
-            });
-        }
-
         const rowComps = Object.entries(question.rows).map(rowKV => {
             const [rowId, row] = rowKV;
-            const rowWithId = Object.assign({}, row, {id: rowId});
 
             switch (question.type) {
                 case "single-choice":
-                    return <Row key={rowId} row={rowWithId} type="radio" question={question} setSelect={setSelect}/>;
+                    return <Row key={rowId} row={row} type="radio" question={question} setSelect={setSelect}/>;
                 case "multiple-choice":
-                    return <Row key={rowId} row={rowWithId} type="checkbox" question={question} setSelect={setSelect}/>;
+                    return <Row key={rowId} row={row} type="checkbox" question={question} setSelect={setSelect}/>;
+                case "single-matrix":
+                    return <RowWithColumns key={rowId} row={row} type="radio" question={question} setSelect={setSelect}/>;
                 default:
                     throw new Error("question type not yet supported");
             }

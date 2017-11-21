@@ -190,28 +190,49 @@ function sendAnswerToInterpreter() {
 
             const questions = [
                 {
-                    "id": "q1",
-                    "type": "single-choice",
-                    "text": "q1 text" + Date.now(),
-                    "rows": {
-                        "_generatedIdentifierName2": {
+                    id: "q1",
+                    type: "single-choice",
+                    text: "q1 text" + Date.now(),
+                    rows: {
+                        _generatedIdentifierName2: {
                             "text": " aa"
                         },
-                        "_generatedIdentifierName3": {
+                        _generatedIdentifierName3: {
                             "text": " bb"
                         }
                     }
                 },
                 {
-                    "id": "q2",
-                    "type": "single-choice",
-                    "text": "q2 text",
-                    "rows": {
-                        "_generatedIdentifierName2": {
+                    id: "q2",
+                    type: "multiple-choice",
+                    text: "q2 text",
+                    rows: {
+                        _generatedIdentifierName4: {
                             "text": " aa"
                         },
-                        "_generatedIdentifierName3": {
+                        _generatedIdentifierName5: {
                             "text": " bb"
+                        }
+                    }
+                },
+                {
+                    id: "q3",
+                    type: "single-matrix",
+                    text: "q3 text",
+                    rows: {
+                        _generatedIdentifierName6: {
+                            text: " aa"
+                        },
+                        _generatedIdentifierName7: {
+                            text: " bb"
+                        }
+                    },
+                    cols: {
+                        _generatedIdentifierName5: {
+                            text: " col1"
+                        },
+                        _generatedIdentifierName6: {
+                            text: " col2"
                         }
                     }
                 }
