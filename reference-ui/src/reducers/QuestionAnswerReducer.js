@@ -13,12 +13,28 @@ export function setSelect(state, action) {
     };
 
     if (colId === undefined || colId === null) {
-        //todo: for single choices, we need to first set selected in other rows to be false.
         questionChanges.rows[rowId] = {selected: val};
+        //for single choices, we need to set selected in other rows to be false.
+        if(question.type === "single-choice") {
+            Object.entries(question.rows).forEach(rowKV => {
+                const [rId] = rowKV;
+                if(rId !== rowId) {
+                    questionChanges.rows[rId] = {selected: false};
+                }
+            });
+        }
     } else {
         questionChanges.rows[rowId] = {};
-        //todo: for single matrix, we need to first set selected in other cols under this row to be false.
+        //for single matrix, we need to set selected in other cols under this row to be false.
         questionChanges.rows[rowId][colId] = {selected: val};
+        if(question.type === "single-matrix") {
+            Object.entries(question.cols).forEach(colKV => {
+                const [cId] = colKV;
+                if(cId !== colId) {
+                    questionChanges.rows[rowId][cId] = {selected: false};
+                }
+            })
+        }
     }
 
     const c1 = questionTimeRecordChanges(state.lastInteractionTime);
