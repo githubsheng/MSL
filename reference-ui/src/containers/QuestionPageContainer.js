@@ -1,5 +1,5 @@
 import {submitAnswersAction, setSelectAction} from "../actions/AnswerActions";
-import Page from "../components/PageComp";
+import QuestionPage from "../components/QuestionPageComp";
 import connect from "react-redux/es/connect/connect";
 
 function mapStateToProps(state) {
@@ -26,9 +26,9 @@ function mapDispatchToProps(dispatch) {
     }
 }
 
-const PageContainer = connect(
+const QuestionPageContainer = connect(
     mapStateToProps,
     mapDispatchToProps
-)(Page);
+)(QuestionPage);
 
-export default PageContainer;
+export default QuestionPageContainer;

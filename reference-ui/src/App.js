@@ -1,12 +1,16 @@
 import React from 'react';
 import {PureComponent} from "react/lib/ReactBaseClasses";
-import PageContainer from "./containers/PageContainer";
+import QuestionPageContainer from "./containers/QuestionPageContainer";
+import WelcomePageContainer from "./containers/WelcomePageContainer";
 
 class App extends PureComponent {
 
     render() {
         return (
-            <PageContainer></PageContainer>
+            <div>
+                <WelcomePageContainer/>
+                <QuestionPageContainer/>
+            </div>
         );
     }
 }

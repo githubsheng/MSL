@@ -1,5 +1,20 @@
 //todo: I want these interfaces to be like a documentations about questions... I need to add details to it.. like stats...
 
+/*
+
+ type: actionTypePageData,
+ token: response.token,
+ pageInfo: response.pageInfo,
+ questions: List(response.questions)
+
+ */
+
+export interface VMResponse {
+    token: string,
+    pageInfo: any,
+    questions: Array<Question>
+}
+
 export interface Question {
     id: string;
     type: string;
@@ -7,9 +22,8 @@ export interface Question {
     //following attributes will be available after question is answered.
     displayedWhen: Date;
     answeredWhen: Date;
-    time: number;
+    duration: number;
     totalClicks: number;
-    geoLocation: string;
 }
 
 interface Option {

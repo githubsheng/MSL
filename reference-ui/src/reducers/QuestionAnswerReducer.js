@@ -1,6 +1,7 @@
 import {pageDataAction} from "../actions/PageActions";
 import {actionTypeSetSelect, actionTypeSubmitAnswer} from "../actions/AnswerActions";
 import * as R from "ramda";
+import {actionTypeEndOfSurvey, endSurveyAction} from "../actions/FlowActions";
 
 export function setSelect(state, action) {
     if(action.type !== actionTypeSetSelect) return state.questions;
@@ -119,16 +120,23 @@ function getQuestionIndexById(questions, id) {
 
 export function submitAnswersReducer(state, action) {
     if (action.type === actionTypeSubmitAnswer) {
-        const questionsPromise = sendAnswerToInterpreter(state.questions.toArray());
+        //todo: we should not send state.token, but for the fake data to pass validation, it needs the token
+        const questionsPromise = sendAnswerToInterpreter(state.questions.toArray(), state.token);
         questionsPromise.then(function (response) {
-            action.asyncDispatch(pageDataAction(response));
+            if(response.token === state.token) {
+                if(!response.questions || response.questions.length === 0) {
+                    action.asyncDispatch(endSurveyAction());
+                } else {
+                    action.asyncDispatch(pageDataAction(response));
+                }
+            }
         });
     }
 }
 
 
 //todo: connect to vm and get back the real questions data
-function sendAnswerToInterpreter() {
+function sendAnswerToInterpreter(questions, token) {
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
             /*
@@ -158,7 +166,7 @@ function sendAnswerToInterpreter() {
              it may look like this:
              use "background-image"
 
-             [Page background={bgUrl}]
+             [QuestionPage background={bgUrl}]
              [SingleChoice].....
              [SingleChoice].....
              [Submit]
@@ -242,7 +250,8 @@ function sendAnswerToInterpreter() {
                 pageInfo: {
                     attrib1: "evaluated attrib1"
                 },
-                questions
+                questions,
+                token
             });
         }, 100);
     });

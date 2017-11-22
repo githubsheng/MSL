@@ -1,7 +1,3 @@
-/**
- * Created by wangsheng on 17/11/17.
- */
-
 import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 

@@ -2,7 +2,7 @@ import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 import Question from './QuestionComp';
 
-class Page extends PureComponent {
+class QuestionPage extends PureComponent {
     render() {
         const {
             pageInfo,
@@ -11,11 +11,14 @@ class Page extends PureComponent {
             submitAnswersHandler
         } = this.props;
 
+        if(!questions || questions.isEmpty()) return null;
+
         const questionsJSX = questions.map(question => {
             return <Question key={question.id} question={question} setSelect={setSelect}/>;
         });
 
         return (
+            //todo: change the class name here, it should be question-page*, rather than page*
             //the extra structures, such as page-body-left, page-body-right are used by the plugins to cusomize the UI.
             <div className="page">
                 <div className="page-header"></div>
@@ -37,4 +40,4 @@ class Page extends PureComponent {
     }
 }
 
-export default Page;
+export default QuestionPage;

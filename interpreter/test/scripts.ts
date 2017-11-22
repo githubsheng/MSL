@@ -1,5 +1,5 @@
 import {Interpreter} from "../src/interpreter";
-import {Question} from "../src/questionTypes";
+import {Question, VMResponse} from "../src/questionTypes";
 
 let interpreter: Interpreter;
 let page: HTMLDivElement;
@@ -17,8 +17,8 @@ function init(){
     submitBtn.onclick = submitAnswer;
 }
 
-function displayQuestion(questionData: Array<Question>) {
-    const c = JSON.stringify(questionData, undefined, 4);
+function displayQuestion(vmResponse: VMResponse) {
+    const c = JSON.stringify(vmResponse.questions, undefined, 4);
     page.innerHTML = syntaxHighlight(c);
     submitBtn.disabled = false;
 }
@@ -36,14 +36,16 @@ function resetPageUI(){
 
 function restartRun(){
     resetPageUI();
-    const p = interpreter.restartRun();
+    const token = Date.now().toString();
+    const p = interpreter.restartRun(token);
     submitBtn.disabled = true;
     p.then(displayQuestion);
 }
 
 function restartDebug(){
     resetPageUI();
-    const p = interpreter.restartDebug();
+    const token = Date.now().toString();
+    const p = interpreter.restartDebug(token);
     submitBtn.disabled = true;
     p.then(displayQuestion);
 }

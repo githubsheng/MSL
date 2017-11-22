@@ -1,7 +1,7 @@
 import {Commands, Command} from "./commands";
 import {CallStack, FuncCallFrame, FuncDef} from "./callstack";
 import {List, _print, _list, _clock} from "./builtIn";
-import {RowsOnly, Matrix, Question, Row, Col} from "./questionTypes";
+import {RowsOnly, Matrix, Question, Row, Col, VMResponse} from "./questionTypes";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
 /*
@@ -72,11 +72,11 @@ interface InterpreterState {
      */
     stepOver: () => void;
     //the behavior of this api is different in different states. check its documentations in those states.
-    submitAnswer: (answerData: Array<Question>) => Promise<Array<Question>>;
-    //start to run from the first line. returns the promise of first question. use this api to start a survey.
-    restartRun: () => Promise<Array<Question>>;
+    submitAnswer: (answerData: Array<Question>) => Promise<VMResponse>;
+    //start to run from the first line. returns the promise of first question (&& page && token). use this api to start a survey.
+    restartRun: (token: string) => Promise<VMResponse>;
     //start to debug from the first line. returns the promise of first question when it sees the first `sendQuestion`, or when it sees a break point.
-    restartDebug: () => Promise<Array<Question>>;
+    restartDebug: (token: string) => Promise<VMResponse>;
     //eval console input
     consoleEval: (commandsStr: string) => void;
 }
@@ -89,14 +89,16 @@ abstract class AbstractInterpreterState implements InterpreterState {
         this.vm = interpreter;
     }
 
+    //todo: add doc for this
     _getUnresolvedQuestionDataPromise(){
         return new Promise((resolve, reject) => {
             this.vm.toResolveNextQuestionData = resolve;
         });
     }
 
-    _getResolvedQuestionDataPromise(questionData: Array<Question>){
-        return Promise.resolve(questionData);
+    //todo: and this...
+    _getResolvedQuestionDataPromise(vmResponse: VMResponse){
+        return Promise.resolve(vmResponse);
     }
 
     run() {
@@ -116,14 +118,14 @@ abstract class AbstractInterpreterState implements InterpreterState {
         return null;
     }
 
-    restartRun(): Promise<Array<Question>> {
+    restartRun(token: string): Promise<VMResponse> {
         this.vm.state = this.vm.normalStateStart;
-        return this.vm.state.restartRun();
+        return this.vm.state.restartRun(token);
     }
 
-    restartDebug(): Promise<Array<Question>> {
+    restartDebug(token: string): Promise<VMResponse> {
         this.vm.state = this.vm.debugStateStart;
-        return this.vm.state.restartDebug();
+        return this.vm.state.restartDebug(token);
     }
 
     consoleEval(commandsStr: string) {
@@ -137,7 +139,7 @@ class NormalStateStart extends AbstractInterpreterState {
         super(interpreter);
     }
 
-    _run(sendQuestionCommListener): Promise<Array<Question>> {
+    _run(sendQuestionCommListener): Promise<VMResponse> {
         const vm = this.vm;
         //as long as there are commands, execute the commands
         while (vm.commands.hasNext()) {
@@ -158,14 +160,15 @@ class NormalStateStart extends AbstractInterpreterState {
     /*
     (in NormalStateStart) submit answer -> send question -> return promise of next question (resolved, since we already have the question data now)
      */
-    submitAnswer(answerData: Array<Question>): Promise<Array<Question>> {
+    submitAnswer(answerData: Array<Question>): Promise<VMResponse> {
         if (!this.vm.isWaitingForAnswer) return;
         this.vm.mergeAnswerData(answerData);
-        return this._run(questionData => Promise.resolve(questionData));
+        return this._run(this._getResolvedQuestionDataPromise.bind(this));
     }
 
-    restartRun():Promise<Array<Question>> {
+    restartRun(token: string):Promise<VMResponse> {
         this.vm.reset();
+        this.vm.token = token;
         return this._run(this._getResolvedQuestionDataPromise.bind(this));
     }
 
@@ -210,14 +213,15 @@ class DebugStateStart extends AbstractInterpreterState {
     (In DebugStateStart) submit answer -> hit a break point -> return promise of next question  -> run / debug / step over
     (In DebugStateStart) submit answer -> sendQuestion -> return resolved promise of next question (since we already have the data of next question)
      */
-    submitAnswer(answerData: Array<Question>): Promise<Array<Question>> {
+    submitAnswer(answerData: Array<Question>): Promise<VMResponse> {
         if (!this.vm.isWaitingForAnswer) return;
         this.vm.mergeAnswerData(answerData);
         return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
     }
 
-    restartDebug() {
+    restartDebug(token: string) {
         this.vm.reset();
+        this.vm.token = token;
         return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
     }
 }
@@ -363,6 +367,7 @@ export class Interpreter {
     builtInFunctions: Map<string, Function>;
     isWaitingForAnswer: boolean;
     toResolveNextQuestionData: Function;
+    token: string;
 
     constructor(commandsStr: string, stringConstants: string) {
         this.commands = new Commands(commandsStr);
@@ -487,14 +492,19 @@ export class Interpreter {
         if (t !== 0) this.commands.setIndexUsingStr(comm.firstOperand);
     }
 
-    private sendQuestion() {
-        const questionData = [];
+    private sendQuestion(): VMResponse {
+        const questions = [];
         this.forEachParameters((param) => {
             //here params being question references..
-            questionData.push(param);
+            questions.push(param);
         });
         this.isWaitingForAnswer = true;
-        return questionData;
+        return {
+            token: this.token,
+            questions: questions,
+            //todo: get the page info here.
+            pageInfo: {}
+        };
     }
 
     private newScope() {
@@ -777,51 +787,52 @@ export class Interpreter {
         this.isWaitingForAnswer = false;
     }
 
-    reset(): void {
+    public reset(): void {
         this.isWaitingForAnswer = false;
+        //if we have pending promise that needs to resolve, resolve it first...
         if (this.toResolveNextQuestionData) this.toResolveNextQuestionData(null);
         this.callStack.reset();
         this.commands.reset();
     }
 
-    run(): void {
+    public run(): void {
         this.state.run();
     }
 
-    debug(): void {
+    public debug(): void {
         this.state.debug();
     }
 
-    stepOver(): void {
+    public stepOver(): void {
         this.state.stepOver();
     }
 
-    restartRun(): Promise<Array<Question>> {
-        return this.state.restartRun();
+    public restartRun(token: string): Promise<VMResponse> {
+        return this.state.restartRun(token);
     }
 
-    restartDebug(): Promise<Array<Question>> {
-        return this.state.restartDebug();
+    public restartDebug(token: string): Promise<VMResponse> {
+        return this.state.restartDebug(token);
     }
 
-    submitAnswer(answerData: Array<Question>): Promise<Array<Question>> {
+    public submitAnswer(answerData: Array<Question>): Promise<VMResponse> {
         return this.state.submitAnswer(answerData);
     }
 
-    consoleEval(commandsStr) {
+    public consoleEval(commandsStr) {
         this.state.consoleEval(commandsStr);
     }
 
-    addBreakPoint(lineNumber: number) {
+    public addBreakPoint(lineNumber: number) {
         this.breakPoints.add(lineNumber);
     }
 
-    deleteBreakPoint(lineNumber: number) {
+    public deleteBreakPoint(lineNumber: number) {
         this.breakPoints.delete(lineNumber);
     }
 
-    resolvePreviousPromise(questionData: Question){
-        this.toResolveNextQuestionData(questionData);
+    public resolvePreviousPromise(vmResponse: VMResponse){
+        this.toResolveNextQuestionData(vmResponse);
         this.toResolveNextQuestionData = null;
     }
 

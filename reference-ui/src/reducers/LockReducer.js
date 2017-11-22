@@ -7,4 +7,5 @@ export function isLockedReducer(state, action) {
     } else if (action.type === actionTypePageData) {
         return false;
     }
+    return state.isLocked;
 }
