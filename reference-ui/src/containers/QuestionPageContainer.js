@@ -5,7 +5,9 @@ import connect from "react-redux/es/connect/connect";
 function mapStateToProps(state) {
     return {
         pageInfo: state.pageInfo,
-        questions: state.questions
+        questions: state.questions,
+        isStarted: state.isStarted,
+        isEnded: state.isEnded
     }
 }
 

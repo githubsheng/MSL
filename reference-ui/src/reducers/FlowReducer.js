@@ -18,7 +18,7 @@ export const defaultState = {
 export function flowReducer(state, action) {
     switch (action.type) {
         case actionTypeReset:
-            return reset();
+            return reset(state, action);
         case actionTypeStartAnswering:
             return startAnswering(state, action);
         case actionTypeEndOfSurvey:
@@ -28,13 +28,17 @@ export function flowReducer(state, action) {
     }
 }
 
-function reset(){
-    return Object.assign({}, defaultState, {token: Date.now().toString()});
+function reset(state, action){
+    const changes = {
+        token: Date.now().toString()
+    };
+    if(action.isDebug) changes.isDebug = true;
+    return Object.assign({}, defaultState, changes);
 }
 
 function startAnswering(state, action){
     let firstQuestionPromise;
-    if(action.isDebug) {
+    if(state.isDebug) {
         firstQuestionPromise = restartDebug(state.token);
     } else {
         firstQuestionPromise = restartRun(state.token);
@@ -52,13 +56,16 @@ function endSurvey(state, action) {
 }
 
 function restartDebug(token){
+    return window.interpreter.restartRun(token);
+
     //todo: in real case, call vm.restartDebug();
-    return fakeData(token);
+    // return fakeData(token);
 }
 
 function restartRun(token){
+    return window.interpreter.restartDebug(token);
     //todo: in real case, call vm.restartRun();
-    return fakeData(token);
+    // return fakeData(token);
 }
 
 //todo: this returns fake data

@@ -10,10 +10,10 @@ export class WelcomePageComp extends PureComponent {
         if(isStarted) return null;
 
         return (
-            <div>
-                Welcome Page
-                <div>
-                    <button onClick={evt => startAnsweringHandler()}>Start answering</button>
+            <div className="welcome-page">
+                <div className="legal-documents">legal documents</div>
+                <div className="start-survey-button-container">
+                    <button className="start-button" onClick={evt => startAnsweringHandler()}>Start answering</button>
                 </div>
             </div>
         )

@@ -11,9 +11,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
 
     function startAnsweringHandler(){
-        //todo: allow debugging
-        //todo: right now we set isDebug to be always false
-        dispatch(startAnsweringAction(false))
+        dispatch(startAnsweringAction())
     }
 
     return {

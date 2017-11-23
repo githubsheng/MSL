@@ -133,6 +133,7 @@ abstract class AbstractInterpreterState implements InterpreterState {
     }
 }
 
+
 class NormalStateStart extends AbstractInterpreterState {
 
     constructor(interpreter: Interpreter) {
@@ -148,7 +149,11 @@ class NormalStateStart extends AbstractInterpreterState {
             if (ret) return sendQuestionCommListener(ret);
         }
         //to signal UI that there is no more next question.
-        return Promise.resolve(null);
+        return Promise.resolve({
+            token: vm.token,
+            pageInfo: {},
+            questions: []
+        });
     }
 
     run() {
@@ -200,7 +205,11 @@ class DebugStateStart extends AbstractInterpreterState {
             }
         }
         //indicate that there is no more questions.
-        return Promise.resolve(null);
+        return Promise.resolve({
+            token: vm.token,
+            pageInfo: {},
+            questions: []
+        });
     }
 
     debug() {
@@ -301,7 +310,11 @@ class DebugStateStopped extends AbstractInterpreterState {
         //if we are here then it means we cannot find any line to stop. we have gone all the way to the end of the program.
         vm.reset();
         //indicate that there is no more questions.
-        return Promise.resolve(null);
+        return Promise.resolve({
+            token: vm.token,
+            pageInfo: {},
+            questions: []
+        });
     }
 
     /**

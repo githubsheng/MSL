@@ -6,7 +6,8 @@
     <link rel="stylesheet" href="../css/index.css"/>
     <script src="jquery/jquery.js"></script>
     <script src="../javascripts/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="../javascripts/interpreter/bundle.js"></script>
+    <script src="../javascripts/interpreter/interpreter.js"></script>
+
     <script src="../javascripts/editor.js"></script>
 </head>
 <body onload="init()">
@@ -17,14 +18,15 @@
     </div>
     <div id="right" style="float: left">
         <div id="debugger-controller">
-            <button>Run</button>
+            <button id="re-run-btn">Run</button>
             <button>Debug</button>
             <button>Resume debugging</button>
             <button>Step over</button>
         </div>
-        <div id="preview-ui"></div>
+        <div id="reference-ui"></div>
         <div id="terminal"></div>
     </div>
 </div>
+<script src="../javascripts/reference_ui/reference-ui.js"></script>
 </body>
 </html>

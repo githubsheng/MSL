@@ -8,10 +8,12 @@ class QuestionPage extends PureComponent {
             pageInfo,
             questions,
             setSelect,
-            submitAnswersHandler
+            submitAnswersHandler,
+            isStarted,
+            isEnded
         } = this.props;
 
-        if(!questions || questions.isEmpty()) return null;
+        if(!isStarted || isEnded) return null;
 
         const questionsJSX = questions.map(question => {
             return <Question key={question.id} question={question} setSelect={setSelect}/>;
@@ -20,21 +22,21 @@ class QuestionPage extends PureComponent {
         return (
             //todo: change the class name here, it should be question-page*, rather than page*
             //the extra structures, such as page-body-left, page-body-right are used by the plugins to cusomize the UI.
-            <div className="page">
-                <div className="page-header"></div>
-                <div className="page-body">
-                    <div className="page-body-left">
+            <div className="question-page">
+                <div className="header"></div>
+                <div className="body">
+                    <div className="body-left">
                     </div>
-                    <div className="page-body-center">
+                    <div className="body-center">
                         {questionsJSX}
                     </div>
-                    <div className="page-body-right">
+                    <div className="body-right">
                     </div>
                 </div>
-                <div className="page-submit-container">
-                    <button onClick={submitAnswersHandler}>Submit</button>
+                <div className="submit-container">
+                    <button className="submit-button" onClick={submitAnswersHandler}>Submit</button>
                 </div>
-                <div className="page-footer"></div>
+                <div className="footer"></div>
             </div>
         );
     }

@@ -5,6 +5,7 @@ const referenceState = {
     isLocked: false,
     isStarted: false,
     isEnded: false,
+    isDebug: false,
     token: Date.now().toString(),
     lastInteractionTime: new Date(),
     questions: List()

@@ -1,0 +1,6 @@
+[Page]
+[SingleChoice]hello world
+[Row]option 1
+[Row]option 2
+[Submit]
+[PageEnd]

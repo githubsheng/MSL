@@ -1,15 +1,18 @@
-/**
- * Created by sheng.wang on 2017/11/22.
- */
-const prefix = "start_";
+const prefix = "flow_";
 
 export const actionTypeStartAnswering = `${prefix}startAnswering`;
 export const actionTypeReset = `${prefix}reset`;
 export const actionTypeEndOfSurvey = `${prefix}end`;
 
-export function startAnsweringAction(isDebug){
+export function resetSurveyAction(isDebug){
     return {
         isDebug: isDebug,
+        type: actionTypeReset
+    }
+}
+
+export function startAnsweringAction(){
+    return {
         type: actionTypeStartAnswering
     }
 }

@@ -53,13 +53,15 @@
 	    constructor(interpreter) {
 	        this.vm = interpreter;
 	    }
+	    //todo: add doc for this
 	    _getUnresolvedQuestionDataPromise() {
 	        return new Promise((resolve, reject) => {
 	            this.vm.toResolveNextQuestionData = resolve;
 	        });
 	    }
-	    _getResolvedQuestionDataPromise(questionData) {
-	        return Promise.resolve(questionData);
+	    //todo: and this...
+	    _getResolvedQuestionDataPromise(vmResponse) {
+	        return Promise.resolve(vmResponse);
 	    }
 	    run() {
 	        if (this.vm.isWaitingForAnswer)
@@ -77,13 +79,13 @@
 	        console.log("operation not implemented!!");
 	        return null;
 	    }
-	    restartRun() {
+	    restartRun(token) {
 	        this.vm.state = this.vm.normalStateStart;
-	        return this.vm.state.restartRun();
+	        return this.vm.state.restartRun(token);
 	    }
-	    restartDebug() {
+	    restartDebug(token) {
 	        this.vm.state = this.vm.debugStateStart;
-	        return this.vm.state.restartDebug();
+	        return this.vm.state.restartDebug(token);
 	    }
 	    consoleEval(commandsStr) {
 	        console.log("operation not supported under such state");
@@ -103,7 +105,11 @@
 	                return sendQuestionCommListener(ret);
 	        }
 	        //to signal UI that there is no more next question.
-	        return Promise.resolve(null);
+	        return Promise.resolve({
+	            token: vm.token,
+	            pageInfo: {},
+	            questions: []
+	        });
 	    }
 	    run() {
 	        const vm = this.vm;
@@ -118,10 +124,11 @@
 	        if (!this.vm.isWaitingForAnswer)
 	            return;
 	        this.vm.mergeAnswerData(answerData);
-	        return this._run(questionData => Promise.resolve(questionData));
+	        return this._run(this._getResolvedQuestionDataPromise.bind(this));
 	    }
-	    restartRun() {
+	    restartRun(token) {
 	        this.vm.reset();
+	        this.vm.token = token;
 	        return this._run(this._getResolvedQuestionDataPromise.bind(this));
 	    }
 	}
@@ -151,7 +158,11 @@
 	            }
 	        }
 	        //indicate that there is no more questions.
-	        return Promise.resolve(null);
+	        return Promise.resolve({
+	            token: vm.token,
+	            pageInfo: {},
+	            questions: []
+	        });
 	    }
 	    debug() {
 	        if (this.vm.isWaitingForAnswer)
@@ -169,8 +180,9 @@
 	        this.vm.mergeAnswerData(answerData);
 	        return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
 	    }
-	    restartDebug() {
+	    restartDebug(token) {
 	        this.vm.reset();
+	        this.vm.token = token;
 	        return this._debug(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
 	    }
 	}
@@ -249,7 +261,11 @@
 	        //if we are here then it means we cannot find any line to stop. we have gone all the way to the end of the program.
 	        vm.reset();
 	        //indicate that there is no more questions.
-	        return Promise.resolve(null);
+	        return Promise.resolve({
+	            token: vm.token,
+	            pageInfo: {},
+	            questions: []
+	        });
 	    }
 	    /**
 	     * steps over the current line and continue to execute until it reaches another line that we can set a break point.
@@ -409,13 +425,18 @@
 	            this.commands.setIndexUsingStr(comm.firstOperand);
 	    }
 	    sendQuestion() {
-	        const questionData = [];
+	        const questions = [];
 	        this.forEachParameters((param) => {
 	            //here params being question references..
-	            questionData.push(param);
+	            questions.push(param);
 	        });
 	        this.isWaitingForAnswer = true;
-	        return questionData;
+	        return {
+	            token: this.token,
+	            questions: questions,
+	            //todo: get the page info here.
+	            pageInfo: {}
+	        };
 	    }
 	    newScope() {
 	        const parent = this.callStack.getCurrentFrame();
@@ -661,77 +682,13 @@
 	                return this.string(comm);
 	        }
 	    }
-	    _mergeAnswerData(answerData) {
-	        const { questionId, answers, stats } = answerData;
-	        const question = this.getFromGlobalVarSpace(questionId);
-	        function handleRowsOnly() {
-	            const rowsOnly = question;
-	            //rows with user defined ids.
-	            const rows = Object.keys(rowsOnly.rows)
-	                .filter(key => key !== "_type")
-	                .filter(key => !key.startsWith("_"))
-	                .map(key => (rowsOnly.rows[key]));
-	            question.answers = {};
-	            rows.forEach(row => {
-	                //internally we use 0 for false
-	                question.answers[row.id] = { isSelected: 0 };
-	            });
-	            answers.forEach(rowId => {
-	                const t = question.answers[rowId];
-	                //internally we use 1 for true
-	                if (t)
-	                    t.isSelected = 1;
-	            });
-	        }
-	        function handleMatrix() {
-	            const matrix = question;
-	            //we want those rows who have user defined id. they cannot use generated id anyway...
-	            const rows = Object.keys(matrix.rows)
-	                .filter(key => key !== "_type")
-	                .map(key => (matrix.rows[key]))
-	                .filter(row => !row.id.startsWith('_'));
-	            //we want those cols who have user defined id. they cannot use generated id anyway...
-	            const cols = Object.keys(matrix.cols)
-	                .filter(key => key !== "_type")
-	                .map(key => (matrix.cols[key]))
-	                .filter(col => !col.id.startsWith('_'));
-	            const ret = new Map();
-	            rows.forEach(row => {
-	                cols.forEach(col => {
-	                    //internally we use 0 for false
-	                    ret.set(`${row.id}_${col.id}`, { isSelected: 0 });
-	                });
-	            });
-	            matrix.answers = {};
-	            ret.forEach((value, key, map) => {
-	                matrix.answers[key] = value;
-	            });
-	            answers.forEach(comId => {
-	                const t = matrix.answers[comId];
-	                //internally we use 1 for true.
-	                if (t)
-	                    t.isSelected = 1;
-	            });
-	        }
-	        switch (question._type) {
-	            case "single-choice":
-	            case "multiple-choice":
-	                handleRowsOnly();
-	                break;
-	            case "single-matrix":
-	                handleMatrix();
-	                break;
-	            default:
-	                throw new Error("cannot merge answer, unknown question type.");
-	        }
-	        question.stats = stats;
-	    }
 	    mergeAnswerData(answerData) {
-	        answerData.forEach(this._mergeAnswerData.bind(this));
+	        answerData.forEach(q => this.setInGlobalVarSpace(q.id, q));
 	        this.isWaitingForAnswer = false;
 	    }
 	    reset() {
 	        this.isWaitingForAnswer = false;
+	        //if we have pending promise that needs to resolve, resolve it first...
 	        if (this.toResolveNextQuestionData)
 	            this.toResolveNextQuestionData(null);
 	        this.callStack.reset();
@@ -746,11 +703,11 @@
 	    stepOver() {
 	        this.state.stepOver();
 	    }
-	    restartRun() {
-	        return this.state.restartRun();
+	    restartRun(token) {
+	        return this.state.restartRun(token);
 	    }
-	    restartDebug() {
-	        return this.state.restartDebug();
+	    restartDebug(token) {
+	        return this.state.restartDebug(token);
 	    }
 	    submitAnswer(answerData) {
 	        return this.state.submitAnswer(answerData);
@@ -764,8 +721,8 @@
 	    deleteBreakPoint(lineNumber) {
 	        this.breakPoints.delete(lineNumber);
 	    }
-	    resolvePreviousPromise(questionData) {
-	        this.toResolveNextQuestionData(questionData);
+	    resolvePreviousPromise(vmResponse) {
+	        this.toResolveNextQuestionData(vmResponse);
 	        this.toResolveNextQuestionData = null;
 	    }
 	}
