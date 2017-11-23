@@ -2,6 +2,7 @@ import React from 'react';
 import {PureComponent} from "react/lib/ReactBaseClasses";
 import QuestionPageContainer from "./containers/QuestionPageContainer";
 import WelcomePageContainer from "./containers/WelcomePageContainer";
+import EndPageContainer from "./containers/EndPageContainer";
 
 class App extends PureComponent {
 
@@ -10,6 +11,8 @@ class App extends PureComponent {
             <div>
                 <WelcomePageContainer/>
                 <QuestionPageContainer/>
+                <EndPageContainer/>
+
             </div>
         );
     }
