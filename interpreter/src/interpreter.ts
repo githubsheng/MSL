@@ -1,6 +1,6 @@
 import {Commands, Command} from "./commands";
 import {CallStack, FuncCallFrame, FuncDef} from "./callstack";
-import {List, _print, _list, _clock} from "./builtIn";
+import {List, _print, _list, _clock, _getRandomNumber} from "./builtIn";
 import {RowsOnly, Matrix, Question, Row, Col, VMResponse} from "./questionTypes";
 const PARAM_BOUND = {specialCommandName: "param_bound"};
 
@@ -404,16 +404,16 @@ export class Interpreter {
         this.normalStateStart = new NormalStateStart(this);
         this.parseStringConstantsAndAppend(stringConstants);
         this.state = this.normalStateStart;
-        this.initBuiltInFunctions();
         this.isWaitingForAnswer = false;
         this.output = output;
+        this.initBuiltInFunctions();
     }
 
     private initBuiltInFunctions() {
         this.builtInFunctions = new Map();
-        this.builtInFunctions.set("_print", _print);
-        this.builtInFunctions.set("_getRandomNumber", _print);
-        this.builtInFunctions.set("List", this.output ? this.output : _list);
+        this.builtInFunctions.set("_print", this.output ? this.output : _print);
+        this.builtInFunctions.set("_getRandomNumber", _getRandomNumber);
+        this.builtInFunctions.set("List", _list);
         this.builtInFunctions.set("_clock", _clock);
     }
 
