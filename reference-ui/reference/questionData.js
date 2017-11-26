@@ -95,12 +95,10 @@ const augmentedQuestions = [{
     text: "q0 text",
     rows: {
         rowId1: {
-            text: " row1",
-            selected: false
+            text: " row1"
         },
         _generatedIdentifierName2: {
-            text: " row2",
-            selected: false
+            text: " row2"
         }
     },
     displayedWhen: Date.now(),
@@ -112,8 +110,14 @@ const augmentedQuestions = [{
     //set when user submit answer...
     geoLocation: null,
     //again, compiler should make sure row id does not conflict with any built in question properties...
-    rowId1: this.rows.rowId1,
-    rowId2: this.rows.rowId2
+    rowId1: {
+        text: " row1",
+        selected: false
+    },
+    _generatedIdentifierName2: {
+        text: " row2",
+        selected: false
+    }
 
 }, {
     id: "q1",
@@ -121,29 +125,10 @@ const augmentedQuestions = [{
     text: "q1 text",
     rows: {
         rowId1: {
-            text: " row1",
-            //compiler should make sure colId1 and colId2 does not use any built in row attribute name
-            //any none built in attribute names will prefixed with an underscore, to make sure it does not
-            //conflict with any legal ids.
-            colId1: {
-                text: " col1",
-                selected: false
-            },
-            colId2: {
-                text: " col2",
-                selected: false
-            }
+            text: " row1"
         },
         rowId2: {
-            text: " row2",
-            colId1: {
-                text: " col1",
-                selected: false
-            },
-            colId2: {
-                text: " col2",
-                selected: false
-            }
+            text: " row2"
         }
     },
     cols: {
@@ -158,8 +143,33 @@ const augmentedQuestions = [{
     answeredWhen: null,
     duration: null,
     totalClicks: 0,
-    geoLocation: null
-    //rows direct references omitted..see single choice for example..
+    geoLocation: null,
+    //rows direct references
+    rowId1: {
+        text: " row1",
+        //compiler should make sure colId1 and colId2 does not use any built in row attribute name
+        //any none built in attribute names will prefixed with an underscore, to make sure it does not
+        //conflict with any legal ids.
+        colId1: {
+            text: " col1",
+            selected: false
+        },
+        colId2: {
+            text: " col2",
+            selected: false
+        }
+    },
+    rowId2: {
+        text: " row2",
+        colId1: {
+            text: " col1",
+            selected: false
+        },
+        colId2: {
+            text: " col2",
+            selected: false
+        }
+    }
 }];
 
 

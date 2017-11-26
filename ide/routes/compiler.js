@@ -5,12 +5,15 @@ const {exec} = require('child_process');
 const slash = require('slash');
 const fs = require("fs");
 
-const jarPath = slash(path.resolve("compiler/MSL-1.0-SNAPSHOT-jar-with-dependencies.jar"));
-const inputFilePath = slash(path.resolve("compiler/input/input.txt"));
 const inputFolderPath = slash(path.resolve("compiler/input"));
 const outputFolderPath = slash(path.resolve("compiler/output"));
+const jarPath = slash(path.resolve("compiler/MSL-1.0-SNAPSHOT-jar-with-dependencies.jar"));
+
+
+const inputFilePath = slash(path.resolve("compiler/input/input.txt"));
 const commandsStrPath = slash(path.resolve("compiler/output/commandsStr.txt"));
 const stringConstantsPath = slash(path.resolve("compiler/output/stringConstants.txt"));
+
 const encoding = 'utf8';
 
 if(!fs.existsSync(inputFolderPath)) fs.mkdirSync(inputFolderPath);
@@ -58,13 +61,15 @@ function commonFailureCallback(res, compileErrorMessage){
 
 function compileCallbackGenenertor(successCallback, failCallback){
     return function (req, res, next) {
-        const src = req.body.data;
+        const {data: src, commandIndexOffset = 0, strConstsIndexOffset = 0} = req.body;
+        console.log(src, commandIndexOffset, strConstsIndexOffset);
         fs.writeFile(inputFilePath, src, (error) => {
             if(error) {
                 console.log(error);
                 return;
             }
-            exec(`java -jar ${jarPath} ${inputFilePath} ${outputFolderPath}`, (error, stdout, stderr) => {
+            console.log("going to run java program.");
+            exec(`java -jar ${jarPath} ${inputFilePath} ${outputFolderPath} ${commandIndexOffset} ${strConstsIndexOffset}`, (error, stdout, stderr) => {
                 const compileSuccessMessage = stdout.trim();
                 const compileErrorMessage = stderr.trim();
                 compileSuccessMessage === "successful" ? successCallback(res) : failCallback(res, compileErrorMessage);
@@ -86,18 +91,22 @@ const tryCompileAndReturnCommsAndStrConsts = (function(){
         //todo: read the two files and return them
         let commsStrs = null;
         let strsConsts = null;
+        let isCommsStrsFileRead = false;
+        let isStrsConstsFileRead = false;
         fs.readFile(commandsStrPath, encoding, (err, data) => {
             if (err) throw err;
+            isCommsStrsFileRead = true;
             commsStrs = data;
             trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
         });
         fs.readFile(stringConstantsPath, encoding, (err, data) => {
             if (err) throw err;
+            isStrsConstsFileRead = true;
             strsConsts = data;
             trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
         });
         function trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts) {
-            if(commsStrs && strsConsts) {
+            if(isCommsStrsFileRead && isStrsConstsFileRead) {
                 res.json({
                     commsStrs,
                     strsConsts
@@ -109,15 +118,15 @@ const tryCompileAndReturnCommsAndStrConsts = (function(){
 })();
 
 /**
- * tries to compiles, if successful, returns a json object with two fields `commsStrs` and `strsConsts`
- * if not successful, returns a json object with a single field `errMsg`.
- */
-router.post('/exec', tryCompileAndReturnCommsAndStrConsts);
-
-/**
  * tries to compiles, if successful, returns an empty json object
  * if not successful, returns a json object with a single field `errMsg`.
  */
 router.post('/compile', tryCompileAndReportErrorMessage);
+
+/**
+ * tries to compiles, if successful, returns a json object with two fields `commsStrs` and `strsConsts`
+ * if not successful, returns a json object with a single field `errMsg`.
+ */
+router.post('/exec', tryCompileAndReturnCommsAndStrConsts);
 
 module.exports = router;

@@ -1,21 +1,6 @@
-const breakPoints = new Set();
-
-let editor;
-
-function init(){
-    editor = ace.edit("editor");
-    editor.$blockScrolling = Infinity;
-
-    tryCompileOnChanges();
-    listenerForBreakpointsSettings();
-    bindReRunSurveyButton();
-}
-
 function showCompileResult(messages){
     const compileMessageDiv = document.querySelector("#compile-message");
-
     while(compileMessageDiv.lastChild) compileMessageDiv.removeChild(compileMessageDiv.lastChild);
-    console.log(messages);
     const frag = document.createDocumentFragment();
     messages.forEach(function(msg){
         frag.appendChild(document.createTextNode(msg));
@@ -46,6 +31,7 @@ function tryCompileOnChanges(){
     }
 }
 
+const breakPoints = new Set();
 
 function listenerForBreakpointsSettings(){
     const $editorDiv = $("#editor");
@@ -62,20 +48,5 @@ function listenerForBreakpointsSettings(){
     });
 }
 
-function bindReRunSurveyButton(){
-    const reRunBtn = document.querySelector("#re-run-btn");
-    reRunBtn.onclick = reRunSurvey;
-}
 
-function reRunSurvey(){
-    const src = editor.getValue();
-    const dataSend = {data: src};
-    $.post("/compiler/exec", dataSend, function(res){
-        if(res.errMsg) showCompileResult(res.errMsg);
-        //`commsStrs` and `strsConsts`
-        window.interpreter = new Interpreter(res.commsStrs, res.strsConsts);
-        // window.interpreter.restartRun().then(vmResponse => console.log(vmResponse));
-        referenceUIController.rerunSurvey();
-    });
-}
 

@@ -22,6 +22,10 @@ export class FuncCallFrame {
         this.isUsingTempOperandStack = false;
     }
 
+    resetTempOperandStack(){
+        this.tempOperandStack = [];
+    }
+
     getOperandStack() {
         return this.isUsingTempOperandStack ? this.tempOperandStack : this.operandStack;
     }

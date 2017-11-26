@@ -5,7 +5,7 @@ import {isLockedReducer} from "./LockReducer";
 import {lastInteractionTimeReducer} from "./InteractionTimeReducer";
 import {questionsReducer} from "./QuestionsReducer";
 import {defaultState, flowReducer} from "./FlowReducer";
-import {actionTypeEndOfSurvey} from "../actions/FlowActions";
+import {actionTypeEndOfSurvey, actionTypeReset} from "../actions/FlowActions";
 
 //todo: here, add a reset action, and a reset reducer. when reset action is received, reset the status to default status (with a new token)
 //todo: add a start answering action (action sent when user click on the start button on welcome page), a corresponding reducer, that reducer would call vm's restart function.
@@ -19,7 +19,16 @@ const mainReducer = (state = defaultState, action) => {
         before the promise resolves, user may again click on the submit button, in this case, we don't want the answer data
         to be sent again.
      */
-    if((action.type !== actionTypePageData && action.type !== actionTypeEndOfSurvey) && state.isLocked) return state;
+    if(state.isLocked) {
+        switch (action.type) {
+            case actionTypePageData:
+            case actionTypeEndOfSurvey:
+            case actionTypeReset:
+                break;
+            default:
+                return state;
+        }
+    }
     const ret = flowReducer(state, action);
     if(ret) return ret;
 

@@ -78,7 +78,7 @@ interface InterpreterState {
     //start to debug from the first line. returns the promise of first question when it sees the first `sendQuestion`, or when it sees a break point.
     restartDebug: (token: string) => Promise<VMResponse>;
     //eval console input
-    consoleEval: (commandsStr: string) => void;
+    consoleEval: (commandsStr: string, stringConstsStr: string) => void;
 }
 
 abstract class AbstractInterpreterState implements InterpreterState {
@@ -128,9 +128,31 @@ abstract class AbstractInterpreterState implements InterpreterState {
         return this.vm.state.restartDebug(token);
     }
 
-    consoleEval(commandsStr: string) {
-        console.log("operation not supported under such state");
+    consoleEval(commandsStr: string, stringConstsStr: string) {
+        const vm = this.vm;
+        const preIdx = vm.commands.getNextCommandIndex();
+        //use temp operand stack to execute run the evaluation
+        vm.commands.advanceIndexForNewCommands();
+
+        vm.commands.parseCommandsAndAppend(commandsStr);
+        vm.parseStringConstantsAndAppend(stringConstsStr);
+
+        vm.callStack.getCurrentFrame().enableTempOperandStack();
+        while (vm.commands.hasNext()) {
+            const comm = vm.commands.getNext();
+            vm.execute(comm);
+        }
+
+        //finally, we need to print out whatever is at the head of the operand stack...
+        const ret = vm.callStack.getCurrentFrame().getOperandStack().pop();
+        vm.output ? vm.output(ret) : _print(ret);
+
+        vm.callStack.getCurrentFrame().disableTempOperandStack();
+        vm.callStack.getCurrentFrame().resetTempOperandStack();
+        vm.commands.setIndex(preIdx);
     }
+
+
 }
 
 
@@ -355,17 +377,6 @@ class DebugStateStopped extends AbstractInterpreterState {
         return this._stopAtNextStoppableLine(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
     }
 
-    consoleEval(commandsStr: string) {
-        const vm = this.vm;
-        vm.commands.parseCommandsAndAppend(commandsStr);
-        const preIdx = vm.commands.getNextCommandIndex();
-        vm.commands.advanceIndexForNewCommands();
-        vm.callStack.getCurrentFrame().enableTempOperandStack();
-        this.run();
-        vm.callStack.getCurrentFrame().disableTempOperandStack();
-        vm.state = this;
-        vm.commands.setIndex(preIdx);
-    }
 }
 
 export class Interpreter {
@@ -380,42 +391,47 @@ export class Interpreter {
     builtInFunctions: Map<string, Function>;
     isWaitingForAnswer: boolean;
     toResolveNextQuestionData: Function;
+    //todo: documentation to explain how we use token
     token: string;
+    output: (content: string) => void;
 
-    constructor(commandsStr: string, stringConstants: string) {
+    constructor(commandsStr: string, stringConstants: string, output?: (content: string) => void) {
         this.commands = new Commands(commandsStr);
         this.callStack = new CallStack();
         this.breakPoints = new Set();
         this.debugStateStart = new DebugStateStart(this);
         this.debugStateStopped = new DebugStateStopped(this);
         this.normalStateStart = new NormalStateStart(this);
-        this.stringConstants = this.parseStringConstants(stringConstants);
+        this.parseStringConstantsAndAppend(stringConstants);
         this.state = this.normalStateStart;
         this.initBuiltInFunctions();
         this.isWaitingForAnswer = false;
+        this.output = output;
     }
 
     private initBuiltInFunctions() {
         this.builtInFunctions = new Map();
         this.builtInFunctions.set("_print", _print);
         this.builtInFunctions.set("_getRandomNumber", _print);
-        this.builtInFunctions.set("List", _list);
+        this.builtInFunctions.set("List", this.output ? this.output : _list);
         this.builtInFunctions.set("_clock", _clock);
     }
 
-    private parseStringConstants(stringConstants: string) {
-        return stringConstants.split('\n')
-        /*
-         an empty string constant would at least have two " symbol because
-         a string constant is always surrounded by double quotes.
-         we need to filter out the empty lines because sometimes when pasting the
-         the string constants string manually we accidentally introduce some empty lines.
-         */
+    public parseStringConstantsAndAppend(stringConstants: string) {
+        const strConsts =  stringConstants.split('\n')
+            /*
+             an empty string constant would at least have two " symbol because
+             a string constant is always surrounded by double quotes.
+             we need to filter out the empty lines because sometimes when pasting the
+             the string constants string manually we accidentally introduce some empty lines.
+             */
             .filter(line => line.trim() !== "")
             .map(str => {
                 //remove the first and last " symbol
                 return str.substring(1, str.length - 1);
             });
+            if(!this.stringConstants) this.stringConstants = [];
+            this.stringConstants = this.stringConstants.concat(strConsts);
     }
 
     private popOperandStack() {
@@ -832,8 +848,8 @@ export class Interpreter {
         return this.state.submitAnswer(answerData);
     }
 
-    public consoleEval(commandsStr) {
-        this.state.consoleEval(commandsStr);
+    public consoleEval(commandsStr, stringConstsStr) {
+        this.state.consoleEval(commandsStr, stringConstsStr);
     }
 
     public addBreakPoint(lineNumber: number) {

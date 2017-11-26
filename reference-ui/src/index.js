@@ -25,12 +25,12 @@ const store = createStore(
 
 window.referenceUIController = {};
 
-window.referenceUIController.rerunSurvey = function(){
+window.referenceUIController.reRunSurvey = function(){
     store.dispatch(resetSurveyAction());
 };
 
-window.referenceUIController.redebugSurvey = function(){
-    store.dispatch(resetSurveyAction());
+window.referenceUIController.reDebugSurvey = function(){
+    store.dispatch(resetSurveyAction(true));
 };
 
 ReactDOM.render(

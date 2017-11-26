@@ -83,15 +83,27 @@ class ParseTreeVisitor {
     private String generateRandomIdentifierName(String prefix) {
         return "_" + prefix + "_gn" + (++randomIdentifierNameCounter);
     }
-    
+
+    //todo: here i need to add another entry point.... visitConsoleInput? to make use of all the methods i have coded here.
+
     List<StatementNode> visitFile(DLSParser.FileContext ctx) {
-        //we sees pages as functions ( has its own local variable scope )
-        //we sees a page group as a function that contains functions (pages)
-        return ctx.element()
-                .stream()
-                .map(this::getPageNodeOrPageGroupNode)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+        if(ctx.Temp() == null) {
+            //we sees pages as functions ( has its own local variable scope )
+            //we sees a page group as a function that contains functions (pages)
+            return ctx.element()
+                    .stream()
+                    .map(this::getPageNodeOrPageGroupNode)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+        } else {
+            List<DLSParser.StatementContext> rootStatements = ctx.statement();
+            boolean returnStatementInRootStatements = rootStatements.stream().anyMatch(DLSParser.ReturnStatementContext.class::isInstance);
+            if(returnStatementInRootStatements) throw new RuntimeException("illegal statement: cannot evaluate return directly..");
+            return rootStatements.stream()
+                    .map(this::getStatementNodes)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+        }
     }
 
     private List<StatementNode> getPageNodeOrPageGroupNode(DLSParser.ElementContext ctx) {

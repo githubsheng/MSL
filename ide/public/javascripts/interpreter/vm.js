@@ -87,8 +87,24 @@
 	        this.vm.state = this.vm.debugStateStart;
 	        return this.vm.state.restartDebug(token);
 	    }
-	    consoleEval(commandsStr) {
-	        console.log("operation not supported under such state");
+	    consoleEval(commandsStr, stringConstsStr) {
+	        const vm = this.vm;
+	        const preIdx = vm.commands.getNextCommandIndex();
+	        //use temp operand stack to execute run the evaluation
+	        vm.commands.advanceIndexForNewCommands();
+	        vm.commands.parseCommandsAndAppend(commandsStr);
+	        vm.parseStringConstantsAndAppend(stringConstsStr);
+	        vm.callStack.getCurrentFrame().enableTempOperandStack();
+	        while (vm.commands.hasNext()) {
+	            const comm = vm.commands.getNext();
+	            vm.execute(comm);
+	        }
+	        //finally, we need to print out whatever is at the head of the operand stack...
+	        const ret = vm.callStack.getCurrentFrame().getOperandStack().pop();
+	        vm.output ? vm.output(ret) : builtIn_1._print(ret);
+	        vm.callStack.getCurrentFrame().disableTempOperandStack();
+	        vm.callStack.getCurrentFrame().resetTempOperandStack();
+	        vm.commands.setIndex(preIdx);
 	    }
 	}
 	class NormalStateStart extends AbstractInterpreterState {
@@ -305,45 +321,38 @@
 	        this.vm.mergeAnswerData(answerData);
 	        return this._stopAtNextStoppableLine(this._getUnresolvedQuestionDataPromise.bind(this), this._getResolvedQuestionDataPromise.bind(this));
 	    }
-	    consoleEval(commandsStr) {
-	        const vm = this.vm;
-	        vm.commands.parseCommandsAndAppend(commandsStr);
-	        const preIdx = vm.commands.getNextCommandIndex();
-	        vm.commands.advanceIndexForNewCommands();
-	        vm.callStack.getCurrentFrame().enableTempOperandStack();
-	        this.run();
-	        vm.callStack.getCurrentFrame().disableTempOperandStack();
-	        vm.state = this;
-	        vm.commands.setIndex(preIdx);
-	    }
 	}
 	class Interpreter {
-	    constructor(commandsStr, stringConstants) {
+	    constructor(commandsStr, stringConstants, output) {
 	        this.commands = new commands_1.Commands(commandsStr);
 	        this.callStack = new callstack_1.CallStack();
 	        this.breakPoints = new Set();
 	        this.debugStateStart = new DebugStateStart(this);
 	        this.debugStateStopped = new DebugStateStopped(this);
 	        this.normalStateStart = new NormalStateStart(this);
-	        this.stringConstants = this.parseStringConstants(stringConstants);
+	        this.parseStringConstantsAndAppend(stringConstants);
 	        this.state = this.normalStateStart;
 	        this.initBuiltInFunctions();
 	        this.isWaitingForAnswer = false;
+	        this.output = output;
 	    }
 	    initBuiltInFunctions() {
 	        this.builtInFunctions = new Map();
 	        this.builtInFunctions.set("_print", builtIn_1._print);
 	        this.builtInFunctions.set("_getRandomNumber", builtIn_1._print);
-	        this.builtInFunctions.set("List", builtIn_1._list);
+	        this.builtInFunctions.set("List", this.output ? this.output : builtIn_1._list);
 	        this.builtInFunctions.set("_clock", builtIn_1._clock);
 	    }
-	    parseStringConstants(stringConstants) {
-	        return stringConstants.split('\n')
+	    parseStringConstantsAndAppend(stringConstants) {
+	        const strConsts = stringConstants.split('\n')
 	            .filter(line => line.trim() !== "")
 	            .map(str => {
 	            //remove the first and last " symbol
 	            return str.substring(1, str.length - 1);
 	        });
+	        if (!this.stringConstants)
+	            this.stringConstants = [];
+	        this.stringConstants = this.stringConstants.concat(strConsts);
 	    }
 	    popOperandStack() {
 	        return this.callStack.getCurrentFrame().getOperandStack().pop();
@@ -712,8 +721,8 @@
 	    submitAnswer(answerData) {
 	        return this.state.submitAnswer(answerData);
 	    }
-	    consoleEval(commandsStr) {
-	        this.state.consoleEval(commandsStr);
+	    consoleEval(commandsStr, stringConstsStr) {
+	        this.state.consoleEval(commandsStr, stringConstsStr);
 	    }
 	    addBreakPoint(lineNumber) {
 	        this.breakPoints.add(lineNumber);
@@ -781,14 +790,23 @@
 	    advanceIndexForNewCommands() {
 	        this.execIndex = this.commArray.length;
 	    }
-	    parseCommandsAndAppend(commandsStr) {
-	        this.commArray = commandsStr.split('\n')
+	    parseCommands(commandsStr) {
+	        /*
+	         caution: any command would at least have a name so it cannot be an empty line
+	         we need to filter out the empty lines because sometimes when pasting the
+	         the commands string manually (in test page) we accidentally introduce some empty lines.
+	         */
+	        return commandsStr.split('\n')
 	            .filter(line => line.trim() !== "")
 	            .map(line => {
 	            const comps = line.split('\t');
 	            const lineNumber = comps[0] === "" ? undefined : +(comps[0]);
 	            return new Command(lineNumber, comps[1], comps[2], comps[3], comps[4]);
 	        });
+	    }
+	    parseCommandsAndAppend(commandsStr) {
+	        const commands = this.parseCommands(commandsStr);
+	        this.commArray = this.commArray.concat(commands);
 	    }
 	    reset() {
 	        this.execIndex = 0;
@@ -821,6 +839,9 @@
 	    }
 	    disableTempOperandStack() {
 	        this.isUsingTempOperandStack = false;
+	    }
+	    resetTempOperandStack() {
+	        this.tempOperandStack = [];
 	    }
 	    getOperandStack() {
 	        return this.isUsingTempOperandStack ? this.tempOperandStack : this.operandStack;

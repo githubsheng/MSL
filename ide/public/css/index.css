@@ -66,10 +66,26 @@
     background: green;
 }
 
-#terminal {
+#console {
     position: absolute;
     width: 100%;
     bottom: 0;
     top: 600px;
     background: lightblue;
+    padding: 5px;
+}
+
+#console-output {
+    width: 100%;
+}
+
+#console-input {
+    resize: none;
+    width: 100%;
+    border: none;
+    height: 1000px;
+}
+
+#console-input:focus {
+    outline: none;
 }

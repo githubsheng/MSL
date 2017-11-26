@@ -45,6 +45,19 @@ public class Generator {
 
     private List<String> stringConstants = new ArrayList<>();
 
+    private final int commandIndexOffset;
+    private final int stringConstantsIndexOffset;
+
+    public Generator(){
+        this.commandIndexOffset = 0;
+        this.stringConstantsIndexOffset = 0;
+    }
+
+    public Generator(int commandIndexOffset, int stringConstantsIndexOffset){
+        this.commandIndexOffset = commandIndexOffset;
+        this.stringConstantsIndexOffset = stringConstantsIndexOffset;
+    }
+
     public Result getCommands(List<StatementNode> statements) {
         List<Command> cs = statements.stream()
                 .map(this::generate)
@@ -61,7 +74,7 @@ public class Generator {
 
     private void setIndex(List<Command> cs) {
         for(int i = 0; i < cs.size(); i++) {
-            cs.get(i).setIndex(i);
+            cs.get(i).setIndex(i + this.commandIndexOffset);
         }
     }
 
@@ -489,7 +502,7 @@ public class Generator {
     }
 
     private List<Command> generate(StringNode strNode) {
-        int index = stringConstants.size();
+        int index = stringConstants.size() + this.stringConstantsIndexOffset;
         String str = strNode.getVal();
         //because of the lexer reason, we sometimes gets an extra \n
         if(str.endsWith("\n")) str = str.substring(0, str.length() - 1);

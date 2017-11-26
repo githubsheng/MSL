@@ -30,9 +30,9 @@ export function flowReducer(state, action) {
 
 function reset(state, action){
     const changes = {
-        token: Date.now().toString()
+        token: Date.now().toString(),
+        isDebug: action.isDebug
     };
-    if(action.isDebug) changes.isDebug = true;
     return Object.assign({}, defaultState, changes);
 }
 
@@ -56,14 +56,14 @@ function endSurvey(state, action) {
 }
 
 function restartDebug(token){
-    return window.interpreter.restartRun(token);
+    return window.interpreter.restartDebug(token);
 
     //todo: in real case, call vm.restartDebug();
     // return fakeData(token);
 }
 
 function restartRun(token){
-    return window.interpreter.restartDebug(token);
+    return window.interpreter.restartRun(token);
     //todo: in real case, call vm.restartRun();
     // return fakeData(token);
 }

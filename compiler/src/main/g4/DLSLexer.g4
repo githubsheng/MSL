@@ -4,6 +4,11 @@ lexer grammar DLSLexer;
     private int opened = 0;
 }
 
+Temp:
+'###temp'
+-> pushMode(ScriptMode)
+;
+
 PageGroupStart
 : '[PageGroup'
 -> pushMode(ScriptMode), pushMode(TagMode)

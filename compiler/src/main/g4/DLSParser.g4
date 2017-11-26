@@ -2,7 +2,7 @@ parser grammar DLSParser;
 
 options { tokenVocab=DLSLexer; }
 
-file: element*;
+file: element* | Temp statement*;
 
 element
 : page

@@ -10,8 +10,8 @@ export function augmentQuestions(questions, action) {
 //this reducer augment a vm passed in question. see reference/questionData for more information.
 function augmentQuestion(question){
     question = augmentWithStatsFields(question);
+    // question = directAccessToRows(question);
     question = augmentRows(question);
-    question = directAccessToRows(question);
     return question;
 }
 
@@ -42,7 +42,7 @@ function augmentRows(question) {
             const [rowId, row] = kv;
             newRows[rowId] = Object.assign({}, row, {id: rowId, selected: false});
         });
-        return Object.assign({}, question, {rows: newRows});
+        return Object.assign({}, question, newRows);
     }
 
     function augmentMatrixQuestions(question){
@@ -63,12 +63,12 @@ function augmentRows(question) {
             newRows[rowId] = newRow;
         });
 
-        return Object.assign({}, question, {rows: newRows});
+        return Object.assign({}, question, newRows);
     }
 }
 
-function directAccessToRows(question) {
-    return Object.assign({}, question, question.rows);
-}
+// function directAccessToRows(question) {
+//     return Object.assign({}, question, question.rows);
+// }
 
 

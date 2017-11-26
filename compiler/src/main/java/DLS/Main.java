@@ -16,9 +16,9 @@ import java.util.List;
 
 public class Main {
 
+    //todo: the main methods needs to get a flag to find out whether we are evaluating a console expression or a survey..
     public static void main(String[] args) throws IOException {
 
-        //todo: change this url from hardcoded to something else
         ClassLoader classLoader = Main.class.getClassLoader();
         String sourcePath = null;
         String outputPath = null;
@@ -30,6 +30,7 @@ public class Main {
         } else {
             file = new File(classLoader.getResource("input.txt").getFile());
         }
+
         // create a CharStream that reads from standard input
         ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(file));
 
@@ -51,10 +52,21 @@ public class Main {
 
         //generate abstract syntax tree...
         ParseTreeVisitor ptv = new ParseTreeVisitor();
+        //todo: here, if we are evaluating a console expression, then maybe we use ptv.visitConsoleInput
         List<StatementNode> statements = ptv.visitFile(fileContext);
 
         //generate commands...
-        Generator cmdGen = new Generator();
+        int commandIndexOffset = 0;
+        int stringConstantsIndexOffset = 0;
+        Generator cmdGen;
+        if (args.length > 3) {
+            commandIndexOffset = Integer.valueOf(args[2]);
+            stringConstantsIndexOffset = Integer.valueOf(args[3]);
+            cmdGen = new Generator(commandIndexOffset, stringConstantsIndexOffset);
+        } else {
+            cmdGen = new Generator();
+        }
+
         Result ret = cmdGen.getCommands(statements);
 
         String commandsStrFileName;

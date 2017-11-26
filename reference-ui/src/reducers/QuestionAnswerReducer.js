@@ -9,30 +9,28 @@ export function setSelect(state, action) {
     const {rowId, colId, questionId, val} = action;
     const questionIndex = getQuestionIndexById(questions, questionId);
     const question = questions.get(questionIndex);
-    const questionChanges = {
-        rows: {}
-    };
+    const questionChanges = {};
 
     if (colId === undefined || colId === null) {
-        questionChanges.rows[rowId] = {selected: val};
+        questionChanges[rowId] = {selected: val};
         //for single choices, we need to set selected in other rows to be false.
         if(question.type === "single-choice") {
             Object.entries(question.rows).forEach(rowKV => {
                 const [rId] = rowKV;
                 if(rId !== rowId) {
-                    questionChanges.rows[rId] = {selected: false};
+                    questionChanges[rId] = {selected: false};
                 }
             });
         }
     } else {
-        questionChanges.rows[rowId] = {};
+        questionChanges[rowId] = {};
         //for single matrix, we need to set selected in other cols under this row to be false.
-        questionChanges.rows[rowId][colId] = {selected: val};
+        questionChanges[rowId][colId] = {selected: val};
         if(question.type === "single-matrix") {
             Object.entries(question.cols).forEach(colKV => {
                 const [cId] = colKV;
                 if(cId !== colId) {
-                    questionChanges.rows[rowId][cId] = {selected: false};
+                    questionChanges[rowId][cId] = {selected: false};
                 }
             })
         }

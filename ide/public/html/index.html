@@ -6,9 +6,10 @@
     <link rel="stylesheet" href="../css/index.css"/>
     <script src="jquery/jquery.js"></script>
     <script src="../javascripts/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="../javascripts/interpreter/interpreter.js"></script>
-
+    <script src="../javascripts/interpreter/vm.js"></script>
+    <script src="../javascripts/debugger.js"></script>
     <script src="../javascripts/editor.js"></script>
+    <script src="../javascripts/main.js"></script>
 </head>
 <body onload="init()">
 <div id="container">
@@ -19,12 +20,16 @@
     <div id="right" style="float: left">
         <div id="debugger-controller">
             <button id="re-run-btn">Run</button>
-            <button>Debug</button>
-            <button>Resume debugging</button>
-            <button>Step over</button>
+            <button id="re-debug-btn">Debug</button>
+            <button id="resume-debug-btn">Resume debugging</button>
+            <button id="step-over-btn">Step over</button>
         </div>
         <div id="reference-ui"></div>
-        <div id="terminal"></div>
+        <div id="console">
+            <div id="console-output">
+            </div>
+            <textarea id="console-input"></textarea>
+        </div>
     </div>
 </div>
 <script src="../javascripts/reference_ui/reference-ui.js"></script>

@@ -50,7 +50,7 @@ export class Commands {
         this.execIndex = index;
     }
 
-    setIndexUsingStr (index: string) {
+    setIndexUsingStr(index: string) {
         this.execIndex = +(index);
     }
 
@@ -66,13 +66,13 @@ export class Commands {
         this.execIndex = this.commArray.length;
     }
 
-    parseCommandsAndAppend(commandsStr: string) {
-        this.commArray = commandsStr.split('\n')
+    private parseCommands(commandsStr: string) {
         /*
-         any command would at least have a name so it cannot be an empty line
+         caution: any command would at least have a name so it cannot be an empty line
          we need to filter out the empty lines because sometimes when pasting the
-         the commands string manually we accidentally introduce some empty lines.
+         the commands string manually (in test page) we accidentally introduce some empty lines.
          */
+        return commandsStr.split('\n')
             .filter(line => line.trim() !== "")
             .map(line => {
                 const comps = line.split('\t');
@@ -81,12 +81,17 @@ export class Commands {
             });
     }
 
+    parseCommandsAndAppend(commandsStr: string) {
+        const commands = this.parseCommands(commandsStr);
+        this.commArray = this.commArray.concat(commands);
+    }
+
     reset() {
         this.execIndex = 0;
         this.commArray = this.commArray.slice(0, this.originalCommArrayLength);
     }
 
-    end(){
+    end() {
         //index for next command points at undefined.
         //this allows hasNext() to properly return false when we exit the program.
         this.execIndex = this.commArray.length;

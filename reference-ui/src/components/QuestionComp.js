@@ -9,8 +9,8 @@ class Question extends PureComponent {
         const {question, setSelect} = this.props;
 
         const rowComps = Object.entries(question.rows).map(rowKV => {
-            const [rowId, row] = rowKV;
-
+            const [rowId] = rowKV;
+            const row = question[rowId];
             switch (question.type) {
                 case "single-choice":
                     return <Row key={rowId} row={row} type="radio" question={question} setSelect={setSelect}/>;
