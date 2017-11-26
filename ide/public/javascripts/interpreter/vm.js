@@ -332,15 +332,15 @@
 	        this.normalStateStart = new NormalStateStart(this);
 	        this.parseStringConstantsAndAppend(stringConstants);
 	        this.state = this.normalStateStart;
-	        this.initBuiltInFunctions();
 	        this.isWaitingForAnswer = false;
 	        this.output = output;
+	        this.initBuiltInFunctions();
 	    }
 	    initBuiltInFunctions() {
 	        this.builtInFunctions = new Map();
-	        this.builtInFunctions.set("_print", builtIn_1._print);
-	        this.builtInFunctions.set("_getRandomNumber", builtIn_1._print);
-	        this.builtInFunctions.set("List", this.output ? this.output : builtIn_1._list);
+	        this.builtInFunctions.set("_print", this.output ? this.output : builtIn_1._print);
+	        this.builtInFunctions.set("_getRandomNumber", builtIn_1._getRandomNumber);
+	        this.builtInFunctions.set("List", builtIn_1._list);
 	        this.builtInFunctions.set("_clock", builtIn_1._clock);
 	    }
 	    parseStringConstantsAndAppend(stringConstants) {
