@@ -4,8 +4,21 @@ function clearConsoleOutput(){
 
 function appendInputContentToConsoleOutput(content) {
     const block = document.createElement("div");
-    block.appendChild(document.createTextNode(">"));
-    block.appendChild(document.createTextNode(content));
+
+    const l = document.createElement("div");
+    l.appendChild(document.createTextNode(">"));
+    block.appendChild(l);
+
+    const c = document.createElement("div");
+    block.appendChild(c);
+    const t = content.split('\n');
+    const s = t.length - 1;
+    t.forEach((line, index) => {
+        c.appendChild(document.createTextNode(line));
+        if(index !== s)
+            c.appendChild(document.createElement("br"));
+    });
+
     consoleOutputDiv.appendChild(block);
 }
 
