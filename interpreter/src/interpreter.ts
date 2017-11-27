@@ -419,15 +419,21 @@ export class Interpreter {
 
     public parseStringConstantsAndAppend(stringConstants: string) {
         const strConsts =  stringConstants.split('\n')
-            /*
+        /*
              an empty string constant would at least have two " symbol because
              a string constant is always surrounded by double quotes.
              we need to filter out the empty lines because sometimes when pasting the
              the string constants string manually we accidentally introduce some empty lines.
+
+             also...in windows, line break is \r\n, so when splitting by \n we have an extra \r at the end of each string
+             we need to remove that extra \r as well.
              */
-            .filter(line => line.trim() !== "")
+            .map(line => line.trim())
+            .filter(line => line !== "")
             .map(str => {
-                //remove the first and last " symbol
+                /*
+                 remove the first and last " symbol
+                 */
                 return str.substring(1, str.length - 1);
             });
             if(!this.stringConstants) this.stringConstants = [];
