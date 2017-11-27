@@ -118,8 +118,8 @@ function getQuestionIndexById(questions, id) {
 
 export function submitAnswersReducer(state, action) {
     if (action.type === actionTypeSubmitAnswer) {
-        //todo: we should not send state.token, but for the fake data to pass validation, it needs the token
-        const questionsPromise = sendAnswerToInterpreter(state.questions.toArray());
+        //we should not send state.token, but for the fake data to pass validation, it needs the token
+        const questionsPromise = sendAnswerToInterpreter(state.questions.toArray(), state.token);
         questionsPromise.then(function (response) {
             if(response.token === state.token) {
                 if(!response.questions || response.questions.length === 0) {
@@ -132,8 +132,12 @@ export function submitAnswersReducer(state, action) {
     }
 }
 
-function sendAnswerToInterpreter(questionsWithAnswers) {
-    return window.interpreter.submitAnswer(questionsWithAnswers);
+function sendAnswerToInterpreter(questionsWithAnswers, token) {
+    if(!window.isDev) {
+        return window.interpreter.submitAnswer(questionsWithAnswers);
+    } else {
+        return fakeSendAnswerToInterpreter(questionsWithAnswers, token);
+    }
 }
 
 //todo: connect to vm and get back the real questions data

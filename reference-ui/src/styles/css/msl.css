@@ -1,0 +1,53 @@
+div.question-page > div.banner {
+    background: #337ab7;
+    color: white;
+    padding: 5px;
+    font-weight: bold;
+}
+
+div.question-page > div.body > div.body-center {
+    padding: 5px;
+}
+
+div.question-page > div.submit-container {
+    text-align: center;
+}
+
+div.question {
+    margin: 10px 0 30px 0;
+}
+
+div.question > div.question-text {
+    font-size: 1.2em;
+    border-left: 5px solid #337ab7;
+    padding-left: 5px;
+    line-height: 2em;
+}
+
+div.question > div.rows-container {
+    margin-left: 20px;
+}
+
+div.question > div.rows-container > div.row-with-cols > div.row-text {
+    background-color: #e0dfdf;
+    margin: 10px 0;
+    padding: 5px 10px;
+    border-radius: 3px;
+}
+
+div.question-row, div.question-col {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+}
+
+div.question-row > input[type="radio"],
+div.question-row > input[type="checkbox"],
+div.question-col > input[type="radio"],
+div.question-col > input[type="checkbox"]
+{
+    width: 25px;
+    height: 15px;
+    flex: none;
+    margin: 0;
+}

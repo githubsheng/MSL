@@ -56,16 +56,19 @@ function endSurvey(state, action) {
 }
 
 function restartDebug(token){
-    return window.interpreter.restartDebug(token);
-
-    //todo: in real case, call vm.restartDebug();
-    // return fakeData(token);
+    if(!window.isDev) {
+        return window.interpreter.restartDebug(token);
+    } else {
+        return fakeData(token);
+    }
 }
 
 function restartRun(token){
-    return window.interpreter.restartRun(token);
-    //todo: in real case, call vm.restartRun();
-    // return fakeData(token);
+    if(!window.isDev) {
+        return window.interpreter.restartRun(token);
+    } else {
+        return fakeData(token);
+    }
 }
 
 //todo: this returns fake data

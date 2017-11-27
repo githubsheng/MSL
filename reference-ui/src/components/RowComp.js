@@ -8,10 +8,11 @@ export class Row extends PureComponent {
     render(){
         const {row, type, question, setSelect} = this.props;
         return (
-            <div className="row">
+            //using question-row instead of row because boostrap css also have row class
+            <div className="question-row">
                 <input type={type} checked={row.selected}
                        onClick={evt => setSelect(question.id, row.id, null, !row.selected)}/>
-                <span className="text">{row.text}</span>
+                <div className="text">{row.text}</div>
             </div>
         )
     }

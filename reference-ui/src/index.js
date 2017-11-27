@@ -9,6 +9,8 @@ import registerServiceWorker from './registerServiceWorker';
 import App from './App';
 import mainReducer from "./reducers/MainReducer";
 import {resetSurveyAction} from "./actions/FlowActions";
+import "./styles/css/bootstrap.css";
+import "./styles/css/msl.css";
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -33,11 +35,13 @@ window.referenceUIController.reDebugSurvey = function(){
     store.dispatch(resetSurveyAction(true));
 };
 
+const rootElementId = window.isDev ? "root" : "reference-ui";
+
 ReactDOM.render(
     <Provider store={store}>
         <App />
     </Provider>,
-    document.getElementById('reference-ui')
+    document.getElementById(rootElementId)
 );
 
 // registerServiceWorker();

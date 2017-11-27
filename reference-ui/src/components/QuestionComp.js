@@ -25,9 +25,9 @@ class Question extends PureComponent {
 
         return (
             <div className="question">
-                <div className="above-question-text"></div>
+                <div className="above-question-text"/>
                 <div className="question-text">{question.text}</div>
-                <div className="below-question-text"></div>
+                <div className="below-question-text"/>
                 <div className="rows-container">{rowComps}</div>
             </div>
         );

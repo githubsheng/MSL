@@ -23,7 +23,8 @@ class QuestionPage extends PureComponent {
             //todo: change the class name here, it should be question-page*, rather than page*
             //the extra structures, such as page-body-left, page-body-right are used by the plugins to cusomize the UI.
             <div className="question-page">
-                <div className="header"></div>
+                <div className="banner">MSL</div>
+                <div className="header"/>
                 <div className="body">
                     <div className="body-left">
                     </div>
@@ -34,9 +35,9 @@ class QuestionPage extends PureComponent {
                     </div>
                 </div>
                 <div className="submit-container">
-                    <button className="submit-button" onClick={submitAnswersHandler}>Submit</button>
+                    <button className="submit-button btn btn-primary" onClick={submitAnswersHandler}>Submit</button>
                 </div>
-                <div className="footer"></div>
+                <div className="footer"/>
             </div>
         );
     }
