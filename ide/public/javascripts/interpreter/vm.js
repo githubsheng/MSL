@@ -345,9 +345,12 @@
 	    }
 	    parseStringConstantsAndAppend(stringConstants) {
 	        const strConsts = stringConstants.split('\n')
-	            .filter(line => line.trim() !== "")
+	            .map(line => line.trim())
+	            .filter(line => line !== "")
 	            .map(str => {
-	            //remove the first and last " symbol
+	            /*
+	             remove the first and last " symbol
+	             */
 	            return str.substring(1, str.length - 1);
 	        });
 	        if (!this.stringConstants)
