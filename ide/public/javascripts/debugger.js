@@ -54,7 +54,12 @@ function evaluateExpression(content){
     };
 
     $.post("/compiler/exec", dataSend, function(res){
-        if(res.errMsg) showCompileResult(res.errMsg);
+        if(res.errMsg) {
+            showCompileResult(res.errMsg, false);
+            return;
+        } else {
+            showCompileResult(["compilation success"], true);
+        }
         //`res.commsStrs` and `res.strsConsts`
 
         vm.consoleEval(res.commsStrs, res.strsConsts);
@@ -82,7 +87,12 @@ function reRunSurvey(){
     const src = editor.getValue();
     const dataSend = {data: src};
     $.post("/compiler/exec", dataSend, function(res){
-        if(res.errMsg) showCompileResult(res.errMsg);
+        if(res.errMsg) {
+            showCompileResult(res.errMsg, false);
+            return;
+        } else {
+            showCompileResult(["compilation success"], true);
+        }
         //`commsStrs` and `strsConsts`
         window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput);
         // window.interpreter.restartRun().then(vmResponse => console.log(vmResponse));

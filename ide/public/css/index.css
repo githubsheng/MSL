@@ -31,6 +31,15 @@
     background: white;
     overflow: auto;
     border-radius: 5px;
+    padding: 5px 10px;
+}
+
+#compile-message.error {
+    color: #bb0000;
+}
+
+#compile-message.success {
+    color: green;
 }
 
 #editor div.breakPoint {

@@ -1,4 +1,4 @@
-function showCompileResult(messages){
+function showCompileResult(messages, isSuccessful){
     const compileMessageDiv = document.querySelector("#compile-message");
     while(compileMessageDiv.lastChild) compileMessageDiv.removeChild(compileMessageDiv.lastChild);
     const frag = document.createDocumentFragment();
@@ -6,6 +6,7 @@ function showCompileResult(messages){
         frag.appendChild(document.createTextNode(msg));
         frag.appendChild(document.createElement("br"));
     });
+    compileMessageDiv.className = isSuccessful ? "success" : "error";
     compileMessageDiv.appendChild(frag);
 }
 
@@ -25,7 +26,7 @@ function tryCompileOnChanges(){
             const src = editor.getValue();
             const dataSend = {data: src};
             $.post("/compiler/compile", dataSend, function(res){
-                res.errMsg ? showCompileResult(res.errMsg) : showCompileResult([]);
+                res.errMsg ? showCompileResult(res.errMsg, false) : showCompileResult(["compilation success"], true);
             });
         }
     }
