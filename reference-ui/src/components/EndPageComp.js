@@ -11,8 +11,11 @@ export class EndPageComp extends PureComponent {
 
         return (
             <div className="end-survey-page">
+                <div className="banner">MSL</div>
                 <div className="thank-you-message">
-                    Thank you for taking the survey, have a nice day!
+                    <p className="well">
+                        Thank you for taking the survey, have a nice day!
+                    </p>
                 </div>
             </div>
         )

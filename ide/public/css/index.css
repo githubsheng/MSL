@@ -45,7 +45,6 @@
     left: 60%;
     right: 0;
     bottom: 0;
-    background: lightgoldenrodyellow;
 }
 
 #debugger-controller {
@@ -63,7 +62,6 @@
 #reference-ui {
     height: 560px;
     width: 100%;
-    background: green;
 }
 
 #console {

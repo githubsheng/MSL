@@ -1,4 +1,4 @@
-div.question-page > div.banner {
+div.banner {
     background: #337ab7;
     color: white;
     padding: 5px;
@@ -41,6 +41,10 @@ div.question-row, div.question-col {
     margin: 5px;
 }
 
+input[type="radio"]:hover, input[type="checkbox"]:hover {
+    cursor: pointer;
+}
+
 div.question-row > input[type="radio"],
 div.question-row > input[type="checkbox"],
 div.question-col > input[type="radio"],
@@ -50,4 +54,16 @@ div.question-col > input[type="checkbox"]
     height: 15px;
     flex: none;
     margin: 0;
+}
+
+div.legal-documents {
+    padding: 5px;
+}
+
+div.start-survey-button-container {
+    text-align: center;
+}
+
+div.thank-you-message {
+    padding: 5px;
 }
