@@ -7,6 +7,8 @@ export class Row extends PureComponent {
 
     render(){
         const {row, type, question, setSelect} = this.props;
+        if(row.hide === 1 || row.hide === "true") return null;
+        if(row.show === 0 || row.show === "false") return null;
         return (
             //using question-row instead of row because boostrap css also have row class
             <div className="question-row">
@@ -23,6 +25,10 @@ export class RowWithColumns extends PureComponent {
 
     render() {
         const {row, type, question, setSelect} = this.props;
+
+        if(row.hide === 1 || row.hide === "true") return null;
+        if(row.show === 0 || row.show === "false") return null;
+
         const colCompsInRow = Object.entries(question.cols).map(colKV => {
             const [colId] = colKV;
             const colInRow = row[colId];
