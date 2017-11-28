@@ -57,7 +57,7 @@ div.question-col > input[type="checkbox"]
 }
 
 div.legal-documents {
-    padding: 5px;
+    padding: 10px;
 }
 
 div.start-survey-button-container {
@@ -65,5 +65,5 @@ div.start-survey-button-container {
 }
 
 div.thank-you-message {
-    padding: 5px;
+    padding: 10px;
 }
