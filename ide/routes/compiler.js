@@ -62,13 +62,11 @@ function commonFailureCallback(res, compileErrorMessage){
 function compileCallbackGenenertor(successCallback, failCallback){
     return function (req, res, next) {
         const {data: src, commandIndexOffset = 0, strConstsIndexOffset = 0} = req.body;
-        console.log(src, commandIndexOffset, strConstsIndexOffset);
         fs.writeFile(inputFilePath, src, (error) => {
             if(error) {
                 console.log(error);
                 return;
             }
-            console.log("going to run java program.");
             exec(`java -jar ${jarPath} ${inputFilePath} ${outputFolderPath} ${commandIndexOffset} ${strConstsIndexOffset}`, (error, stdout, stderr) => {
                 const compileSuccessMessage = stdout.trim();
                 const compileErrorMessage = stderr.trim();

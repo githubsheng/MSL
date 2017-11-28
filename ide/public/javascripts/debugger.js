@@ -4,29 +4,35 @@ function clearConsoleOutput(){
 
 function appendInputContentToConsoleOutput(content) {
     const block = document.createElement("div");
-
-    const l = document.createElement("div");
-    l.appendChild(document.createTextNode(">"));
-    block.appendChild(l);
-
-    const c = document.createElement("div");
-    block.appendChild(c);
     const t = content.split('\n');
     const s = t.length - 1;
     t.forEach((line, index) => {
-        c.appendChild(document.createTextNode(line));
+        block.appendChild(document.createTextNode(line));
         if(index !== s)
-            c.appendChild(document.createElement("br"));
+            block.appendChild(document.createElement("br"));
     });
-
+    block.className = "input-lines";
     consoleOutputDiv.appendChild(block);
 }
 
+//consoleOutputDiv and consoleDiv is initialized in main.js
 function appendResultToConsoleOutput(content){
     const block = document.createElement("div");
-    block.appendChild(document.createTextNode("<"));
     block.appendChild(document.createTextNode(content));
+    block.className = "output-lines";
     consoleOutputDiv.appendChild(block);
+
+    //all the following code is used to shift the input box upwards
+    //when it goes out of view.
+    const downShift = consoleOutputDiv.getBoundingClientRect().height;
+    const upShift = consoleDiv.scrollTop;
+    const containerHeight = consoleDiv.getBoundingClientRect().height;
+    //containerHeight - (downShift - upShift) = 20;
+    //containerHeight - downShift + upShift = 20;
+    //upShift = 20 - containerHeight + downShift;
+    if(downShift - upShift > containerHeight - 30) {
+        consoleDiv.scrollTop = 30 - containerHeight + downShift;
+    }
 }
 
 function evaluateExpression(content){

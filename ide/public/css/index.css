@@ -94,11 +94,28 @@
     width: 100%;
 }
 
+#console-output .input-lines, #console-output .output-lines {
+    padding-left: 10px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#console-output .input-lines {
+    border-left: 2px solid lightgray;
+}
+
+#console-output .output-lines {
+    border-left: 2px solid #5cb85c;
+}
+
 #console-input {
     resize: none;
     width: 100%;
     border: none;
     height: 1000px;
+    font-size: 14px;
+    line-height: 20px;
+    padding: 0 0 0 12px;
 }
 
 #console-input:focus {
