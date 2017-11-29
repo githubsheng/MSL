@@ -1,12 +1,28 @@
 [Page]
 
-print 1
-print 2
-print 3
-
-[SingleChoice id="q1"]hello world
+[MultipleMatrix id="q1"]hello world
 [Row id="r1"]option 1
 [Row id="r2"]option 2
+[Col id="c1"]option a
+[Col id="c2"]option b
+[Col]option c
+[Col]option d
+[Submit]
+
+if q1.r1.c1.selected then
+    print "q1.r1.c1 is selected!!"
+end
+
+[PageEnd]
+
+[Page]
+[SingleChoice]goodbye world
+[Row]option 3
+[Row]option 4
+
+[SingleChoice]byebye world
+[Row]option 3
+[Row]option 4
 [Submit]
 [PageEnd]
 

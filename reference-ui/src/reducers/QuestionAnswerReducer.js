@@ -241,7 +241,7 @@ function fakeSendAnswerToInterpreter(questions, token) {
                 },
                 {
                     id: "q3",
-                    type: "single-matrix",
+                    type: "multiple-matrix",
                     text: "q3 text",
                     rows: {
                         _generatedIdentifierName6: {

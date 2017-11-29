@@ -313,7 +313,7 @@ class ParseTreeVisitor {
         } else if (questionCtx.singleMatrixQuestion() != null) {
             DLSParser.SingleMatrixQuestionContext sm = questionCtx.singleMatrixQuestion();
             return getCommonQuestionStatements(sm.attributes(), sm.textArea(), getQuestionTypeField(sm), sm.rows, sm.cols);
-        } else if(questionCtx.multipleChoiceQuestion() != null) {
+        } else if(questionCtx.multipleMatrixQuestion() != null) {
             DLSParser.MultipleMatrixQuestionContext mm = questionCtx.multipleMatrixQuestion();
             return getCommonQuestionStatements(mm.attributes(), mm.textArea(), getQuestionTypeField(mm), mm.rows, mm.cols);
         } else {
