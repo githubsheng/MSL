@@ -2,13 +2,17 @@ import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 
 import {Col} from './ColComp';
+import {isPropertyValueFalse, isPropertyValueTrue, rotate, shuffle} from "../util/util";
 
 export class Row extends PureComponent {
 
     render(){
         const {row, type, question, setSelect} = this.props;
-        if(row.hide === true || row.hide === "true") return null;
-        if(row.show === false || row.show === "false") return null;
+        // if(row.hide === true || row.hide === "true") return null;
+        if(isPropertyValueTrue(row.hide)) return null;
+        // if(row.show === false || row.show === "false") return null;
+        if(isPropertyValueFalse(row.show)) return null;
+
         return (
             //using question-row instead of row because boostrap css also have row class
             <div className="question-row">
@@ -26,8 +30,10 @@ export class RowWithColumns extends PureComponent {
     render() {
         const {row, type, question, setSelect} = this.props;
 
-        if(row.hide === true || row.hide === "true") return null;
-        if(row.show === false || row.show === "false") return null;
+        // if(row.hide === true || row.hide === "true") return null;
+        if(isPropertyValueTrue(row.hide)) return null;
+        // if(row.show === false || row.show === "false") return null;
+        if(isPropertyValueFalse(row.show)) return null;
 
         const colCompsInRow = Object.entries(question.cols).map(colKV => {
             const [colId] = colKV;
@@ -36,6 +42,10 @@ export class RowWithColumns extends PureComponent {
                 <Col key={colId} col={colInRow} row={row} type={type} setSelect={setSelect} question={question}/>
             );
         });
+
+        if(isPropertyValueTrue(question.randomize_col)) shuffle(colCompsInRow);
+        if(isPropertyValueTrue(question.rotate_col)) rotate(colCompsInRow);
+
         return (
             <div className="row-with-cols">
                 <div className="row-text">{row.text}</div>

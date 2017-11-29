@@ -63,6 +63,8 @@ class ParseTreeVisitor {
         questionImplicitValues.put(QuestionAttributes.HIDE.getName(), "true");
         questionImplicitValues.put(QuestionAttributes.RANDOMIZE.getName(), "true");
         questionImplicitValues.put(QuestionAttributes.ROTATE.getName(), "true");
+        questionImplicitValues.put(QuestionAttributes.RANDOMIZE_COL.getName(), "true");
+        questionImplicitValues.put(QuestionAttributes.ROTATE_COL.getName(), "true");
         questionImplicitValues.put(QuestionAttributes.REQUIRED.getName(), "true");
 
         //page group implicit attribute values

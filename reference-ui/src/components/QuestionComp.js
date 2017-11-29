@@ -2,14 +2,17 @@ import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 
 import {Row, RowWithColumns} from './RowComp';
+import {isPropertyValueFalse, isPropertyValueTrue, rotate, shuffle} from "../util/util";
 
 class Question extends PureComponent {
     render (){
 
         const {question, setSelect} = this.props;
 
-        if(question.hide === true || question.hide === "true") return null;
-        if(question.show === false || question.show === "false") return null;
+        // if(question.hide === true || question.hide === "true") return null;
+        if(isPropertyValueTrue(question.hide)) return null;
+        // if(question.show === false || question.show === "false") return null;
+        if(isPropertyValueFalse(question.show)) return null;
 
         const rowComps = Object.entries(question.rows).map(rowKV => {
             const [rowId] = rowKV;
@@ -25,6 +28,9 @@ class Question extends PureComponent {
                     throw new Error("question type not yet supported");
             }
         });
+
+        if(isPropertyValueTrue(question.randomize)) shuffle(rowComps);
+        if(isPropertyValueTrue(question.rotate)) rotate(rowComps);
 
         return (
             <div className="question">
