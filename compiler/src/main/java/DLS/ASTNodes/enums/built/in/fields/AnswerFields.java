@@ -1,7 +1,7 @@
 package DLS.ASTNodes.enums.built.in.fields;
 
 public enum AnswerFields {
-    IsSelected("isSelected"), Rank("rank");
+    IsSelected("selected"), Rank("rank");
 
     private final String name;
 
