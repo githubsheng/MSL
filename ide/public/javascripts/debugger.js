@@ -20,6 +20,7 @@ function appendResultToConsoleOutput(content){
     const block = document.createElement("div");
     block.appendChild(document.createTextNode(content));
     block.className = "output-lines";
+    if(content === undefined) block.classList.add("undefined");
     consoleOutputDiv.appendChild(block);
 
     //all the following code is used to shift the input box upwards
