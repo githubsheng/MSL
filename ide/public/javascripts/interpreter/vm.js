@@ -426,14 +426,20 @@
 	    goTo(comm) {
 	        this.commands.setIndexUsingStr(comm.firstOperand);
 	    }
+	    //if equal to 0, that is, if false
+	    //in the very beginning we use 0 for false, and 1 for true, but now we use boolean instead
+	    //so this is kinda of legacy name
 	    ifEq(comm) {
 	        const t = this.popOperandStack();
-	        if (t === 0)
+	        if (t === false)
 	            this.commands.setIndexUsingStr(comm.firstOperand);
 	    }
+	    //if not equal to 0, that is, if true
+	    //in the very beginning we use 0 for false, and 1 for true, but now we use boolean instead
+	    //so this is kinda of legacy name
 	    ifNe(comm) {
 	        const t = this.popOperandStack();
-	        if (t !== 0)
+	        if (t === true)
 	            this.commands.setIndexUsingStr(comm.firstOperand);
 	    }
 	    sendQuestion() {
@@ -610,6 +616,10 @@
 	        const string = this.stringConstants[+(comm.firstOperand)];
 	        this.pushOperandStack(string.replace('\\n', '\n'));
 	    }
+	    boolean(comm) {
+	        const bool = comm.firstOperand === "true";
+	        this.pushOperandStack(bool);
+	    }
 	    execute(comm) {
 	        //todo: big giant switch case...
 	        switch (comm.name) {
@@ -690,6 +700,8 @@
 	                return this.number(comm);
 	            case "store":
 	                return this.store(comm);
+	            case "bool":
+	                return this.boolean(comm);
 	            case "string":
 	                return this.string(comm);
 	        }

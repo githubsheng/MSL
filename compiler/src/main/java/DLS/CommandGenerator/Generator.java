@@ -366,9 +366,11 @@ public class Generator {
         CIfeq ifLeftFalseReturnFalse = new CIfeq();
         List<Command> rights = generate(exp.getRight());
         CIfeq ifRightFalseReturnFalse = new CIfeq();
-        CNumber isTrue = new CNumber(true);
+//        CNumber isTrue = new CNumber(true);
+        CBoolean isTrue = new CBoolean(true);
         CGoTo goToEnd = new CGoTo();
-        CNumber isFalse = new CNumber(false);
+//        CNumber isFalse = new CNumber(false);
+        CBoolean isFalse = new CBoolean(false);
         CEmpty end = new CEmpty();
 
         ifLeftFalseReturnFalse.setBranchIfEqualsZero(isFalse);
@@ -394,9 +396,11 @@ public class Generator {
         CIfne ifLeftTrueReturnTrue = new CIfne();
         List<Command> rights = generate(exp.getRight());
         CIfeq ifRightFalseReturnFalse = new CIfeq();
-        CNumber isTrue = new CNumber(true);
+//        CNumber isTrue = new CNumber(true);
+        CBoolean isTrue = new CBoolean(true);
         CGoTo goToEnd = new CGoTo();
-        CNumber isFalse = new CNumber(false);
+//        CNumber isFalse = new CNumber(false);
+        CBoolean isFalse = new CBoolean(false);
         CEmpty end = new CEmpty();
 
         ifLeftTrueReturnTrue.setBranchIfNotEqualsZero(isTrue);
@@ -417,9 +421,11 @@ public class Generator {
 
     private List<Command> generate(CompareAndBranch cab, List<Command> lefts, List<Command> rights) {
         List<Command> cs = new ArrayList<>();
-        CNumber isFalse = new CNumber(false);
+//        CNumber isFalse = new CNumber(false);
+        CBoolean isFalse = new CBoolean(false);
         CGoTo goToEnd = new CGoTo();
-        CNumber isTrue = new CNumber(true);
+//        CNumber isTrue = new CNumber(true);
+        CBoolean isTrue = new CBoolean(true);
         CEmpty end = new CEmpty();
 
         cab.setBranch(isTrue);
@@ -458,7 +464,7 @@ public class Generator {
     }
 
     private List<Command> generate(BooleanNode exp) {
-        return Collections.singletonList(new CNumber(exp.isTrue()));
+        return Collections.singletonList(new CBoolean(exp.isTrue()));
     }
 
     private List<Command> generate(NumberNode exp) {

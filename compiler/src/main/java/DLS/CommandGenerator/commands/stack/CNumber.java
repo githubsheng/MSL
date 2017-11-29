@@ -7,10 +7,6 @@ import DLS.CommandGenerator.AbstractCommand;
  */
 public class CNumber extends AbstractCommand {
 
-    public CNumber(boolean isTrue) {
-        this((isTrue ? 1 : 0));
-    }
-
     public CNumber(int i) {
         this.setFirstOperand(String.valueOf(i));
     }
