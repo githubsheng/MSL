@@ -93,11 +93,15 @@ function reRunSurvey(){
             return;
         } else {
             showCompileResult(["compilation success"], true);
+            referenceUiDiv.style.display = "block";
+            previewInstructionDiv.style.display = "none";
+            //`commsStrs` and `strsConsts`
+            window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput);
+            // window.interpreter.restartRun().then(vmResponse => console.log(vmResponse));
+            referenceUIController.reRunSurvey();
         }
-        //`commsStrs` and `strsConsts`
-        window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput);
-        // window.interpreter.restartRun().then(vmResponse => console.log(vmResponse));
-        referenceUIController.reRunSurvey();
+
+
     });
 }
 
@@ -110,12 +114,19 @@ function reDebugSurvey(){
     const src = editor.getValue();
     const dataSend = {data: src};
     $.post("/compiler/exec", dataSend, function(res){
-        if(res.errMsg) showCompileResult(res.errMsg);
-        //`commsStrs` and `strsConsts`
-        window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput);
-        const interpreter = window.interpreter;
-        breakPoints.forEach(lineNumber => interpreter.addBreakPoint(lineNumber));
-        referenceUIController.reDebugSurvey();
+        if(res.errMsg) {
+            showCompileResult(res.errMsg);
+        } else {
+            showCompileResult(["compilation success"], true);
+            referenceUiDiv.style.display = "block";
+            previewInstructionDiv.style.display = "none";
+            //`commsStrs` and `strsConsts`
+            window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput);
+            const interpreter = window.interpreter;
+            breakPoints.forEach(lineNumber => interpreter.addBreakPoint(lineNumber));
+            referenceUIController.reDebugSurvey();
+        }
+
     });
 }
 

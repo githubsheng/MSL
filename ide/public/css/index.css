@@ -77,13 +77,26 @@
     margin: 0 5px;
 }
 
-#reference-ui {
+#reference-ui, #preview-introduction {
     height: 560px;
     width: 100%;
     margin: 10px 0;
     border-radius: 5px;
     overflow: auto;
+}
+
+#reference-ui {
+    display: none;
     background: white;
+}
+
+#preview-introduction {
+    color: #676767;
+    font-size: 2em;
+    text-align: center;
+    line-height: 560px;
+    font-weight: bold;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.4);
 }
 
 #console {
