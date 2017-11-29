@@ -243,6 +243,7 @@ function fakeSendAnswerToInterpreter(questions, token) {
                     id: "q3",
                     type: "multiple-matrix",
                     text: "q3 text",
+                    rotateCol: true,
                     rows: {
                         _generatedIdentifierName6: {
                             text: " aa"

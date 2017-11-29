@@ -43,8 +43,8 @@ export class RowWithColumns extends PureComponent {
             );
         });
 
-        if(isPropertyValueTrue(question.randomize_col)) shuffle(colCompsInRow);
-        if(isPropertyValueTrue(question.rotate_col)) rotate(colCompsInRow);
+        if(isPropertyValueTrue(question.randomizeCol)) shuffle(colCompsInRow);
+        if(isPropertyValueTrue(question.rotateCol)) rotate(colCompsInRow);
 
         return (
             <div className="row-with-cols">
@@ -53,7 +53,6 @@ export class RowWithColumns extends PureComponent {
                     {colCompsInRow}
                 </div>
             </div>
-
         )
     }
 

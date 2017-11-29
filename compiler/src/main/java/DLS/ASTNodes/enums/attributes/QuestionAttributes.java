@@ -6,8 +6,8 @@ public enum QuestionAttributes {
     HIDE("hide"),
     RANDOMIZE("randomize"),
     ROTATE("rotate"),
-    RANDOMIZE_COL("randomize_col"),
-    ROTATE_COL("rotate_col"),
+    RANDOMIZE_COL("randomizeCol"),
+    ROTATE_COL("rotateCol"),
     REQUIRED("required");
 
     private String name;
