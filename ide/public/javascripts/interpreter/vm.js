@@ -448,6 +448,8 @@
 	            //here params being question references..
 	            questions.push(param);
 	        });
+	        //q1, q2, and q3 are pushed to the stack like q1 -> q2 -> q3 and when popping them, order becomes q3, q2, q1.
+	        questions.reverse();
 	        this.isWaitingForAnswer = true;
 	        return {
 	            token: this.token,
