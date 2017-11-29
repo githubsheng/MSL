@@ -313,6 +313,9 @@ class ParseTreeVisitor {
         } else if (questionCtx.singleMatrixQuestion() != null) {
             DLSParser.SingleMatrixQuestionContext sm = questionCtx.singleMatrixQuestion();
             return getCommonQuestionStatements(sm.attributes(), sm.textArea(), getQuestionTypeField(sm), sm.rows, sm.cols);
+        } else if(questionCtx.multipleChoiceQuestion() != null) {
+            DLSParser.MultipleMatrixQuestionContext mm = questionCtx.multipleMatrixQuestion();
+            return getCommonQuestionStatements(mm.attributes(), mm.textArea(), getQuestionTypeField(mm), mm.rows, mm.cols);
         } else {
             throw new RuntimeException("cannot generate question statements: unknown question types");
         }
@@ -328,6 +331,10 @@ class ParseTreeVisitor {
 
     private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleMatrixQuestionContext smc) {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.SINGLE_MATRIX.getName()));
+    }
+
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.MultipleMatrixQuestionContext mm) {
+        return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.MULTIPLE_MATRIX.getName()));
     }
 
     private StatementNode getCommonQuestionStatements(DLSParser.AttributesContext attribs, DLSParser.TextAreaContext textArea,

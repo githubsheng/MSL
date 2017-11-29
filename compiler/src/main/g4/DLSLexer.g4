@@ -119,27 +119,30 @@ TextArea: .*? TextAreaEnd {
      if(matched.endsWith("[Row")) {
         offSet = 4;
         pushMode(TagMode);
-     }
-     if(matched.endsWith("[Col")) {
+     } else if (matched.endsWith("[Col")) {
         offSet = 4;
         pushMode(TagMode);
-     }
-     if(matched.endsWith("[Submit")) {
+     } else if(matched.endsWith("[Submit")) {
         offSet = 7;
         popMode();
         pushMode(ScriptMode);
-     }
-     if(matched.endsWith("[SingleChoice")) {
+     } else if(matched.endsWith("[SingleChoice")) {
         offSet = 13;
         popMode();
         pushMode(ScriptMode);
-     }
-     if(matched.endsWith("[MultipleChoice")) {
+     } else if(matched.endsWith("[MultipleChoice")) {
         offSet = 15;
         popMode();
         pushMode(ScriptMode);
-     }
-     if(matched.endsWith("${")) {
+     } else if(matched.endsWith("[SingleMatrix")) {
+        offSet = 13;
+        popMode();
+        pushMode(ScriptMode);
+     } else if(matched.endsWith("[MultipleMatrix")) {
+        offSet = 15;
+        popMode();
+        pushMode(ScriptMode);
+     } else if(matched.endsWith("${")) {
         offSet = 2;
         pushMode(ScriptMode);
      }
@@ -154,6 +157,8 @@ TextAreaEnd
 | '${'
 | SingleChoiceStart
 | MultipleChoiceStart
+| SingleChoiceMatrixStart
+| MultipleChoiceMatrixStart
 ;
 
 mode ScriptMode;
@@ -309,9 +314,16 @@ MultipleChoiceStart
 ;
 
 SingleChoiceMatrixStart
-: '[SingleChoiceMatrix'
+: '[SingleMatrix'
 -> popMode, pushMode(TextAreaMode), pushMode(TagMode)
 ;
+
+MultipleChoiceMatrixStart
+: '[MultipleMatrix'
+-> popMode, pushMode(TextAreaMode), pushMode(TagMode)
+;
+
+
 
 //if a page is inside a page group, it would appear after the page group script..
 //it is different than PageStart in that it does not need to push a ScriptMode because
