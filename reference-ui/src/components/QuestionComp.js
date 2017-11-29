@@ -8,6 +8,9 @@ class Question extends PureComponent {
 
         const {question, setSelect} = this.props;
 
+        if(question.hide === true || question.hide === "true") return null;
+        if(question.show === false || question.show === "false") return null;
+
         const rowComps = Object.entries(question.rows).map(rowKV => {
             const [rowId] = rowKV;
             const row = question[rowId];
