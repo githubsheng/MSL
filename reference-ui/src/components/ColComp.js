@@ -6,8 +6,8 @@ export class Col extends PureComponent {
     render(){
         const {col, row, type, question, setSelect} = this.props;
 
-        if(col.hide === 1 || col.hide === "true") return null;
-        if(col.show === 0 || col.show === "false") return null;
+        if(col.hide === true || col.hide === "true") return null;
+        if(col.show === false || col.show === "false") return null;
 
         return (
             //using question-col instead of col because boostrap css also have col class
