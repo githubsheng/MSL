@@ -41,9 +41,11 @@ function listenerForBreakpointsSettings(){
         const lineNumber = +($target.text());
         if(breakPoints.has(lineNumber)) {
             breakPoints.delete(lineNumber);
+            if(window.interpreter) window.interpreter.deleteBreakPoint(lineNumber);
             $target.removeClass("breakPoint");
         } else {
             breakPoints.add(lineNumber);
+            if(window.interpreter) window.interpreter.addBreakPoint(lineNumber);
             $target.addClass("breakPoint");
         }
     });
