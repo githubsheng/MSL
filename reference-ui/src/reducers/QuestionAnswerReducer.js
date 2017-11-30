@@ -98,7 +98,7 @@ function questionTimeRecordChanges(lastInteractionTime) {
     const now = new Date();
     return {
         answeredWhen: now,
-        duration: (now.getTime() - lastInteractionTime.getTime()) / 1000
+        duration: now.getTime() - lastInteractionTime.getTime()
     };
 }
 
