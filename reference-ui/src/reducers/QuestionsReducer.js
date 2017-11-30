@@ -6,7 +6,7 @@ import {setSelect} from "./QuestionAnswerReducer";
 export function questionsReducer(state, action){
     switch (action.type) {
         case actionTypePageData:
-            return augmentQuestions(action.questions, action);
+            return augmentQuestions(action);
         case actionTypeSetSelect:
             return setSelect(state, action);
         default:

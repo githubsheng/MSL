@@ -1,6 +1,7 @@
 import {actionTypePageData} from "../actions/PageActions";
 
-export function augmentQuestions(questions, action) {
+export function augmentQuestions(action) {
+    const questions = action.questions;
     if(action.type === actionTypePageData) {
         return questions.map(augmentQuestion);
     }
