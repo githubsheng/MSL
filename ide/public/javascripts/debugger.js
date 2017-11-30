@@ -92,11 +92,12 @@ function reRunSurvey(){
             showCompileResult(res.errMsg, false);
             return;
         } else {
-            showCompileResult(["compilation success"], true);
+            showCompileResult(["compilation successful"], true);
+            clearStoppedLines();
             referenceUiDiv.style.display = "block";
             previewInstructionDiv.style.display = "none";
             //`commsStrs` and `strsConsts`
-            window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput);
+            window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput, stoppedAtLine);
             // window.interpreter.restartRun().then(vmResponse => console.log(vmResponse));
             referenceUIController.reRunSurvey();
         }
@@ -117,11 +118,12 @@ function reDebugSurvey(){
         if(res.errMsg) {
             showCompileResult(res.errMsg);
         } else {
-            showCompileResult(["compilation success"], true);
+            showCompileResult(["compilation successful"], true);
+            clearStoppedLines();
             referenceUiDiv.style.display = "block";
             previewInstructionDiv.style.display = "none";
             //`commsStrs` and `strsConsts`
-            window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput);
+            window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput, stoppedAtLine);
             const interpreter = window.interpreter;
             breakPoints.forEach(lineNumber => interpreter.addBreakPoint(lineNumber));
             referenceUIController.reDebugSurvey();
@@ -138,6 +140,7 @@ function bindResumeDebugBtn(){
 function resumeDebugging(){
     const interpreter = window.interpreter;
     if(!interpreter) return;
+    clearStoppedLines();
     interpreter.debug();
 }
 
@@ -149,5 +152,26 @@ function bindStepOverBtn(){
 function stepOver(){
     const interpreter = window.interpreter;
     if(!interpreter) return;
+    clearStoppedLines();
     interpreter.stepOver();
 }
+
+const {stoppedAtLine, clearStoppedLines} = (function(){
+
+    let stoppedRow = 0;
+
+    function stoppedAtLine(lineNumber){
+        const row = lineNumber - 1;
+        editor.session.addGutterDecoration(row, "stopped");
+        stoppedRow = row;
+    }
+
+    function clearStoppedLines() {
+        editor.session.removeGutterDecoration(stoppedRow, "stopped");
+    }
+
+    return {
+        stoppedAtLine,
+        clearStoppedLines
+    };
+})();

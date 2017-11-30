@@ -35,20 +35,29 @@ function tryCompileOnChanges(){
 const breakPoints = new Set();
 
 function listenerForBreakpointsSettings(){
-    const $editorDiv = $("#editor");
-    $editorDiv.on("click", "div.ace_gutter-cell", function(evt){
-        const $target = $(evt.target);
-        const lineNumber = +($target.text());
+    editor.on("guttermousedown", function(e) {
+        const target = e.domEvent.target;
+        if (target.className.indexOf("ace_gutter-cell") == -1)
+            return;
+        if (!editor.isFocused())
+            return;
+
+        //notice that the row number is not the line number, row number starts at 0, so,
+        //line number = row number + 1.
+        const row = e.getDocumentPosition().row;
+        const lineNumber = row + 1;
+
         if(breakPoints.has(lineNumber)) {
             breakPoints.delete(lineNumber);
             if(window.interpreter) window.interpreter.deleteBreakPoint(lineNumber);
-            $target.removeClass("breakPoint");
+            e.editor.session.clearBreakpoint(row);
         } else {
             breakPoints.add(lineNumber);
             if(window.interpreter) window.interpreter.addBreakPoint(lineNumber);
-            $target.addClass("breakPoint");
+            e.editor.session.setBreakpoint(row);
         }
-    });
+        e.stop();
+    })
 }
 
 

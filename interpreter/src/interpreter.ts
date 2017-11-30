@@ -215,6 +215,7 @@ class DebugStateStart extends AbstractInterpreterState {
             if (vm.breakPoints.has(comm.lineNumber)) {
                 vm.state = vm.debugStateStopped;
                 vm.debugStateStopped.stoppedAt = comm.lineNumber;
+                vm.stoppedAtBreakpointCallback(comm.lineNumber);
                 if(breakPointListener) {
                     return breakPointListener();
                 } else {
@@ -317,6 +318,7 @@ class DebugStateStopped extends AbstractInterpreterState {
             if (comm.lineNumber >= 0) {
                 //this is a line where we can set a break point, stop at this line (do not execute this line)
                 this.stoppedAt = comm.lineNumber;
+                vm.stoppedAtBreakpointCallback(comm.lineNumber);
                 if(breakPointListener) {
                     return breakPointListener();
                 } else {
@@ -325,7 +327,7 @@ class DebugStateStopped extends AbstractInterpreterState {
             } else {
                 //we cannot set a break point here, do not stop.
                 vm.commands.advanceIndex();
-                const ret = vm.execute(comm);``
+                const ret = vm.execute(comm);
                 if (ret) return sendQuestionCommListener(ret);
             }
         }
@@ -394,8 +396,10 @@ export class Interpreter {
     //todo: documentation to explain how we use token
     token: string;
     output: (content: string) => void;
+    //we use this call back to tell ide that we have stopped at a break point so that the ide can highlight the corresponding line.
+    stoppedAtBreakpointCallback: (lineNumber: number) => void;
 
-    constructor(commandsStr: string, stringConstants: string, output?: (content: string) => void) {
+    constructor(commandsStr: string, stringConstants: string, output?: (content: string) => void, stoppedAtBreakpointCallback?: (lineNumber: number) => void) {
         this.commands = new Commands(commandsStr);
         this.callStack = new CallStack();
         this.breakPoints = new Set();
@@ -406,6 +410,7 @@ export class Interpreter {
         this.state = this.normalStateStart;
         this.isWaitingForAnswer = false;
         this.output = output;
+        this.stoppedAtBreakpointCallback = stoppedAtBreakpointCallback;
         this.initBuiltInFunctions();
     }
 

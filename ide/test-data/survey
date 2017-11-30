@@ -1,5 +1,9 @@
 [Page]
 
+print 1
+print 2
+print 3
+
 [MultipleMatrix id="q1"]hello world
 [Row id="r1"]option 1
 [Row id="r2"]option 2

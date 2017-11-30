@@ -159,6 +159,7 @@
 	            if (vm.breakPoints.has(comm.lineNumber)) {
 	                vm.state = vm.debugStateStopped;
 	                vm.debugStateStopped.stoppedAt = comm.lineNumber;
+	                vm.stoppedAtBreakpointCallback(comm.lineNumber);
 	                if (breakPointListener) {
 	                    return breakPointListener();
 	                }
@@ -258,6 +259,7 @@
 	            if (comm.lineNumber >= 0) {
 	                //this is a line where we can set a break point, stop at this line (do not execute this line)
 	                this.stoppedAt = comm.lineNumber;
+	                vm.stoppedAtBreakpointCallback(comm.lineNumber);
 	                if (breakPointListener) {
 	                    return breakPointListener();
 	                }
@@ -269,7 +271,6 @@
 	                //we cannot set a break point here, do not stop.
 	                vm.commands.advanceIndex();
 	                const ret = vm.execute(comm);
-	                ``;
 	                if (ret)
 	                    return sendQuestionCommListener(ret);
 	            }
@@ -323,7 +324,7 @@
 	    }
 	}
 	class Interpreter {
-	    constructor(commandsStr, stringConstants, output) {
+	    constructor(commandsStr, stringConstants, output, stoppedAtBreakpointCallback) {
 	        this.commands = new commands_1.Commands(commandsStr);
 	        this.callStack = new callstack_1.CallStack();
 	        this.breakPoints = new Set();
@@ -334,6 +335,7 @@
 	        this.state = this.normalStateStart;
 	        this.isWaitingForAnswer = false;
 	        this.output = output;
+	        this.stoppedAtBreakpointCallback = stoppedAtBreakpointCallback;
 	        this.initBuiltInFunctions();
 	    }
 	    initBuiltInFunctions() {
