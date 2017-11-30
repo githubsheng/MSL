@@ -4,7 +4,15 @@ print 1
 print 2
 print 3
 
-[MultipleMatrix id="q1"]hello world
+def a = 45
+def b = 78
+def c
+
+if a * b + 2000 < 10000 then
+    c = "big number!"
+end
+
+[MultipleMatrix id="q1"]hello ${c} haha
 [Row id="r1"]option 1
 [Row id="r2"]option 2
 [Col id="c1"]option a

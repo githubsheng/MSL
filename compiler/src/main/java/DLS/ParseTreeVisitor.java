@@ -112,7 +112,6 @@ class ParseTreeVisitor {
         return ctx.page() != null ? visitPage(ctx.page()) : visitPageGroup(ctx.pageGroup());
     }
 
-    
     private List<StatementNode> visitPageGroup(DLSParser.PageGroupContext ctx) {
         //page group function statements
         List<StatementNode> pageGroupFuncBodyStatNodes = new ArrayList<>();
@@ -253,7 +252,6 @@ class ParseTreeVisitor {
         return ret;
     }
 
-    
     private List<StatementNode> visitPage(DLSParser.PageContext ctx) {
         DLSParser.ScriptContext preScript = ctx.script(0);
         DLSParser.ScriptContext postScript = ctx.script(1);
@@ -379,6 +377,11 @@ class ParseTreeVisitor {
         Optional<String> maybeId = getIdStrVal(attribs);
         String identifierName = maybeId.orElse(generateRandomIdentifierName());
         IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
+
+        //here, also make the id of question a property as well.
+        ObjectLiteralNode.Field questionIdField = new ObjectLiteralNode.Field(QuestionProps.ID.getName(), new StringNode(identifierName));
+        fields.add(questionIdField);
+
         return new DefNode(true, questionIdentifier, new ObjectLiteralNode(fields));
     }
 

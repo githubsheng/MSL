@@ -2,6 +2,7 @@ package DLS.ASTNodes.enums.obj.props;
 
 //all the attributes defined in package DLS.ASTNodes.enums.attributes will also become properties
 public enum QuestionProps {
+    ID("id"),
     TYPE("type"),
     SINGLE_CHOICE("single-choice"),
     MULTIPLE_CHOICE("multiple-choice"),
