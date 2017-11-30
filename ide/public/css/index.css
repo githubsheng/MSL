@@ -161,3 +161,7 @@
     color: white;
     background: #337ab7;
 }
+
+.container-box-shadow {
+    box-shadow: 0 1px 3px #525050;
+}

@@ -16,23 +16,22 @@
 <body onload="init()">
 <div id="container">
     <div id="left" style="float: left">
-        <div id="editor">
-
-        </div>
-        <div id="compile-message"></div>
+        <div id="editor" class="container-box-shadow"></div>
+        <div id="compile-message" class="container-box-shadow"></div>
     </div>
     <div id="right" style="float: left">
-        <div id="debugger-controller">
-            <button id="re-run-btn" class="btn btn-xs btn-default">Run</button>
-            <button id="re-debug-btn" class="btn btn-xs btn-default">Debug</button>
+        <div id="debugger-controller" class="container-box-shadow">
+            <button id="re-run-btn" class="btn btn-xs btn-success">Run</button>
+            <button id="re-debug-btn" class="btn btn-xs btn-warning">Debug</button>
             <button id="resume-debug-btn" class="btn btn-xs btn-default">Resume debugging</button>
             <button id="step-over-btn" class="btn btn-xs btn-default">Step over</button>
+            <button id="clear-console" class="btn btn-xs btn-default">Clear console</button>
         </div>
-        <div id="reference-ui"></div>
+        <div id="reference-ui" class="container-box-shadow"></div>
         <div id="preview-introduction">
             <span>Preview not started</span>
         </div>
-        <div id="console">
+        <div id="console" class="container-box-shadow">
             <div id="console-output">
             </div>
             <textarea id="console-input"></textarea>

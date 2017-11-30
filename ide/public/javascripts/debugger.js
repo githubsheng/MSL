@@ -1,7 +1,3 @@
-function clearConsoleOutput(){
-
-}
-
 function appendInputContentToConsoleOutput(content) {
     const block = document.createElement("div");
     const t = content.split('\n');
@@ -93,6 +89,7 @@ function reRunSurvey(){
             return;
         } else {
             showCompileResult(["compilation successful"], true);
+            clearConsoleOutput();
             clearStoppedLines();
             referenceUiDiv.style.display = "block";
             previewInstructionDiv.style.display = "none";
@@ -119,6 +116,7 @@ function reDebugSurvey(){
             showCompileResult(res.errMsg);
         } else {
             showCompileResult(["compilation successful"], true);
+            clearConsoleOutput();
             clearStoppedLines();
             referenceUiDiv.style.display = "block";
             previewInstructionDiv.style.display = "none";
@@ -175,3 +173,12 @@ const {stoppedAtLine, clearStoppedLines} = (function(){
         clearStoppedLines
     };
 })();
+
+function clearConsoleOutput(){
+    while(consoleOutputDiv.lastChild)
+        consoleOutputDiv.removeChild(consoleOutputDiv.lastChild);
+}
+
+function bindClearConsoleBtn(){
+    document.querySelector("#clear-console").onclick = clearConsoleOutput;
+}

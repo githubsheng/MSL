@@ -22,4 +22,5 @@ function init(){
     bindResumeDebugBtn();
     bindStepOverBtn();
     bindConsoleInput();
+    bindClearConsoleBtn();
 }
