@@ -1,4 +1,7 @@
-import {actionTypeEndOfSurvey, actionTypeReset, actionTypeStartAnswering} from "../actions/FlowActions";
+import {
+    actionTypeEndOfSurvey, actionTypeFirstQuestionLoaded, actionTypeReset, actionTypeStartAnswering,
+    firstQuestionLoadedAction
+} from "../actions/FlowActions";
 import {List} from "../../node_modules/immutable/dist/immutable";
 import {pageDataAction} from "../actions/PageActions";
 
@@ -23,6 +26,8 @@ export function flowReducer(state, action) {
             return startAnswering(state, action);
         case actionTypeEndOfSurvey:
             return endSurvey(state, action);
+        case actionTypeFirstQuestionLoaded:
+            return firstQuestionLoaded(state, action);
         default:
             return null;
     }
@@ -45,9 +50,14 @@ function startAnswering(state, action){
     }
     firstQuestionPromise.then(function(response){
         if(response.token === state.token) {
+            action.asyncDispatch(firstQuestionLoadedAction());
             action.asyncDispatch(pageDataAction(response));
         }
     });
+    return state;
+}
+
+function firstQuestionLoaded(state, action) {
     return Object.assign({}, state, {isStarted: true});
 }
 
