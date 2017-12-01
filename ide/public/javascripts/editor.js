@@ -6,7 +6,7 @@ function showCompileResult(messages, isSuccessful){
         frag.appendChild(document.createTextNode(msg));
         frag.appendChild(document.createElement("br"));
     });
-    compileMessageDiv.className = isSuccessful ? "success" : "error";
+    compileMessageDiv.className = isSuccessful ? "success container-box-shadow" : "error container-box-shadow";
     compileMessageDiv.appendChild(frag);
 }
 

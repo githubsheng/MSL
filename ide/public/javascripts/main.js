@@ -9,6 +9,10 @@ function init(){
     //ace editor says, if we don't set this there will be warnings. anyway, just set it.
     editor.$blockScrolling = Infinity;
     editor.setHighlightActiveLine(false);
+    editor.getSession().setMode("ace/mode/msl");
+    editor.setOptions({
+        fontSize: "14px"
+    });
 
     consoleDiv = document.querySelector("#console");
     consoleOutputDiv = document.querySelector("#console-output");

@@ -165,3 +165,27 @@
 .container-box-shadow {
     box-shadow: 0 1px 3px #525050;
 }
+
+#editor .ace_support.ace_function {
+    color: purple;
+}
+
+.ace_question {
+    color: red;
+}
+
+.ace_question_row {
+    color: #985f0d;
+}
+
+.ace_question_col {
+    color: #985f0d;
+}
+
+.ace_submit {
+    color: red;
+}
+
+.ace_gray {
+    color: darkgray;
+}

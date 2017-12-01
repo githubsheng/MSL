@@ -1,0 +1,4 @@
+the syntax highlight mode rules need to be placed in ace/src folder
+
+but that's actually a third party library folder so what we do is we edit and modify the file here
+in this folder and then make a copy in ace/src folder.
