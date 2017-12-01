@@ -15,7 +15,9 @@ export const defaultState = {
     isEnded: false,
     token: Date.now().toString(),
     lastInteractionTime: new Date(),
-    questions: List()
+    questions: List(),
+    pageInfo: {},
+    pageGroupInfo: {}
 };
 
 export function flowReducer(state, action) {
@@ -139,6 +141,9 @@ function fakeData(token){
             resolve({
                 pageInfo: {
                     attrib1: "evaluated attrib1"
+                },
+                pageGroupInfo: {
+                    attrib2: "evaluated attrib2"
                 },
                 questions,
                 token: token

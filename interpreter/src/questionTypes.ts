@@ -12,6 +12,7 @@
 export interface VMResponse {
     token: string,
     pageInfo: any,
+    pageGroupInfo: any,
     questions: Array<Question>
 }
 

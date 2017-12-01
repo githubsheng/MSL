@@ -35,16 +35,12 @@ export class RowWithColumns extends PureComponent {
         // if(row.show === false || row.show === "false") return null;
         if(isPropertyValueFalse(row.show)) return null;
 
-        const colCompsInRow = Object.entries(question.cols).map(colKV => {
-            const [colId] = colKV;
+        const colCompsInRow = question.colIds.map((colId, index) => {
             const colInRow = row[colId];
             return (
-                <Col key={colId} col={colInRow} row={row} type={type} setSelect={setSelect} question={question}/>
+                <Col key={index} col={colInRow} row={row} type={type} setSelect={setSelect} question={question}/>
             );
         });
-
-        if(isPropertyValueTrue(question.randomizeCol)) shuffle(colCompsInRow);
-        if(isPropertyValueTrue(question.rotateCol)) rotate(colCompsInRow);
 
         return (
             <div className="row-with-cols">

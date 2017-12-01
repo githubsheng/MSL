@@ -550,8 +550,8 @@ export class Interpreter {
         return {
             token: this.token,
             questions: questions,
-            //todo: get the page info here.
-            pageInfo: {}
+            pageInfo: this.getFromLocalVarSpace("_pagePropObj"),
+            pageGroupInfo: this.getFromLocalVarSpace("_pageGroupObj")
         };
     }
 

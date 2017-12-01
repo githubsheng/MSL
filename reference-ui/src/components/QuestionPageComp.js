@@ -1,6 +1,7 @@
 import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 import Question from './QuestionComp';
+import {isPropertyValueTrue, rotate, shuffle} from "../util/util";
 
 class QuestionPage extends PureComponent {
     render() {
@@ -15,8 +16,8 @@ class QuestionPage extends PureComponent {
 
         if(!isStarted || isEnded) return null;
 
-        const questionsJSX = questions.map(question => {
-            return <Question key={question.id} question={question} setSelect={setSelect}/>;
+        const questionsJSX = questions.map((question, index) => {
+            return <Question key={index} question={question} setSelect={setSelect}/>;
         });
 
         return (

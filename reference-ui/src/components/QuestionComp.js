@@ -14,27 +14,25 @@ class Question extends PureComponent {
         // if(question.show === false || question.show === "false") return null;
         if (isPropertyValueFalse(question.show)) return null;
 
-        const rowComps = Object.entries(question.rows).map(rowKV => {
-            const [rowId] = rowKV;
+        //dont use rowId as key, because rowId changes, so each time the row comp gets recreated (because key is different), instead of simply modified.
+        //if there are 5 rows, and the new question has 10 rows, then for the first 5 rows, we can simply modify them (this is possible because keys are 1 ~5, same)
+        const rowComps = question.rowIds.map((rowId, index) => {
             const row = question[rowId];
             switch (question.type) {
                 case "single-choice":
-                    return <Row key={rowId} row={row} type="radio" question={question} setSelect={setSelect}/>;
+                    return <Row key={index} row={row} type="radio" question={question} setSelect={setSelect}/>;
                 case "multiple-choice":
-                    return <Row key={rowId} row={row} type="checkbox" question={question} setSelect={setSelect}/>;
+                    return <Row key={index} row={row} type="checkbox" question={question} setSelect={setSelect}/>;
                 case "single-matrix":
-                    return <RowWithColumns key={rowId} row={row} type="radio" question={question}
+                    return <RowWithColumns key={index} row={row} type="radio" question={question}
                                            setSelect={setSelect}/>;
                 case "multiple-matrix":
-                    return <RowWithColumns key={rowId} row={row} type="checkbox" question={question}
+                    return <RowWithColumns key={index} row={row} type="checkbox" question={question}
                                            setSelect={setSelect}/>;
                 default:
                     throw new Error("question type not yet supported");
             }
         });
-
-        if (isPropertyValueTrue(question.randomize)) shuffle(rowComps);
-        if (isPropertyValueTrue(question.rotate)) rotate(rowComps);
 
         return (
             <div className="question">

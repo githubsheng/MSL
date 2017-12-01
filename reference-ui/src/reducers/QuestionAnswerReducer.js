@@ -265,8 +265,9 @@ function fakeSendAnswerToInterpreter(questions, token) {
 
             resolve({
                 pageInfo: {
-                    attrib1: "evaluated attrib1"
+                    randomize: "true"
                 },
+                pageGroupInfo: {},
                 questions,
                 token
             });

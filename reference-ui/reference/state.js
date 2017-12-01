@@ -8,6 +8,8 @@ const referenceState = {
     isDebug: false,
     token: Date.now().toString(),
     lastInteractionTime: new Date(),
-    questions: List()
+    questions: List(),
+    pageInfo: {},
+    pageGroupInfo: {}
 };
 

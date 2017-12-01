@@ -13,7 +13,6 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
 
-    //todo: handlers for selecting rows / cols
     function setSelect(questionId, rowId, colId, val) {
         dispatch(setSelectAction(questionId, rowId, colId, val));
     }

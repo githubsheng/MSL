@@ -3,6 +3,7 @@ const questions = [{
     id: "q0",
     type: "single-choice",
     text: "q0 text",
+    //these are for reference only, we don't modify them
     rows: {
         rowId1: {
             text: " row1"
@@ -10,7 +11,9 @@ const questions = [{
         _generatedIdentifierName2: {
             text: " row2"
         }
-    }
+    },
+    //so we can easily loop over the row ids
+    rowIds: ["rowId1", "_generatedIdentifierName2"]
 }, {
     id: "q1",
     type: "single-matrix",
@@ -62,6 +65,7 @@ const questions = [{
          row2: reference to rows.row2
      }
      */
+    //these are for reference only, we don't modify them
     rows: {
         _generatedIdentifierName3: {
             text: " row1",
@@ -77,6 +81,9 @@ const questions = [{
             text: " row2"
         }
     },
+    //so we can easily loop over the row ids
+    rowIds: ["_generatedIdentifierName3", "_generatedIdentifierName4"],
+    //these are for reference only, we don't modify them
     cols: {
         _generatedIdentifierName5: {
             text: " col1"
@@ -84,7 +91,9 @@ const questions = [{
         _generatedIdentifierName6: {
             text: " col2"
         }
-    }
+    },
+    //so we can easily loop over the row ids
+    colIds: ["_generatedIdentifierName5", "_generatedIdentifierName6"]
 }];
 
 
@@ -93,6 +102,7 @@ const augmentedQuestions = [{
     id: "q0",
     type: "single-choice",
     text: "q0 text",
+    //these are for reference only, we don't modify them
     rows: {
         rowId1: {
             text: " row1"
@@ -123,6 +133,7 @@ const augmentedQuestions = [{
     id: "q1",
     type: "single-matrix",
     text: "q1 text",
+    //these are for reference only, we don't modify them
     rows: {
         rowId1: {
             text: " row1"
@@ -131,6 +142,7 @@ const augmentedQuestions = [{
             text: " row2"
         }
     },
+    //these are for reference only, we don't modify them
     cols: {
         colId1: {
             text: " col1"

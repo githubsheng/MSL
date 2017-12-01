@@ -7,6 +7,7 @@ export function pageDataAction(response){
         type: actionTypePageData,
         token: response.token,
         pageInfo: response.pageInfo,
-        questions: List(response.questions)
+        pageGroupInfo: response.pageGroupInfo,
+        questions: response.questions
     }
 }

@@ -52,8 +52,10 @@ function commonFailureCallback(res, compileErrorMessage){
 
      as you can see we only need to show to user which line and which column has what error, but we do not need to show the java runtime exceptions
      */
-    const withoutJavaRuntimeExceptions = compileErrorMessage.split('\n')
+    console.log(compileErrorMessage);
+    let withoutJavaRuntimeExceptions = compileErrorMessage.split('\n')
         .filter(line => line.startsWith("line"));
+    if(withoutJavaRuntimeExceptions.length === 0) withoutJavaRuntimeExceptions = ["unknown error happend"];
     res.json({
         errMsg: withoutJavaRuntimeExceptions
     });

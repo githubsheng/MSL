@@ -4,6 +4,7 @@ import DLS.ASTNodes.*;
 import DLS.ASTNodes.enums.attributes.PageGroupAttribute;
 import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
 import DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames;
+import DLS.ASTNodes.enums.built.in.specialObjNames.BuiltInSpecObjNames;
 import DLS.ASTNodes.enums.obj.props.QuestionProps;
 import DLS.ASTNodes.statement.FuncDefNode;
 import DLS.ASTNodes.enums.attributes.*;
@@ -68,12 +69,12 @@ class ParseTreeVisitor {
         questionImplicitValues.put(QuestionAttributes.REQUIRED.getName(), "true");
 
         //page group implicit attribute values
-        pageGroupImplicitValues.put(PageGroupAttribute.RANDOMIZE.toIdentifierName(), "true");
-        pageGroupImplicitValues.put(PageGroupAttribute.ROTATE.toIdentifierName(), "true");
+        pageGroupImplicitValues.put(PageGroupAttribute.RANDOMIZE.getName(), "true");
+        pageGroupImplicitValues.put(PageGroupAttribute.ROTATE.getName(), "true");
 
         //page implicit attribute values
-        pageImplicitValues.put(PageAttributes.RANDOMIZE.toIdentifierName(), "true");
-        pageImplicitValues.put(PageAttributes.ROTATE.toIdentifierName(), "true");
+        pageImplicitValues.put(PageAttributes.RANDOMIZE.getName(), "true");
+        pageImplicitValues.put(PageAttributes.ROTATE.getName(), "true");
     }
 
     private int randomIdentifierNameCounter = 1;
@@ -118,8 +119,25 @@ class ParseTreeVisitor {
 
         //todo: semantic checking: warn invalid attribute name
         //page group attributes
-        List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
-        pageGroupFuncBodyStatNodes.addAll(attribStats);
+        //get page attributes
+        /*
+            we turn each page into a function so that any variable / function declared in the preScript and postScript of the page
+            will live in a separated local scope. However, turning the page into a function (a function call) poses a problem, it is
+            not easy to transfer the page attributes to reference UI. for questions this is not a problem, because we turn questions into
+            objects, and these objects are passed to UI and later be rendered. Question attributes simply become object properties and
+            be passed along.
+
+            Here, our solution is to store all page properties into a local object with a special name. When we are sending question objects
+            to UI, we are still inside page function call, and have access to this special "page attribute object". Then, the VM can read out
+            this "page attribute object" from local variable space and pass it along with the question objects.
+         */
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.attributes(), pageGroupImplicitValues);
+        String specialPageGroupPropObjName = BuiltInSpecObjNames.PageGroupPropObject.getName();
+        pageGroupFuncBodyStatNodes.add(new DefNode(specialPageGroupPropObjName, new ObjectLiteralNode(fields)));
+
+//
+//        List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
+//        pageGroupFuncBodyStatNodes.addAll(attribStats);
 
         pageGroupFuncBodyStatNodes.addAll(getScriptStatements(ctx.script()));
 
@@ -150,24 +168,24 @@ class ParseTreeVisitor {
 
         //call list.randomize if page group attribute "randomize" evaluates to true.
         CallNode randomizeCall = new CallNode(callOrderListIdentifier, new IdentifierNode(ListMethods.RANDOMIZE.getName()));
-        //previously we should have already declared and initialized a local variable with the name "_randomize", now we need to read its value
-        IdentifierNode _randomize = new IdentifierNode(PageGroupAttribute.RANDOMIZE.toIdentifierName());
+        //previously we should have already declared and initialized a special page group attributes objects, we need to get its `randomize` field
+        DotNode randomizePropVal = new DotNode(new IdentifierNode(specialPageGroupPropObjName), new IdentifierNode(PageGroupAttribute.RANDOMIZE.getName()));
         //equals to true
-        EqualsNode isTrue = new EqualsNode(_randomize, new BooleanNode(true));
+        EqualsNode isTrue = new EqualsNode(randomizePropVal, new BooleanNode(true));
         //equals to "true"
-        EqualsNode isTrueStr = new EqualsNode(_randomize, new StringNode("true"));
+        EqualsNode isTrueStr = new EqualsNode(randomizePropVal, new StringNode("true"));
         OrNode either = new OrNode(isTrue, isTrueStr);
         IfElseNode maybeRandomize = new IfElseNode(either, new ExpressionStatementNode(randomizeCall));
         pageGroupFuncBodyStatNodes.add(maybeRandomize);
 
         //call list.randomize if page group attribute "rotate" evaluates to true.
         CallNode rotateCall = new CallNode(callOrderListIdentifier, new IdentifierNode(ListMethods.ROTATE.getName()));
-        //previously we should have already declared and initialized a local variable with the name "_rotate", now we need to read its value
-        IdentifierNode _rotate = new IdentifierNode(PageGroupAttribute.ROTATE.toIdentifierName());
+        //previously we should have already declared and initialized a special page group attributes objects, we need to get its `rotate` field
+        DotNode rotatePropVal = new DotNode(new IdentifierNode(specialPageGroupPropObjName), new IdentifierNode(PageGroupAttribute.ROTATE.getName()));
         //equals to true
-        EqualsNode isTrue1 = new EqualsNode(_rotate, new BooleanNode(true));
+        EqualsNode isTrue1 = new EqualsNode(rotatePropVal, new BooleanNode(true));
         //equals to "true"
-        EqualsNode isTrueStr1 = new EqualsNode(_rotate, new StringNode("true"));
+        EqualsNode isTrueStr1 = new EqualsNode(rotatePropVal, new StringNode("true"));
         OrNode either1 = new OrNode(isTrue1, isTrueStr1);
         IfElseNode maybeRotate = new IfElseNode(either1, new ExpressionStatementNode(rotateCall));
         pageGroupFuncBodyStatNodes.add(maybeRotate);
@@ -253,15 +271,25 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> visitPage(DLSParser.PageContext ctx) {
+        List<StatementNode> pageFuncBodyStatNodes = new ArrayList<>();
+        //get page attributes
+        /*
+            we turn each page into a function so that any variable / function declared in the preScript and postScript of the page
+            will live in a separated local scope. However, turning the page into a function (a function call) poses a problem, it is
+            not easy to transfer the page attributes to reference UI. for questions this is not a problem, because we turn questions into
+            objects, and these objects are passed to UI and later be rendered. Question attributes simply become object properties and
+            be passed along.
+
+            Here, our solution is to store all page properties into a local object with a special name. When we are sending question objects
+            to UI, we are still inside page function call, and have access to this special "page attribute object". Then, the VM can read out
+            this "page attribute object" from local variable space and pass it along with the question objects.
+         */
+        List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.attributes(), pageImplicitValues);
+        pageFuncBodyStatNodes.add(new DefNode(BuiltInSpecObjNames.PagePropObject.getName(), new ObjectLiteralNode(fields)));
+
         DLSParser.ScriptContext preScript = ctx.script(0);
         DLSParser.ScriptContext postScript = ctx.script(1);
-
-        List<StatementNode> pageFuncBodyStatNodes = new ArrayList<>();
         pageFuncBodyStatNodes.addAll(getScriptStatements(preScript));
-
-        //get page attributes
-        List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageImplicitValues);
-        pageFuncBodyStatNodes.addAll(attribStats);
 
         //a list of DefNode
         List<StatementNode> questionStatements = ctx.question()
@@ -707,7 +735,6 @@ class ParseTreeVisitor {
     private ExpressionNode visitIdentifierExpression(DLSParser.IdentifierExpressionContext ctx) {
         return new IdentifierNode(ctx.getText());
     }
-
 
     private ExpressionNode visitMemberExpression(DLSParser.MemberExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression());

@@ -6,6 +6,8 @@ import {lastInteractionTimeReducer} from "./InteractionTimeReducer";
 import {questionsReducer} from "./QuestionsReducer";
 import {defaultState, flowReducer} from "./FlowReducer";
 import {actionTypeEndOfSurvey, actionTypeReset} from "../actions/FlowActions";
+import {pageGroupInfoReducer} from "./pageGroupInfoReducer";
+import {pageInfoReducer} from "./pageInfoReducer";
 
 //todo: here, add a reset action, and a reset reducer. when reset action is received, reset the status to default status (with a new token)
 //todo: add a start answering action (action sent when user click on the start button on welcome page), a corresponding reducer, that reducer would call vm's restart function.
@@ -35,11 +37,14 @@ const mainReducer = (state = defaultState, action) => {
     submitAnswersReducer(state, action);
     const isLocked = isLockedReducer(state, action);
     const lastInteractionTime = lastInteractionTimeReducer(state, action);
-    const questions = questionsReducer(state, action);
-    const pageInfo = state.pageInfo;
+    const pageInfo = pageInfoReducer(state, action);
+    const pageGroupInfo = pageGroupInfoReducer(state, action);
+    const questions = questionsReducer(state, action, pageInfo, pageGroupInfo);
+
 
     return {
         pageInfo,
+        pageGroupInfo,
         questions,
         isLocked,
         lastInteractionTime,
