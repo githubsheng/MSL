@@ -77,7 +77,7 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
             }],
 
             "inPrePageScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, {
-                token: "keyword",
+                token: "gray",
                 regex: /\[Page/,
                 next: "inPageTag"
             }],
