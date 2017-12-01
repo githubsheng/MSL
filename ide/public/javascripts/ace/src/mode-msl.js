@@ -7,14 +7,14 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
     const MslHighlightRules = function() {
         // taken from http://download.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
         const keywords = (
-            "if|then|else|end|def|global|each|chance|function|return|terminate|clock|$index|$element"
+            "if|then|else|end|def|global|each|chance|function|return|terminate|clock|$index|$element|and|or"
         );
 
         const buildinConstants = ("null");
 
         const buildInMethods = (
             "List|randomize|rotate|get|has|indexOf|add|addFirst|addLast|addAllFirst|addAllLast|" +
-            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|rank|print|and|or|->"
+            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|rank|print|->"
         );
 
         const keywordMapper = this.createKeywordMapper({
