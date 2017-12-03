@@ -2,7 +2,12 @@ parser grammar DLSParser;
 
 options { tokenVocab=DLSLexer; }
 
-file: element* | Temp statement*;
+file: pluginImport* element* | Temp statement*;
+
+pluginImport
+: ImportJS ImportUrl
+| ImportCSS ImportUrl
+;
 
 element
 : page

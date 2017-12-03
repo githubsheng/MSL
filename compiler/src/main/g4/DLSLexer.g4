@@ -9,6 +9,11 @@ Temp:
 -> pushMode(ScriptMode)
 ;
 
+ImportJS: 'JS';
+ImportCSS: 'CSS';
+
+ImportUrl: String;
+
 PageGroupStart
 : '[PageGroup'
 -> pushMode(ScriptMode), pushMode(TagMode)

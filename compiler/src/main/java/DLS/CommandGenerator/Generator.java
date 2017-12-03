@@ -1,6 +1,8 @@
 package DLS.CommandGenerator;
 
 import DLS.ASTNodes.TokenAssociation;
+import DLS.ASTNodes.plugin.CssPluginNode;
+import DLS.ASTNodes.plugin.JsPluginNode;
 import DLS.ASTNodes.statement.*;
 import DLS.ASTNodes.statement.built.in.commands.EndSurveyNode;
 import DLS.ASTNodes.statement.built.in.commands.ReceiveDataBlockingNode;
@@ -44,6 +46,8 @@ public class Generator {
     private final static String LOOP_ELEMENT = "$element";
 
     private List<String> stringConstants = new ArrayList<>();
+    //todo:
+    private List<String> pluginImports = new ArrayList<>();
 
     private final int commandIndexOffset;
     private final int stringConstantsIndexOffset;
@@ -63,13 +67,16 @@ public class Generator {
                 .map(this::generate)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-        if(cs.isEmpty()) return new Result(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+
+        if(cs.isEmpty()) return new Result(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+
         Command lastCommand = cs.get(cs.size() - 1);
         if(!(lastCommand instanceof CEnd)) cs.add(new CEnd());
         setIndex(cs);
         setBranchIndex(cs);
         List<String> cmms = cs.stream().map(Command::print).collect(Collectors.toList());
-        return new Result(stringConstants, cmms);
+
+        return new Result(stringConstants, cmms, pluginImports);
     }
 
     private void setIndex(List<Command> cs) {
@@ -109,8 +116,22 @@ public class Generator {
             return generate((SendDataNode) statement);
         } else if (statement instanceof ReceiveDataBlockingNode) {
             return generateAwaitCommand();
+        } else if (statement instanceof JsPluginNode) {
+            return generate((JsPluginNode) statement);
+        } else if (statement instanceof CssPluginNode) {
+            return generate((CssPluginNode) statement);
         }
         throw new RuntimeException("unsupported statement type");
+    }
+
+    private List<Command> generate(JsPluginNode node) {
+        this.pluginImports.add("js:" + node.url);
+        return Collections.emptyList();
+    }
+
+    private List<Command> generate(CssPluginNode node) {
+        this.pluginImports.add("css:" + node.url);
+        return Collections.emptyList();
     }
 
     private List<Command> generate(DefNode defNode) {

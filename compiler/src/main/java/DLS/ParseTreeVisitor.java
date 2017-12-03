@@ -6,6 +6,8 @@ import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
 import DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames;
 import DLS.ASTNodes.enums.built.in.specialObjNames.BuiltInSpecObjNames;
 import DLS.ASTNodes.enums.obj.props.QuestionProps;
+import DLS.ASTNodes.plugin.CssPluginNode;
+import DLS.ASTNodes.plugin.JsPluginNode;
 import DLS.ASTNodes.statement.FuncDefNode;
 import DLS.ASTNodes.enums.attributes.*;
 import DLS.ASTNodes.enums.methods.*;
@@ -91,13 +93,22 @@ class ParseTreeVisitor {
 
     List<StatementNode> visitFile(DLSParser.FileContext ctx) {
         if(ctx.Temp() == null) {
+            List<StatementNode> rets = new ArrayList<>();
+            List<StatementNode> plugins =  ctx.pluginImport()
+                    .stream()
+                    .map(this::getImportsNode)
+                    .collect(Collectors.toList());
+
             //we sees pages as functions ( has its own local variable scope )
             //we sees a page group as a function that contains functions (pages)
-            return ctx.element()
+            List<StatementNode> pagesOrPageGroups = ctx.element()
                     .stream()
                     .map(this::getPageNodeOrPageGroupNode)
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
+            rets.addAll(plugins);
+            rets.addAll(pagesOrPageGroups);
+            return rets;
         } else {
             List<DLSParser.StatementContext> rootStatements = ctx.statement();
             boolean returnStatementInRootStatements = rootStatements.stream().anyMatch(DLSParser.ReturnStatementContext.class::isInstance);
@@ -106,6 +117,14 @@ class ParseTreeVisitor {
                     .map(this::getStatementNodes)
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
+        }
+    }
+
+    private StatementNode getImportsNode(DLSParser.PluginImportContext ctx) {
+        if(ctx.ImportJS() != null) {
+            return new JsPluginNode(util.removeDoubleQuotes(ctx.ImportUrl().getText()));
+        } else {
+            return new CssPluginNode(util.removeDoubleQuotes(ctx.ImportUrl().getText()));
         }
     }
 
