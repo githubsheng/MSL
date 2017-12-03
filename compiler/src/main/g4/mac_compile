@@ -11,7 +11,7 @@ cp ../java/DLS/generated/*.tokens .
 
 javac ../java/DLS/generated/*.java
 
-#export CLASSPATH="../java:$CLASSPATH"
-#java org.antlr.v4.gui.TestRig DLS.generated.DLS file -gui input.txt
+export CLASSPATH="../java:$CLASSPATH"
+java org.antlr.v4.gui.TestRig DLS.generated.DLS file -gui input.txt
 #java org.antlr.v4.gui.TestRig DLS.generated.DLSLexer tokens -tokens input.txt
 
