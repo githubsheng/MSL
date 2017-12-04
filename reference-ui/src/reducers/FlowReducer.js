@@ -42,7 +42,7 @@ function reset(state, action){
         token: Date.now().toString(),
         isDebug: action.isDebug,
         jsPluginImports: List(action.jsPluginImports),
-        cssPluginImports: List(action.jsPluginImports)
+        cssPluginImports: List(action.cssPluginImports)
     };
     return Object.assign({}, defaultState, changes);
 }

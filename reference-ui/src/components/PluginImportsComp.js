@@ -3,15 +3,37 @@ import React from 'react';
 
 export class PluginImportsComp extends PureComponent {
 
-    render(){
+    insertPlugins(){
         const {jsPluginImports, cssPluginImports} = this.props;
-        const jsLinks = jsPluginImports.map(url => (<script key={url} src={url}></script>));
-        const cssLinks = cssPluginImports.map(url => (<link key={url} rel="stylesheet" href={url}/>));
+        jsPluginImports.map(url => {
+            const script = document.createElement("script");
+            script.src = url;
+            script.async = true;
+            document.body.appendChild(script);
+        });
+        cssPluginImports.map(url => {
+            const fileref = document.createElement("link");
+            fileref.rel = "stylesheet";
+            fileref.type = "text/css";
+            fileref.href = url;
+            document.body.appendChild(fileref)
+        });
+    }
+
+    //not called in initial rendering
+    componentDidUpdate() {
+        this.insertPlugins();
+    }
+
+    //called in initial rendering
+    componentDidMount () {
+        this.insertPlugins();
+    }
+
+    render(){
         return (
-            <div id="plugins">
-                <div id="jsPluginImports">{jsLinks}</div>
-                <div id="cssPluginImports">{cssLinks}</div>
-            </div>
+            //well, this is just a marker.
+            <div id="plugins"/>
         )
     }
 

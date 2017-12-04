@@ -50,7 +50,9 @@ const mainReducer = (state = defaultState, action) => {
         lastInteractionTime,
         token: state.token,
         isStarted: state.isStarted,
-        isEnded: state.isEnded
+        isEnded: state.isEnded,
+        jsPluginImports: state.jsPluginImports,
+        cssPluginImports: state.cssPluginImports
     };
 };
 
