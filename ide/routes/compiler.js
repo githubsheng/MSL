@@ -13,6 +13,7 @@ const jarPath = slash(path.resolve("compiler/MSL-1.0-SNAPSHOT-jar-with-dependenc
 const inputFilePath = slash(path.resolve("compiler/input/input.txt"));
 const commandsStrPath = slash(path.resolve("compiler/output/commandsStr.txt"));
 const stringConstantsPath = slash(path.resolve("compiler/output/stringConstants.txt"));
+const pluginImportsPath = slash(path.resolve("compiler/output/pluginImports.txt"));
 
 const encoding = 'utf8';
 
@@ -91,25 +92,43 @@ const tryCompileAndReturnCommsAndStrConsts = (function(){
         //todo: read the two files and return them
         let commsStrs = null;
         let strsConsts = null;
-        let isCommsStrsFileRead = false;
-        let isStrsConstsFileRead = false;
+        const jsPluginImports = [];
+        const cssPluginImports = [];
+
+        let filesRead = 0;
         fs.readFile(commandsStrPath, encoding, (err, data) => {
             if (err) throw err;
-            isCommsStrsFileRead = true;
             commsStrs = data;
-            trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
+            filesRead++;
+            trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts, jsPluginImports, cssPluginImports);
         });
         fs.readFile(stringConstantsPath, encoding, (err, data) => {
             if (err) throw err;
-            isStrsConstsFileRead = true;
             strsConsts = data;
-            trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts);
+            filesRead++;
+            trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts, jsPluginImports, cssPluginImports);
         });
-        function trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts) {
-            if(isCommsStrsFileRead && isStrsConstsFileRead) {
+        fs.readFile(pluginImportsPath, encoding, (err, data) => {
+            if (err) throw err;
+            const plugImports = data;
+            plugImports.split(/\r?\n/).forEach(line => {
+                if(line.startsWith("js:")) {
+                    jsPluginImports.push(line.substring(3));
+                } else if(line.startsWith("css:")) {
+                    cssPluginImports.push(line.substring(4));
+                }
+            });
+            filesRead++;
+            trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts, jsPluginImports, cssPluginImports);
+        });
+
+        function trySendCommsStrsAndStrsConsts(res, commsStrs, strsConsts, jsPluginImports, cssPluginImports) {
+            if(filesRead === 3) {
                 res.json({
                     commsStrs,
-                    strsConsts
+                    strsConsts,
+                    jsPluginImports,
+                    cssPluginImports
                 });
             }
         }

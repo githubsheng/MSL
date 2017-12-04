@@ -96,7 +96,7 @@ function reRunSurvey(){
             //`commsStrs` and `strsConsts`
             window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput, stoppedAtLine);
             // window.interpreter.restartRun().then(vmResponse => console.log(vmResponse));
-            referenceUIController.reRunSurvey();
+            referenceUIController.reRunSurvey(res.jsPluginImports, res.cssPluginImports);
         }
 
 
@@ -124,9 +124,8 @@ function reDebugSurvey(){
             window.interpreter = new Interpreter(res.commsStrs, res.strsConsts, appendResultToConsoleOutput, stoppedAtLine);
             const interpreter = window.interpreter;
             breakPoints.forEach(lineNumber => interpreter.addBreakPoint(lineNumber));
-            referenceUIController.reDebugSurvey();
+            referenceUIController.reDebugSurvey(res.jsPluginImports, res.cssPluginImports);
         }
-
     });
 }
 
