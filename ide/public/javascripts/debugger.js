@@ -86,7 +86,6 @@ function reRunSurvey(){
     $.post("/compiler/exec", dataSend, function(res){
         if(res.errMsg) {
             showCompileResult(res.errMsg, false);
-            return;
         } else {
             showCompileResult(["compilation successful"], true);
             clearConsoleOutput();
