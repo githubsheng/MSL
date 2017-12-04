@@ -5,10 +5,12 @@ export const actionTypeReset = `${prefix}reset`;
 export const actionTypeEndOfSurvey = `${prefix}end`;
 export const actionTypeFirstQuestionLoaded = `${prefix}firstQuestionLoaded`;
 
-export function resetSurveyAction(isDebug){
+export function resetSurveyAction(isDebug = false, jsPluginImports = [], cssPluginImports = []){
     return {
+        type: actionTypeReset,
         isDebug: isDebug,
-        type: actionTypeReset
+        jsPluginImports,
+        cssPluginImports
     }
 }
 

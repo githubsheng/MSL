@@ -41,18 +41,10 @@ function reset(state, action){
     const changes = {
         token: Date.now().toString(),
         isDebug: action.isDebug,
-        jsPluginImports: getJsPluginImports(),
-        cssPluginImports: getCssPluginImports()
+        jsPluginImports: List(action.jsPluginImports),
+        cssPluginImports: List(action.jsPluginImports)
     };
     return Object.assign({}, defaultState, changes);
-}
-
-function getJsPluginImports() {
-    return List(window.interpreter.getJsPluginImports());
-}
-
-function getCssPluginImports(){
-    return List(window.interpreter.getCssPluginImports());
 }
 
 function startAnswering(state, action){
