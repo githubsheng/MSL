@@ -17,7 +17,9 @@ export const defaultState = {
     lastInteractionTime: new Date(),
     questions: List(),
     pageInfo: {},
-    pageGroupInfo: {}
+    pageGroupInfo: {},
+    jsPluginImports: List(),
+    cssPluginImports: List()
 };
 
 export function flowReducer(state, action) {
@@ -38,18 +40,15 @@ export function flowReducer(state, action) {
 function reset(state, action){
     const changes = {
         token: Date.now().toString(),
-        isDebug: action.isDebug
+        isDebug: action.isDebug,
+        jsPluginImports: List(action.jsPluginImports),
+        cssPluginImports: List(action.cssPluginImports)
     };
     return Object.assign({}, defaultState, changes);
 }
 
 function startAnswering(state, action){
-    let firstQuestionPromise;
-    if(state.isDebug) {
-        firstQuestionPromise = restartDebug(state.token);
-    } else {
-        firstQuestionPromise = restartRun(state.token);
-    }
+    const firstQuestionPromise = state.isDebug ? restartDebug(state.token) : restartRun(state.token);
     firstQuestionPromise.then(function(response){
         if(response.token === state.token) {
             action.asyncDispatch(firstQuestionLoadedAction());
@@ -68,22 +67,13 @@ function endSurvey(state, action) {
 }
 
 function restartDebug(token){
-    if(!window.isDev) {
-        return window.interpreter.restartDebug(token);
-    } else {
-        return fakeData(token);
-    }
+    return window.isDev? fakeData(token) : window.interpreter.restartDebug(token);
 }
 
 function restartRun(token){
-    if(!window.isDev) {
-        return window.interpreter.restartRun(token);
-    } else {
-        return fakeData(token);
-    }
+    return window.isDev? fakeData(token) : window.interpreter.restartRun(token);
 }
 
-//todo: this returns fake data
 function fakeData(token){
     //see sendAnswerToInterpreter in QuestionAnswerReducer
     return new Promise(function (resolve, reject) {
@@ -137,7 +127,6 @@ function fakeData(token){
                     }
                 }
             ];
-
             resolve({
                 pageInfo: {
                     attrib1: "evaluated attrib1"

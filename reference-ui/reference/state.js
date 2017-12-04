@@ -10,6 +10,8 @@ const referenceState = {
     lastInteractionTime: new Date(),
     questions: List(),
     pageInfo: {},
-    pageGroupInfo: {}
+    pageGroupInfo: {},
+    jsPluginImports: List(),
+    cssPluginImports: List()
 };
 

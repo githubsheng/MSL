@@ -27,12 +27,12 @@ const store = createStore(
 
 window.referenceUIController = {};
 
-window.referenceUIController.reRunSurvey = function(){
-    store.dispatch(resetSurveyAction());
+window.referenceUIController.reRunSurvey = function(jsPluginImports, cssPluginImports){
+    store.dispatch(resetSurveyAction(false, jsPluginImports, cssPluginImports));
 };
 
-window.referenceUIController.reDebugSurvey = function(){
-    store.dispatch(resetSurveyAction(true));
+window.referenceUIController.reDebugSurvey = function(jsPluginImports, cssPluginImports){
+    store.dispatch(resetSurveyAction(true, jsPluginImports, cssPluginImports));
 };
 
 const rootElementId = window.isDev ? "root" : "reference-ui";

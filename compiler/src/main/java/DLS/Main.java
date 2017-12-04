@@ -71,79 +71,54 @@ public class Main {
 
         String commandsStrFileName;
         String stringConstantsFileName;
+        String pluginImportsFileName;
         if (outputPath == null) {
             commandsStrFileName = "commandsStr.txt";
             stringConstantsFileName = "stringConstants.txt";
+            pluginImportsFileName = "pluginImports.txt";
         } else {
             commandsStrFileName = outputPath + "/commandsStr.txt";
             stringConstantsFileName = outputPath + "/stringConstants.txt";
+            pluginImportsFileName = outputPath + "/pluginImports.txt";
         }
 
-        try (FileWriter fw = new FileWriter(commandsStrFileName, false);
-             BufferedWriter bw = new BufferedWriter(fw);
-             PrintWriter out = new PrintWriter(bw)) {
+        PrintWriter out = null;
+        try {
+            FileWriter fw = new FileWriter(commandsStrFileName, false);
+            BufferedWriter bw = new BufferedWriter(fw);
+            out = new PrintWriter(bw);
             for (String cmdStr : ret.commands) out.println(cmdStr);
-            out.close();
         } catch (IOException e) {
-            //exception handling left as an exercise for the reader
-        }
-
-        try (FileWriter fw = new FileWriter(stringConstantsFileName, false);
-             BufferedWriter bw = new BufferedWriter(fw);
-             PrintWriter out = new PrintWriter(bw)) {
-            for (String strConst : ret.stringConstants) out.println(strConst);
-            out.close();
-        } catch (IOException e) {
-            //exception handling left as an exercise for the reader
-        }
-
-        if (args.length == 0) {
-            try (FileWriter fw = new FileWriter("../interpreter/test/main.html", false);
-                 BufferedWriter bw = new BufferedWriter(fw);
-                 PrintWriter out = new PrintWriter(bw)) {
-                out.println("<!DOCTYPE html>\n" +
-                        "<html lang=\"en\">\n" +
-                        "<head>\n" +
-                        "    <meta charset=\"UTF-8\">\n" +
-                        "    <title>Title</title>\n" +
-                        "    <link rel=\"stylesheet\" href=\"styles.css\"/>\n" +
-                        "    <script src=\"../dist/test-bundle.js\"></script>\n" +
-                        "</head>\n" +
-                        "<body onload=\"init()\">\n" +
-                        "<fieldset>\n" +
-                        "    <legend>Commands:</legend>\n" +
-                        "    <textarea id=\"commands\">");
-                for (String cmdStr : ret.commands) out.println(cmdStr);
-                out.println("    </textarea>\n" +
-                        "</fieldset>\n" +
-                        "<fieldset>\n" +
-                        "    <legend>String constants:</legend>\n" +
-                        "    <textarea id=\"string-constants\">");
-                for (String strConst : ret.stringConstants) out.println(strConst);
-                out.println("    </textarea>\n" +
-                        "</fieldset>\n" +
-                        "<fieldset>\n" +
-                        "<legend>Dummy UI</legend>\n" +
-                        "<pre id=\"page\" style=\"height: 380px;\"><span class=\"null\">null</span></pre>\n" +
-                        "<textarea id=\"answers\" style=\"height: 200px;\">\n" +
-                        "</textarea>\n" +
-                        "<button id=\"submitAnswer\">submit answer</button>\n" +
-                        "</fieldset>\n" +
-                        "<div class=\"clear\"></div>\n" +
-                        "<input id=\"add-break-points\" placeholder=\"add break points\"/>\n" +
-                        "<button onclick=\"addBreakPoints()\">Add break points</button>\n" +
-                        "<input id=\"remove-break-points\" placeholder=\"delete break points\"/>\n" +
-                        "<button onclick=\"deleteBreakPoints()\">Delete break points</button>\n" +
-                        "<br/><br/>\n" +
-                        "<button onclick=\"restartRun()\">restart run</button>\n" +
-                        "<button onclick=\"restartDebug()\">restart debug</button>\n" +
-                        "<button onclick=\"resumeDebug()\">resume debug</button>\n" +
-                        "<button onclick=\"resumeRun()\">resume run</button>\n" +
-                        "<button onclick=\"stepOver()\">Step over</button>\n" +
-                        "<div id=\"break-points\"></div>");
+            System.out.println(e);
+        } finally {
+            if(out != null) {
                 out.close();
-            } catch (IOException e) {
-                //exception handling left as an exercise for the reader
+            }
+        }
+
+        try {
+            FileWriter fw = new FileWriter(stringConstantsFileName, false);
+            BufferedWriter bw = new BufferedWriter(fw);
+            out = new PrintWriter(bw);
+            for (String strConst : ret.stringConstants) out.println(strConst);
+        } catch (IOException e) {
+            System.out.println(e);
+        } finally {
+            if(out != null) {
+                out.close();
+            }
+        }
+
+        try {
+            FileWriter fw = new FileWriter(pluginImportsFileName, false);
+            BufferedWriter bw = new BufferedWriter(fw);
+            out = new PrintWriter(bw);
+            for (String pi : ret.pluginImports) out.println(pi);
+        } catch (IOException e) {
+            System.out.println(e);
+        } finally {
+            if(out != null) {
+                out.close();
             }
         }
 

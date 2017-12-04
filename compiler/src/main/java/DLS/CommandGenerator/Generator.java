@@ -67,12 +67,15 @@ public class Generator {
                 .map(this::generate)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+
         if(cs.isEmpty()) return new Result(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+
         Command lastCommand = cs.get(cs.size() - 1);
         if(!(lastCommand instanceof CEnd)) cs.add(new CEnd());
         setIndex(cs);
         setBranchIndex(cs);
         List<String> cmms = cs.stream().map(Command::print).collect(Collectors.toList());
+
         return new Result(stringConstants, cmms, pluginImports);
     }
 
@@ -114,13 +117,21 @@ public class Generator {
         } else if (statement instanceof ReceiveDataBlockingNode) {
             return generateAwaitCommand();
         } else if (statement instanceof JsPluginNode) {
-            //todo:
-            return null;
+            return generate((JsPluginNode) statement);
         } else if (statement instanceof CssPluginNode) {
-            //todo:
-            return null;
+            return generate((CssPluginNode) statement);
         }
         throw new RuntimeException("unsupported statement type");
+    }
+
+    private List<Command> generate(JsPluginNode node) {
+        this.pluginImports.add("js:" + node.url);
+        return Collections.emptyList();
+    }
+
+    private List<Command> generate(CssPluginNode node) {
+        this.pluginImports.add("css:" + node.url);
+        return Collections.emptyList();
     }
 
     private List<Command> generate(DefNode defNode) {

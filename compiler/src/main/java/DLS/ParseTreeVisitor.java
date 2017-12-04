@@ -6,6 +6,8 @@ import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
 import DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames;
 import DLS.ASTNodes.enums.built.in.specialObjNames.BuiltInSpecObjNames;
 import DLS.ASTNodes.enums.obj.props.QuestionProps;
+import DLS.ASTNodes.plugin.CssPluginNode;
+import DLS.ASTNodes.plugin.JsPluginNode;
 import DLS.ASTNodes.statement.FuncDefNode;
 import DLS.ASTNodes.enums.attributes.*;
 import DLS.ASTNodes.enums.methods.*;
@@ -119,7 +121,11 @@ class ParseTreeVisitor {
     }
 
     private StatementNode getImportsNode(DLSParser.PluginImportContext ctx) {
-        return null;
+        if(ctx.ImportJS() != null) {
+            return new JsPluginNode(util.removeDoubleQuotes(ctx.ImportUrl().getText()));
+        } else {
+            return new CssPluginNode(util.removeDoubleQuotes(ctx.ImportUrl().getText()));
+        }
     }
 
     private List<StatementNode> getPageNodeOrPageGroupNode(DLSParser.ElementContext ctx) {
