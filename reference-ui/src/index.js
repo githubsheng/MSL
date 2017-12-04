@@ -25,14 +25,16 @@ const store = createStore(
     )
 );
 
-window.referenceUIController = {};
-
-window.referenceUIController.reRunSurvey = function(jsPluginImports, cssPluginImports){
-    store.dispatch(resetSurveyAction(false, jsPluginImports, cssPluginImports));
-};
-
-window.referenceUIController.reDebugSurvey = function(jsPluginImports, cssPluginImports){
-    store.dispatch(resetSurveyAction(true, jsPluginImports, cssPluginImports));
+window.referenceUIController = {
+    reRunSurvey: function(jsPluginImports, cssPluginImports){
+        store.dispatch(resetSurveyAction(false, jsPluginImports, cssPluginImports));
+    },
+    reDebugSurvey: function(jsPluginImports, cssPluginImports){
+        store.dispatch(resetSurveyAction(true, jsPluginImports, cssPluginImports));
+    },
+    dispatch: function(action){
+        store.dispatch(action);
+    }
 };
 
 const rootElementId = window.isDev ? "root" : "reference-ui";

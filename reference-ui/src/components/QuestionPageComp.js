@@ -2,8 +2,27 @@ import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 import Question from './QuestionComp';
 import {isPropertyValueTrue, rotate, shuffle} from "../util/util";
+import {pluginManager} from "../plugins/pluginManager";
+import {pageUpdatedAction} from "../actions/PageActions";
 
 class QuestionPage extends PureComponent {
+
+    componentDidUpdate(){
+        /*
+            every time this.props change the component will update,
+            there will be two updates before we see the first page,
+            first one is `isStarted` changes from false to true,
+            second one is `questions` changes to from empty to with questions.
+            only when `isStarted` is true and `questions` is not empty, can we
+            know that the page is rendered with questions.
+         */
+        if(this.props.isStarted && !this.props.questions.isEmpty()){
+            //page rendered (again)
+            const {pageGroupInfo, pageInfo, questions} = this.props;
+            pluginManager.passEventsToPlugins(new pageUpdatedAction(pageGroupInfo, pageInfo, questions));
+        }
+    }
+
     render() {
         const {
             pageInfo,

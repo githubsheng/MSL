@@ -453,7 +453,7 @@ export class Interpreter {
         return this.callStack.getCurrentFrame().getOperandStack().push(val);
     }
 
-    private getFromLocalVarSpace(key: string) {
+    public getFromLocalVarSpace(key: string) {
         return this.callStack.getCurrentFrame().getFromSpace(key);
     }
 

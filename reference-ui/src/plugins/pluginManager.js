@@ -1,7 +1,4 @@
-/**
- * Created by sheng.wang on 2017/12/04.
- */
-
+import {setSelectAction, submitAnswersAction} from "../actions/AnswerActions";
 const plugins = [];
 
 //todo: function to register a call back, we call the callback when certain events happens
@@ -21,40 +18,43 @@ function passEventsToPlugins(event){
     });
 }
 
-function selectRow(questionId, rowId) {
+/*
+ function setSelect(questionId, rowId, colId, val) {
+ dispatch(setSelectAction(questionId, rowId, colId, val));
+ }
 
+ function submitAnswersHandler() {
+ dispatch(submitAnswersAction())
+ }
+ */
+
+function selectRow(questionId, rowId) {
+    window.referenceUIController.dispatch(setSelectAction(questionId, rowId, null, true));
 }
 
 function selectCol(questionId, rowId, colId) {
-
+    window.referenceUIController.dispatch(setSelectAction(questionId, rowId, colId, true));
 }
 
 function updateForm(questionId, elemName, value) {
-
+    throw new Error("not implemented yet");
 }
 
 function unselectRow(questionId, rowId) {
-
+    window.referenceUIController.dispatch(setSelectAction(questionId, rowId, null, false));
 }
 
 function unselectCol(questionId, rowId, colId) {
-
-}
-
-function updateDuration(questionId, timeInMilliseconds) {
-
-}
-
-function updateTotalClicks(questionId, totalClicks) {
-
+    window.referenceUIController.dispatch(setSelectAction(questionId, rowId, colId, false));
 }
 
 function accessPageVariable(name) {
-
+    /** @namespace window.interpreter.getFromLocalVarSpace */
+    return window.interpreter.getFromLocalVarSpace(name);
 }
 
 function submitAnswer(){
-
+    window.referenceUIController.dispatch(submitAnswersAction())
 }
 
 export const pluginManager = {
@@ -65,11 +65,11 @@ export const pluginManager = {
     updateForm,
     unselectRow,
     unselectCol,
-    updateDuration,
-    updateTotalClicks,
     accessPageVariable,
     submitAnswer
 };
+
+window.pluginManager = pluginManager;
 
 
 

@@ -5,6 +5,7 @@ import {Row, RowWithColumns} from './RowComp';
 import {isPropertyValueFalse, isPropertyValueTrue, rotate, shuffle} from "../util/util";
 
 class Question extends PureComponent {
+
     render() {
 
         const {question, setSelect} = this.props;
