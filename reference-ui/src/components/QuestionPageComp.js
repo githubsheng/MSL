@@ -33,12 +33,20 @@ class QuestionPage extends Component {
             return <Question key={index} question={question} setSelect={setSelect}/>;
         });
 
-        const pageClassName  = `question-page question-page-${pageInfo.id}`;
+        //todo: this part can be reused...
+        const pageDivProps = {};
+        Object.entries(pageInfo).forEach(kv => {
+            const [key, value] = kv;
+            //if value is string or number, we copy it pageDivProps, we then later copy the pageDivProps to div tag.
+            if (typeof value === "string" || typeof value === "number") {
+                pageDivProps["data-"+key] = value;
+            }
+        });
 
         return (
             //todo: change the class name here, it should be question-page*, rather than page*
             //the extra structures, such as page-body-left, page-body-right are used by the plugins to cusomize the UI.
-            <div id="question-page" className={pageClassName}>
+            <div id="question-page" className="question-page" {...pageDivProps}>
                 <div id="question-page-banner" className="banner">MSL</div>
                 <div id="question-page-header" className="header"/>
                 <div id="question-page-body" className="body">
