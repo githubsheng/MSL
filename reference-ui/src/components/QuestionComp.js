@@ -40,7 +40,11 @@ class Question extends PureComponent {
                 <div className="above-question-text"/>
                 <div className="question-text">{question.text}</div>
                 <div className="below-question-text"/>
-                <div className="rows-container">{rowComps}</div>
+                <div className="rows">
+                    <div className="rows-left"/>
+                    <div className="rows-center">{rowComps}</div>
+                    <div className="rows-right"/>
+                </div>
             </div>
         );
     }
