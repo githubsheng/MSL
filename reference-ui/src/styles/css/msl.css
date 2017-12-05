@@ -5,8 +5,13 @@ div.banner {
     font-weight: bold;
 }
 
+div.question-page > div.body {
+    display: flex;
+}
+
 div.question-page > div.body > div.body-center {
     padding: 5px;
+    width: 100%;
 }
 
 div.question-page > div.submit-container {

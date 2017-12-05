@@ -82,57 +82,29 @@ function fakeData(token){
                 {
                     id: "q1",
                     type: "single-choice",
-                    text: "q1 text" + Date.now(),
+                    text: "Which cloth do you like best?",
                     rows: {
-                        _generatedIdentifierName2: {
-                            "text": " aa"
+                        row1: {
+                            text: "Cloth A",
+                            videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1Pm-q-cBNS.mp4"
                         },
-                        _generatedIdentifierName3: {
-                            "text": " bb"
-                        }
-                    }
-                },
-                {
-                    id: "q2",
-                    type: "multiple-choice",
-                    text: "q2 text",
-                    rows: {
-                        _generatedIdentifierName4: {
-                            "text": " aa"
+                        row2: {
+                            text: "Cloth B",
+                            videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1V21HzqzpS.mp4"
                         },
-                        _generatedIdentifierName5: {
-                            "text": " bb"
-                        }
-                    }
-                },
-                {
-                    id: "q3",
-                    type: "single-matrix",
-                    text: "q3 text",
-                    rows: {
-                        _generatedIdentifierName6: {
-                            text: " aa"
-                        },
-                        _generatedIdentifierName7: {
-                            text: " bb"
-                        }
-                    },
-                    cols: {
-                        _generatedIdentifierName5: {
-                            text: " col1"
-                        },
-                        _generatedIdentifierName6: {
-                            text: " col2"
+                        row3: {
+                            text: "Cloth B",
+                            videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1bwNA23dvS.mp4"
                         }
                     }
                 }
             ];
             resolve({
                 pageInfo: {
-                    attrib1: "evaluated attrib1"
+                    id: "p1"
                 },
                 pageGroupInfo: {
-                    attrib2: "evaluated attrib2"
+                    id: "g1"
                 },
                 questions,
                 token: token

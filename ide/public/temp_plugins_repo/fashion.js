@@ -1,9 +1,4 @@
-//because in react create app testing environment react js is always loaded at last
-//inspect index.html and you will see...
-//in real plugin we don't have such issues because real plugins are always loaded after react
-//has set up.
-setTimeout(function(){
-
+(function(){
     const lowerLayerZIndex = 2;
     const higherLayerZIndex = 3;
     const videoTags = [];
@@ -53,4 +48,6 @@ setTimeout(function(){
     }
 
     window.pluginManager.registerPlugins(fashion);
-}, 500);
+
+})();
+
