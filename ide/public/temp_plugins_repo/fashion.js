@@ -1,37 +1,40 @@
 (function(){
-    const lowerLayerZIndex = 2;
-    const higherLayerZIndex = 3;
     const videoTags = [];
+    let isDisplaying = false;
 
     function fashion(action) {
-        if(action.type === "page_pageUpdated" && action.pageInfo.id === "p1") {
+        console.log(action);
+        if(action.type === "page_pageUpdated" && action.pageInfo.fashionPage === "true") {
             //for this demo we only support a single question..
             const question = action.questions.get(0);
             question.rowIds.forEach((rowId, index) => {
                 const row = question[rowId];
                 const vt =  createVideoTag(row.id, row.videoSrc);
                 if(index === 0) {
-                    vt.autoplay = true;
-                    vt.style.zIndex = higherLayerZIndex;
+                    //auto selects the first row and plays its video...
+                    //the selectRow event will trigger the video to play....
+                    window.pluginManager.selectRow(question.id, rowId, null, true);
                 } else {
-                    vt.autoplay = false;
-                    vt.style.zIndex = lowerLayerZIndex;
+                    vt.style.display = "none";
                 }
                 videoTags.push(vt);
             });
-            const questionPageBodyLeftDiv = document.querySelector("#question-page-body-left");
+            const questionPageBodyLeftDiv = document.querySelector("#question-page div.rows-left");
             videoTags.forEach(vt => questionPageBodyLeftDiv.appendChild(vt));
-        } else if(action.type === "page_pageUpdated" && action.pageInfo.id !== "p1") {
-            const fashionVideo = document.querySelector("#fashion-video");
-            if(fashionVideo) fashionVideo.remove();
+            isDisplaying = true;
+        } else if(action.type === "page_pageUpdated") {
+            const fashionVideos = document.querySelectorAll("video.fashion-vt");
+            fashionVideos.forEach(vt => vt.remove());
+            isDisplaying = false;
         } else if(action.type === "answer_setSelect") {
+            if(!isDisplaying) return;
             const rowId = action.rowId;
             videoTags.forEach(vt => {
                 vt.pause();
-                vt.style.zIndex = lowerLayerZIndex;
+                vt.style.display = "none";
             });
             const vt = videoTags.find(vt => vt.id === rowId);
-            vt.style.zIndex = higherLayerZIndex;
+            vt.style.display = "block";
             vt.play();
         }
     }
@@ -44,10 +47,9 @@
         videoTag.width = "400";
         videoTag.loop = true;
         videoTag.classList.add("fashion-vt");
+        videoTag.autoplay = false;
         return videoTag;
     }
 
-    window.pluginManager.registerPlugins(fashion);
-
+    window.pluginManager.registerPlugins(fashion, "fashion");
 })();
-

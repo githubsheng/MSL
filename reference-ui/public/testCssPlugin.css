@@ -1,23 +1,15 @@
-#question-page.question-page-p1 #question-page-body-left {
+#question-page[data-fashionpage="true"] div.rows-left {
     min-width: 400px;
     height: 530px;
     position: relative;
 }
 
-#question-page.question-page-p1 .fashion-vt {
+#question-page[data-fashionpage="true"] .fashion-vt {
     position: absolute;
     top: 0;
     left: 0;
 }
 
-#question-page.question-page-p1 #fv-1 {
-    z-index: 10;
-}
-
-#question-page.question-page-p1 #fv-2 {
-    z-index: 9;
-}
-
-#question-page.question-page-p1 #fv-3 {
-    z-index: 8;
+#question-page[data-fashionpage="true"] div.rows-center {
+    margin-left: 0;
 }
