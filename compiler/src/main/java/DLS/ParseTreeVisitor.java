@@ -290,6 +290,13 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> visitPage(DLSParser.PageContext ctx) {
+        //todo: question identifier should be its id attribute if there is
+        //todo: id attributes can only be stringConstants
+        //todo: verify the expressions....
+        Optional<String> maybeId = getIdStrVal(ctx.attributes());
+        String pageId = maybeId.orElse(this.generateRandomIdentifierName("page"));
+
+
         List<StatementNode> pageFuncBodyStatNodes = new ArrayList<>();
         //get page attributes
         /*
@@ -304,6 +311,7 @@ class ParseTreeVisitor {
             this "page attribute object" from local variable space and pass it along with the question objects.
          */
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.attributes(), pageImplicitValues);
+        if(!maybeId.isPresent()) fields.add(new ObjectLiteralNode.Field("id", new StringNode(pageId)));
         pageFuncBodyStatNodes.add(new DefNode(BuiltInSpecObjNames.PagePropObject.getName(), new ObjectLiteralNode(fields)));
 
         DLSParser.ScriptContext preScript = ctx.script(0);
@@ -330,13 +338,8 @@ class ParseTreeVisitor {
         pageFuncBodyStatNodes.addAll(getScriptStatements(postScript));
         pageFuncBodyStatNodes.add(new ReturnNode());
 
-        //todo: question identifier should be its id attribute if there is
-        //todo: id attributes can only be stringConstants
-        //todo: verify the expressions....
-        Optional<String> maybeId = getIdStrVal(ctx.attributes());
 
-        String funcName = maybeId.orElse(this.generateRandomIdentifierName("page"));
-        IdentifierNode funcNameNode = new IdentifierNode(funcName);
+        IdentifierNode funcNameNode = new IdentifierNode(pageId);
 
         FuncDefNode pageFuncDef = new FuncDefNode(funcNameNode, pageFuncBodyStatNodes);
         CallNode pageFuncCall = new CallNode(funcNameNode);
