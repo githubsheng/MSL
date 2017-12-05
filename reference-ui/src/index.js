@@ -33,7 +33,14 @@ window.referenceUIController = {
         store.dispatch(resetSurveyAction(true, jsPluginImports, cssPluginImports));
     },
     dispatch: function(action){
-        store.dispatch(action);
+        //we use setTimeout to make sure that the dispatch function call do not happen when we are in the middle of mainReducer..
+        //in the mainReducer, we will invoke all registered plugins and pass the actions to them. they may dispatch other actions using this method.
+
+        //dispatching an action directly inside the main reducer is considered bad practices, so we add this setTimeout to make sure whatever that gets
+        //dispatched will only be dispatched when the main reducer finishing running...
+        setTimeout(function(){
+            store.dispatch(action);
+        }, 0);
     }
 };
 
