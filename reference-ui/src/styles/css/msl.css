@@ -7,6 +7,8 @@ div.banner {
 
 div.question-page > div.body {
     display: flex;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 div.question-page > div.body > div.body-center {
@@ -29,11 +31,16 @@ div.question > div.question-text {
     line-height: 2em;
 }
 
-div.question > div.rows-container {
-    margin-left: 20px;
+div.question > div.rows {
+    display: flex;
 }
 
-div.question > div.rows-container > div.row-with-cols > div.row-text {
+div.question > div.rows > div.rows-center {
+    margin-left: 20px;
+    width: 100%;
+}
+
+div.question > div.rows > div.rows-center > div.row-with-cols > div.row-text {
     background-color: #e0dfdf;
     margin: 10px 0;
     padding: 5px 10px;
