@@ -101,7 +101,8 @@ function fakeData(token){
             ];
             resolve({
                 pageInfo: {
-                    id: "p1"
+                    id: "p1",
+                    fashionPage: "true"
                 },
                 pageGroupInfo: {
                     id: "g1"
