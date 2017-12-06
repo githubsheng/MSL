@@ -5,8 +5,10 @@
     function fashion(action) {
         console.log(action);
         if(action.type === "page_pageUpdated" && action.pageInfo.fashionPage === "true") {
-            //for this demo we only support a single question..
+            //for this demo we only support a single choice question..
+            if(action.questions.size !== 1) return;
             const question = action.questions.get(0);
+            if(question.type !== "single-choice") return;
             question.rowIds.forEach((rowId, index) => {
                 const row = question[rowId];
                 const vt =  createVideoTag(row.id, row.videoSrc);

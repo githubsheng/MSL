@@ -35,3 +35,15 @@ export function rotate(array) {
         array.push(array.shift());
     }
 }
+
+export function extractHTMLElementAttributesFromProps(props){
+    const pageDivProps = {};
+    Object.entries(props).forEach(kv => {
+        const [key, value] = kv;
+        //if value is string or number, we copy it pageDivProps, we then later copy the pageDivProps to div tag.
+        if (typeof value === "string" || typeof value === "number") {
+            pageDivProps["data-"+key] = value;
+        }
+    });
+    return pageDivProps;
+}

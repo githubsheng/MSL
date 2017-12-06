@@ -7,7 +7,7 @@ setTimeout(function(){
     let isDisplaying = false;
 
     function fashion(action) {
-        if(action.type === "page_pageUpdated" && action.pageInfo.fashionPage === "true") {
+        if(action.type === "plugin_pageUpdated" && action.pageInfo.fashionPage === "true") {
             //for this demo we only support a single question..
             const question = action.questions.get(0);
             question.rowIds.forEach((rowId, index) => {
@@ -27,7 +27,7 @@ setTimeout(function(){
             const questionPageBodyLeftDiv = document.querySelector("#question-page div.rows-left");
             videoTags.forEach(vt => questionPageBodyLeftDiv.appendChild(vt));
             isDisplaying = true;
-        } else if(action.type === "page_pageUpdated") {
+        } else if(action.type === "plugin_pageUpdated") {
             const fashionVideos = document.querySelectorAll("video.fashion-vt");
             fashionVideos.forEach(vt => vt.remove());
             isDisplaying = false;

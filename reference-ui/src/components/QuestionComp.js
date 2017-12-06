@@ -2,9 +2,24 @@ import {PureComponent} from "react/lib/ReactBaseClasses";
 import React from 'react';
 
 import {Row, RowWithColumns} from './RowComp';
-import {isPropertyValueFalse, isPropertyValueTrue, rotate, shuffle} from "../util/util";
+import {
+    extractHTMLElementAttributesFromProps, isPropertyValueFalse, isPropertyValueTrue, rotate,
+    shuffle
+} from "../util/util";
+import {pluginManager} from "../plugins/pluginManager";
+import {questionChangedAction} from "../actions/PluginActions";
 
 class Question extends PureComponent {
+
+    componentDidMount() {
+        pluginManager.passEventsToPlugins(questionChangedAction(this.props.question, this.questionDiv));
+    }
+
+    componentDidUpdate(prevProps, prevState){
+        if(prevProps.question !== this.props.question) {
+            pluginManager.passEventsToPlugins(questionChangedAction(this.props.question, this.questionDiv));
+        }
+    }
 
     render() {
 
@@ -35,8 +50,12 @@ class Question extends PureComponent {
             }
         });
 
+        const questionDivProps = extractHTMLElementAttributesFromProps(question);
+
         return (
-            <div className="question">
+            <div id={question.id} className="question"
+                 ref={(questionDiv) => {this.questionDiv = questionDiv;}}
+                 {...questionDivProps}>
                 <div className="above-question-text"/>
                 <div className="question-text">{question.text}</div>
                 <div className="below-question-text"/>

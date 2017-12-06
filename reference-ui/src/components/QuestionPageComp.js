@@ -2,7 +2,8 @@ import {Component} from "react/lib/ReactBaseClasses";
 import React from 'react';
 import Question from './QuestionComp';
 import {pluginManager} from "../plugins/pluginManager";
-import {pageUpdatedAction} from "../actions/PageActions";
+import {extractHTMLElementAttributesFromProps} from "../util/util";
+import {pageMountedAction, pageUpdatedAction} from "../actions/PluginActions";
 
 class QuestionPage extends Component {
 
@@ -15,6 +16,10 @@ class QuestionPage extends Component {
             const {pageGroupInfo, pageInfo, questions} = this.props;
             pluginManager.passEventsToPlugins(new pageUpdatedAction(pageGroupInfo, pageInfo, questions));
         }
+    }
+
+    componentDidMount() {
+        pluginManager.passEventsToPlugins(new pageMountedAction())
     }
 
     render() {
@@ -33,15 +38,7 @@ class QuestionPage extends Component {
             return <Question key={index} question={question} setSelect={setSelect}/>;
         });
 
-        //todo: this part can be reused...
-        const pageDivProps = {};
-        Object.entries(pageInfo).forEach(kv => {
-            const [key, value] = kv;
-            //if value is string or number, we copy it pageDivProps, we then later copy the pageDivProps to div tag.
-            if (typeof value === "string" || typeof value === "number") {
-                pageDivProps["data-"+key] = value;
-            }
-        });
+        const pageDivProps = extractHTMLElementAttributesFromProps(pageInfo);
 
         return (
             //todo: change the class name here, it should be question-page*, rather than page*

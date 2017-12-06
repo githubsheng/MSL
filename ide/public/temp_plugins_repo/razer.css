@@ -1,0 +1,34 @@
+iframe.razer-iframe {
+    overflow:hidden;
+    background-color:black;
+    outline: none;
+    border: none;
+}
+
+div.question[data-razer="true"] > div.below-question-text {
+    overflow: hidden;
+}
+
+#question-page {
+    background: black;
+    color: white;
+}
+
+#question-page .btn-primary {
+    background-color: green;
+    border-color: darkgreen;
+}
+
+#question-page div.question-text {
+    border-color: darkgreen;
+}
+
+#question-page-header {
+    height: 20px;
+    margin: 20px 0 10px 75px;
+    background: url(https://d1urewwzb2qwii.cloudfront.net/sys-master/images/h6c/he1/8858452525086/wordmark.svg) no-repeat;
+}
+
+#question-page div.question div.row-with-cols div.row-text {
+    background-color: green;
+}
