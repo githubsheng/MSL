@@ -1,11 +1,11 @@
 JS "../temp_plugins_repo/fashion.js"
 CSS "../temp_plugins_repo/fashion.css"
 
-[Page fashionPage="true"]
-[SingleChoice]Which one do you like best?
-[Row id="row1" videoSrc="https://images-fe.ssl-images-amazon.com/images/I/A1Pm-q-cBNS.mp4"]AAA
-[Row id="row2" videoSrc="https://images-fe.ssl-images-amazon.com/images/I/A1V21HzqzpS.mp4"]BBB
-[Row id="row3" videoSrc="https://images-fe.ssl-images-amazon.com/images/I/A1bwNA23dvS.mp4"]CCC
+[Page]
+[SingleChoice fashion="true"]Which one do you like best?
+[Row id="row1" videoSrc="https://images-fe.ssl-images-amazon.com/images/I/A1kTsukHrtS.mp4"]Black
+[Row id="row2" videoSrc="https://images-fe.ssl-images-amazon.com/images/I/A1V21HzqzpS.mp4"]Red
+[Row id="row3" videoSrc="https://images-fe.ssl-images-amazon.com/images/I/A1YY9ei9l7S.mp4"]Pink
 [Submit]
 [PageEnd]
 
