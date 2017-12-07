@@ -4,7 +4,7 @@
 
     function fashion(action) {
         console.log(action);
-        if(action.type === "page_pageUpdated" && action.pageInfo.fashionPage === "true") {
+        if(action.type === "plugin_pageChanged" && action.pageInfo.fashionPage === "true") {
             //for this demo we only support a single choice question..
             if(action.questions.size !== 1) return;
             const question = action.questions.get(0);
@@ -24,7 +24,7 @@
             const questionPageBodyLeftDiv = document.querySelector("#question-page div.rows-left");
             videoTags.forEach(vt => questionPageBodyLeftDiv.appendChild(vt));
             isDisplaying = true;
-        } else if(action.type === "page_pageUpdated") {
+        } else if(action.type === "plugin_pageChanged") {
             const fashionVideos = document.querySelectorAll("video.fashion-vt");
             fashionVideos.forEach(vt => vt.remove());
             isDisplaying = false;
