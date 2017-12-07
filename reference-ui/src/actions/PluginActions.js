@@ -7,7 +7,6 @@ const prefix = "plugin_";
 export const actionTypePageMounted = `${prefix}pageMounted`;
 export const actionTypePageUpdated = `${prefix}pageChanged`;
 export const actionTypeQuestionChanged = `${prefix}questionChanged`;
-
 //these event is not intended to be used by redux, rather, it is passed to plugins
 
 //this event is emitted when the we go from one question page to another
