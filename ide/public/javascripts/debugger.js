@@ -66,7 +66,7 @@ function evaluateExpression(content){
 function bindConsoleInput(){
     const consoleInputTextarea = document.querySelector("#console-input");
     consoleInputTextarea.addEventListener('keydown', function(e) {
-        if(e.keyCode == 13 && e.metaKey) {
+        if(e.keyCode == 13 && e.ctrlKey) {
             evaluateExpression(consoleInputTextarea.value);
             appendInputContentToConsoleOutput(consoleInputTextarea.value);
             consoleInputTextarea.value = "";
@@ -179,4 +179,32 @@ function clearConsoleOutput(){
 
 function bindClearConsoleBtn(){
     document.querySelector("#clear-console").onclick = clearConsoleOutput;
+}
+
+const resize = (function(){
+    //0 normal, 1 small
+    let size = 0;
+
+    function resize(){
+        switch(size) {
+            case 0:
+                consoleDiv.style.height = "100px";
+                referenceUiDiv.style.bottom = "110px";
+                size = 1;
+                break;
+            case 1:
+                consoleDiv.style.height = "230px";
+                referenceUiDiv.style.bottom = "240px";
+                size = 0;
+                break;
+            default:
+            //nothing.
+        }
+    }
+
+    return resize;
+})();
+
+function bindResizeBtn(){
+    document.querySelector("#resize-console").onclick = resize;
 }

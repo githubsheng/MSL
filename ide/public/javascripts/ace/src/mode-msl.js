@@ -56,19 +56,29 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
             next: "inQuestionTag"
         };
 
+        const PageAndPageGroupStartRules = [{
+            token: "gray",
+            regex: /\[PageGroupEnd]/
+        }, {
+            token: "gray",
+            regex: /\[PageGroup/,
+            next: "inPageGroupTag"
+        }, {
+            token: "gray",
+            regex: /\[Page/,
+            next: "inPageTag"
+        }];
+
+        const startRules = [{
+            token: "keyword",
+            regex: /(?:JS|CSS)/
+        }, StringRule, ...PageAndPageGroupStartRules];
+
+
         this.$rules = {
-            "start" : [ {
-                token: "gray",
-                regex: /\[PageGroupEnd]/
-            }, {
-                token: "gray",
-                regex: /\[PageGroup/,
-                next: "inPageGroupTag"
-            }, {
-                token: "gray",
-                regex: /\[Page/,
-                next: "inPageTag"
-            }],
+            "start": startRules,
+
+            "pageAndPageGroupStart" : PageAndPageGroupStartRules,
 
             "inPageGroupTag": [StringRule, EqualSignRule, {
                 token: "gray",
@@ -113,7 +123,7 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
             "inPostQuestionScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, {
                 token: "gray",
                 regex: /\[PageEnd]/,
-                next: "start"
+                next: "pageAndPageGroupStart"
             }],
 
             "inRowTag": [StringRule, EqualSignRule, {

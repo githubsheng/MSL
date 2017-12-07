@@ -5,22 +5,21 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
     const TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
     const MslHighlightRules = function() {
-        // taken from http://download.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
-        const keywords = (
-            "if|then|else|end|def|global|each|chance|function|return|terminate|clock"
-        );
+        const keywords = "if|then|else|end|def|global|each|chance|function|return|terminate|clock|$index|$element|and|or";
 
-        const buildinConstants = ("null");
+        const buildinConstants = "null";
 
         const buildInMethods = (
             "List|randomize|rotate|get|has|indexOf|add|addFirst|addLast|addAllFirst|addAllLast|" +
-            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|rank|print|and|or|->"
+            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|rank|print|->"
         );
+
+        const buildInProperties = "selected|duration|answeredWhen|";
 
         const keywordMapper = this.createKeywordMapper({
             "keyword": keywords,
             "constant.language": buildinConstants,
-            "support.function": buildInMethods
+            "purple": buildInMethods
         }, "identifier");
 
         const StringRule = {
@@ -30,14 +29,20 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
 
         //in tag
         const EqualSignRule = {
-            //use another class name
-            token: "keyword",
+            token: "gray",
             regex: /=/
         };
 
         const BooleanRule = {
             token : "constant.language.boolean",
             regex : "(?:true|false)\\b"
+        };
+
+        const DotRule = {
+            //wow, this is incredibly useful
+            //see https://stackoverflow.com/questions/25213824/ace-editor-non-capturing-group-issue
+            token: ["text", "purple"],
+            regex: /(\.)(selected|duration|displayedWhen|answeredWhen|totalClicks|geoLocation)/
         };
 
         const KeyWordMapperRule = {
@@ -47,46 +52,53 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
 
         const QuestionStartRule = {
             token: "question",
-                regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix/,
+            regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix/,
             next: "inQuestionTag"
         };
 
+        const PageAndPageGroupStartRules = [{
+            token: "gray",
+            regex: /\[PageGroupEnd]/
+        }, {
+            token: "gray",
+            regex: /\[PageGroup/,
+            next: "inPageGroupTag"
+        }, {
+            token: "gray",
+            regex: /\[Page/,
+            next: "inPageTag"
+        }];
+
+        const startRules = [{
+            token: "keyword",
+            regex: /(?:JS|CSS)/
+        }, StringRule, ...PageAndPageGroupStartRules];
+
+
         this.$rules = {
-            "start" : [ {
-                token: "gray",
-                regex: /\[PageGroupEnd]/
-            }, {
-                token: "gray",
-                regex: /\[PageGroup/,
-                next: "inPageGroupTag"
-            }, {
-                //here, maybe change the class name
-                token: "gray",
-                regex: /\[Page/,
-                next: "inPageTag"
-            }],
+            "start": startRules,
+
+            "pageAndPageGroupStart" : PageAndPageGroupStartRules,
 
             "inPageGroupTag": [StringRule, EqualSignRule, {
-                //use another class name
                 token: "gray",
                 regex: /]/,
                 next: "inPrePageScript"
             }],
 
-            "inPrePageScript": [StringRule, BooleanRule, KeyWordMapperRule, {
-                token: "keyword",
+            "inPrePageScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, {
+                token: "gray",
                 regex: /\[Page/,
                 next: "inPageTag"
             }],
 
             "inPageTag": [StringRule, EqualSignRule, {
-                //use another class name
                 token: "gray",
                 regex: /]/,
                 next: "inPreQuestionScript"
             }],
 
-            "inPreQuestionScript": [StringRule, BooleanRule, KeyWordMapperRule, QuestionStartRule],
+            "inPreQuestionScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, QuestionStartRule],
 
             "inQuestionTag": [StringRule, EqualSignRule, {
                 token: "question",
@@ -108,21 +120,19 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
                 next: "inPostQuestionScript"
             }, QuestionStartRule],
 
-            "inPostQuestionScript": [StringRule, BooleanRule, KeyWordMapperRule, {
+            "inPostQuestionScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, {
                 token: "gray",
                 regex: /\[PageEnd]/,
-                next: "start"
+                next: "pageAndPageGroupStart"
             }],
 
             "inRowTag": [StringRule, EqualSignRule, {
-                //use another class name
                 token: "question_row",
                 regex: /]/,
                 next: "inQuestionBody"
             }],
 
             "inColTag": [StringRule, EqualSignRule, {
-                //use another class name
                 token: "question_col",
                 regex: /]/,
                 next: "inQuestionBody"

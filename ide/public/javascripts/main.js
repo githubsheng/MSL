@@ -27,4 +27,5 @@ function init(){
     bindStepOverBtn();
     bindConsoleInput();
     bindClearConsoleBtn();
+    bindResizeBtn();
 }

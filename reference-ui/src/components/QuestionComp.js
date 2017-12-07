@@ -16,7 +16,7 @@ class Question extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState){
-        if(prevProps.question !== this.props.question) {
+        if(prevProps.question.id !== this.props.question.id) {
             pluginManager.passEventsToPlugins(questionChangedAction(this.props.question, this.questionDiv));
         }
     }

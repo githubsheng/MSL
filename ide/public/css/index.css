@@ -60,7 +60,7 @@
     left: 50%;
     right: 0;
     bottom: 0;
-    padding: 0 10px;
+    margin: 0 10px;
 }
 
 #debugger-controller {
@@ -78,7 +78,9 @@
 }
 
 #reference-ui, #preview-introduction {
-    height: 560px;
+    top: 40px;
+    position: absolute;
+    bottom: 240px;
     width: 100%;
     margin: 10px 0;
     border-radius: 5px;
@@ -102,9 +104,9 @@
 #console {
     position: absolute;
     bottom: 0;
-    top: 610px;
-    right: 10px;
-    left: 10px;
+    height: 230px;
+    right: 0;
+    left: 0;
     margin: 10px 0;
     overflow: auto;
     border-radius: 5px;

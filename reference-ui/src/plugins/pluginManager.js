@@ -1,7 +1,6 @@
 import {setSelectAction, submitAnswersAction} from "../actions/AnswerActions";
 const plugins = [];
 
-//todo: function to register a call back, we call the callback when certain events happens
 function registerPlugins(plugin, id){
     //if the plugin is not already added...add it.
     if(plugins.findIndex(p => p.id === id) === -1) {
@@ -74,7 +73,3 @@ export const pluginManager = {
 };
 
 window.pluginManager = pluginManager;
-
-
-
-//todo: functions to manipulate answers....
