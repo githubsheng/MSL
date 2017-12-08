@@ -26,7 +26,7 @@ function tryCompileOnChanges(){
             const src = editor.getValue();
             const dataSend = {data: src};
             $.post("/compiler/compile", dataSend, function(res){
-                res.errMsg ? showCompileResult(res.errMsg, false) : showCompileResult(["compilation success"], true);
+                res.errMsg ? showCompileResult(res.errMsg, false) : showCompileResult(["no syntax error :)"], true);
             });
         }
     }

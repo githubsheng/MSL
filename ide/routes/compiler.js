@@ -56,7 +56,7 @@ function commonFailureCallback(res, compileErrorMessage){
     console.log(compileErrorMessage);
     let withoutJavaRuntimeExceptions = compileErrorMessage.split('\n')
         .filter(line => line.startsWith("line"));
-    if(withoutJavaRuntimeExceptions.length === 0) withoutJavaRuntimeExceptions = ["unknown error happend"];
+    if(withoutJavaRuntimeExceptions.length === 0) withoutJavaRuntimeExceptions = ["unknown error happened"];
     res.json({
         errMsg: withoutJavaRuntimeExceptions
     });
