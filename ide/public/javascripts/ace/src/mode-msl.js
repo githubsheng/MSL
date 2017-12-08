@@ -1,10 +1,10 @@
-define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text_highlight_rules"], function (require, exports, module) {
     "use strict";
 
     const oop = require("../lib/oop");
     const TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
-    const MslHighlightRules = function() {
+    const MslHighlightRules = function () {
         const keywords = "if|then|else|end|def|global|each|chance|function|return|terminate|clock|$index|$element|and|or";
 
         const buildinConstants = "null";
@@ -34,8 +34,8 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
         };
 
         const BooleanRule = {
-            token : "constant.language.boolean",
-            regex : "(?:true|false)\\b"
+            token: "constant.language.boolean",
+            regex: "(?:true|false)\\b"
         };
 
         const DotRule = {
@@ -46,13 +46,13 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
         };
 
         const KeyWordMapperRule = {
-            token : keywordMapper,
-            regex : "[a-zA-Z$][a-zA-Z0-9]*\\b"
+            token: keywordMapper,
+            regex: "[a-zA-Z$][a-zA-Z0-9]*\\b"
         };
 
         const QuestionStartRule = {
             token: "question",
-                regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix/,
+            regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix/,
             next: "inQuestionTag"
         };
 
@@ -74,11 +74,22 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
             regex: /(?:JS|CSS)/
         }, StringRule, ...PageAndPageGroupStartRules];
 
+        const submitButtonRule = {
+            token: "submit",
+            regex: /\[Submit]/,
+            next: "inPostQuestionScript"
+        };
+
+        const PageEndRule = {
+            token: "gray",
+            regex: /\[PageEnd]/,
+            next: "pageAndPageGroupStart"
+        };
 
         this.$rules = {
             "start": startRules,
 
-            "pageAndPageGroupStart" : PageAndPageGroupStartRules,
+            "pageAndPageGroupStart": PageAndPageGroupStartRules,
 
             "inPageGroupTag": [StringRule, EqualSignRule, {
                 token: "gray",
@@ -98,13 +109,35 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
                 next: "inPreQuestionScript"
             }],
 
-            "inPreQuestionScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, QuestionStartRule],
+            "inPreQuestionScript": [
+                StringRule,
+                BooleanRule,
+                DotRule,
+                KeyWordMapperRule,
+                QuestionStartRule,
+                /*
+                 submit button is not supposed to show in pre question script, however, we add this highlight rule here
+                 because we normally type:
+                 [Page]
+                 [Submit]
+                 [PageEnd]
+                 and then immediately add questions between [Page] and [Submit]
+                 because this happens very often we want the syntax highlight to highlight the submit button as well.
+
+                 same for pattern
+                 [Page]
+                 [PageEnd]
+                 */
+                submitButtonRule,
+                PageEndRule
+            ],
 
             "inQuestionTag": [StringRule, EqualSignRule, {
                 token: "question",
                 regex: /]/,
                 next: "inQuestionBody"
-            }],
+            }
+            ],
 
             "inQuestionBody": [{
                 token: "question_row",
@@ -114,17 +147,24 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
                 token: "question_col",
                 regex: /\[Col/,
                 next: "inColTag"
-            }, {
-                token: "submit",
-                regex: /\[Submit]/,
-                next: "inPostQuestionScript"
-            }, QuestionStartRule],
+            }, QuestionStartRule,
+                /*
+                 * we often type
+                 * [Page]
+                 * [PageEnd]
+                 *
+                 * and then we start to insert questions, so at certain time we will have
+                 * [Page]
+                 * [SingleChoice]
+                 * [PageEnd]
+                 *
+                 * and then we continue to add rows and columns
+                 * this happens so often, therefore we want the syntax highlight to highlight page end / submit button in this case...
+                 */
+                submitButtonRule,
+                PageEndRule],
 
-            "inPostQuestionScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, {
-                token: "gray",
-                regex: /\[PageEnd]/,
-                next: "pageAndPageGroupStart"
-            }],
+            "inPostQuestionScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, PageEndRule],
 
             "inRowTag": [StringRule, EqualSignRule, {
                 token: "question_row",
@@ -147,19 +187,19 @@ define("ace/mode/msl_highlight_rules",["require","exports","module","ace/lib/oop
     exports.MslHighlightRules = MslHighlightRules;
 });
 
-define("ace/mode/msl",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/msl_highlight_rules"], function(require, exports, module) {
+define("ace/mode/msl", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text", "ace/mode/msl_highlight_rules"], function (require, exports, module) {
     "use strict";
 
     const oop = require("../lib/oop");
     const TextMode = require("./text").Mode;
     const MslHighlightRules = require("./msl_highlight_rules").MslHighlightRules;
 
-    const Mode = function() {
+    const Mode = function () {
         this.HighlightRules = MslHighlightRules;
     };
     oop.inherits(Mode, TextMode);
 
-    (function() {
+    (function () {
 
         this.lineCommentStart = "--";
 
