@@ -1,2 +1,0 @@
-js:some url
-css:some other url
