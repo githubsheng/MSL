@@ -57,7 +57,7 @@ class Question extends PureComponent {
                  ref={(questionDiv) => {this.questionDiv = questionDiv;}}
                  {...questionDivProps}>
                 <div className="above-question-text"/>
-                <div className="question-text">{question.text}</div>
+                <div className="question-text">{question.text || "warning: no question text"}</div>
                 <div className="below-question-text"/>
                 <div className="rows">
                     <div className="rows-left"/>

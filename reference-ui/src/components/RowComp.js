@@ -18,7 +18,7 @@ export class Row extends PureComponent {
             <div className="question-row">
                 <input type={type} checked={row.selected}
                        onClick={evt => setSelect(question.id, row.id, null, !row.selected)}/>
-                <div className="text">{row.text}</div>
+                <div className="text">{row.text || "warning: no row text"}</div>
             </div>
         )
     }
@@ -44,7 +44,7 @@ export class RowWithColumns extends PureComponent {
 
         return (
             <div className="row-with-cols">
-                <div className="row-text">{row.text}</div>
+                <div className="row-text">{row.text || "warning: no col text"}</div>
                 <div className="cols-container">
                     {colCompsInRow}
                 </div>

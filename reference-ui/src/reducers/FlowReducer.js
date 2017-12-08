@@ -83,6 +83,7 @@ function fakeData(token){
                     id: "q1",
                     type: "single-choice",
                     text: "Which cloth do you like best?",
+                    fashion: "true",
                     rows: {
                         row1: {
                             text: "Cloth A",
@@ -101,8 +102,7 @@ function fakeData(token){
             ];
             resolve({
                 pageInfo: {
-                    id: "p1",
-                    fashionPage: "true"
+                    id: "p1"
                 },
                 pageGroupInfo: {
                     id: "g1"

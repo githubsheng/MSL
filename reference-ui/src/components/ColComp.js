@@ -17,7 +17,7 @@ export class Col extends PureComponent {
             <div className="question-col">
                 <input type={type} checked={col.selected}
                        onClick={evt => setSelect(question.id, row.id, col.id, !col.selected)}/>
-                <div className="text">{col.text}</div>
+                <div className="text">{col.text || "warning: no column text"}</div>
             </div>
         )
 
