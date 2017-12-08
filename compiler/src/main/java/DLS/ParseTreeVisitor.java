@@ -46,6 +46,8 @@ class ParseTreeVisitor {
     //I don't like making it stateful but this requires least code changes so guess will just have to live with it for now.
     private boolean needsTokenAssociation = false;
 
+    private final Set<String> questionIds = new HashSet<>();
+
     private Util util = new Util();
 
     ParseTreeVisitor() {
@@ -424,8 +426,24 @@ class ParseTreeVisitor {
             fields.add(colsField);
         }
 
-        Optional<String> maybeId = getIdStrVal(attribs);
+        Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeIdContext = getIdAttribCtx(attribs);
+        Optional<String> maybeId = maybeIdContext
+                .map(DLSParser.AttributeWithAssignedStringValueContext::String)
+                .map(TerminalNode::getText)
+                .map(util::removeDoubleQuotes);
+
+        if(maybeId.isPresent() && questionIds.contains(maybeId.get())) {
+            //ctx must exists then
+            DLSParser.AttributeWithAssignedStringValueContext idCtx = maybeIdContext.get();
+            System.err.println("line " + idCtx.getStart().getLine()
+                    + ":" + idCtx.getStart().getCharPositionInLine()
+                    + " duplicated question id: " + maybeId.get());
+            throw new RuntimeException("duplicated question id");
+        }
+
+        //question id string
         String identifierName = maybeId.orElse(generateRandomIdentifierName());
+        questionIds.add(identifierName);
         IdentifierNode questionIdentifier = new IdentifierNode(identifierName);
 
         //here, also make the id of question a property as well.
@@ -436,18 +454,55 @@ class ParseTreeVisitor {
     }
 
     private ObjectLiteralNode getQuestionRowsField(List<DLSParser.RowContext> rows) {
+        Set<String> rowIds = new HashSet<>();
+
         List<ObjectLiteralNode.Field> rowLiteralsAsFields = rows.stream().map(rc -> {
             ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
-            String referenceName = getIdStrVal(rc.attributes()).orElse(generateRandomIdentifierName());
+            Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeRowIdCtx = getIdAttribCtx(rc.attributes());
+            Optional<String> maybeRowId = maybeRowIdCtx.map(strValAttr -> strValAttr.String().getText())
+                    .map(util::removeDoubleQuotes);
+
+            if(maybeRowId.isPresent() && rowIds.contains(maybeRowId.get())) {
+                DLSParser.AttributeWithAssignedStringValueContext rowIdCtx = maybeRowIdCtx.get();
+                System.err.println("line " + rowIdCtx.getStart().getLine()
+                        + ":" + rowIdCtx.getStart().getCharPositionInLine()
+                        + " duplicated row id: " + maybeRowId.get()
+                        + ". All rows inside the same question must have different ids"
+                );
+                throw new RuntimeException("duplicated row id");
+            }
+
+
+            String referenceName = maybeRowId.orElse(generateRandomIdentifierName());
+            rowIds.add(referenceName);
             return new ObjectLiteralNode.Field(referenceName, rowLiteral);
         }).collect(Collectors.toList());
         return new ObjectLiteralNode(rowLiteralsAsFields);
     }
 
     private ObjectLiteralNode getQuestionColumnsField(List<DLSParser.ColContext> cols) {
+        Set<String> colIds = new HashSet<>();
+
+
         List<ObjectLiteralNode.Field> colLiteralsAsFields = cols.stream().map(cc -> {
             ObjectLiteralNode colLiteral = getColObjectLiteralFromColTag(cc);
-            String referenceName = getIdStrVal(cc.attributes()).orElse(generateRandomIdentifierName());
+
+            Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeColIdCtx = getIdAttribCtx(cc.attributes());
+            Optional<String> maybeColId = maybeColIdCtx.map(strValAttr -> strValAttr.String().getText())
+                    .map(util::removeDoubleQuotes);
+
+            if(maybeColId.isPresent() && colIds.contains(maybeColId.get())) {
+                DLSParser.AttributeWithAssignedStringValueContext colIdCtx = maybeColIdCtx.get();
+                System.err.println("line " + colIdCtx.getStart().getLine()
+                        + ":" + colIdCtx.getStart().getCharPositionInLine()
+                        + " duplicated col id: " + maybeColId.get()
+                        + ". All cols inside the same question must have different ids"
+                );
+                throw new RuntimeException("duplicated col id");
+            }
+            
+            String referenceName = maybeColId.orElse(generateRandomIdentifierName());
+            colIds.add(referenceName);
             return new ObjectLiteralNode.Field(referenceName, colLiteral);
         }).collect(Collectors.toList());
         return new ObjectLiteralNode(colLiteralsAsFields);
@@ -1017,6 +1072,15 @@ class ParseTreeVisitor {
                 .filter(strValAttr -> strValAttr.Name().getText().equals(PageAttributes.ID.getName()))
                 .map(strValAttr -> strValAttr.String().getText())
                 .map(util::removeDoubleQuotes)
+                .findFirst();
+    }
+
+    private Optional<DLSParser.AttributeWithAssignedStringValueContext> getIdAttribCtx(DLSParser.AttributesContext ctx) {
+        return ctx.attribute()
+                .stream()
+                .filter(DLSParser.AttributeWithAssignedStringValueContext.class::isInstance)
+                .map(DLSParser.AttributeWithAssignedStringValueContext.class::cast)
+                .filter(strValAttr -> strValAttr.Name().getText().equals(PageAttributes.ID.getName()))
                 .findFirst();
     }
 
