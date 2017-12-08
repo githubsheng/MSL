@@ -60,5 +60,56 @@ function listenerForBreakpointsSettings(){
     })
 }
 
+function generateRowsTemplate(){
+    let str = "";
+    for(let i = 0; i < 10; i++) {
+        str += `\n[Row id="r${i+1}"]`;
+    }
+    return str;
+}
+
+function generateColsTemplate(){
+    let str = "";
+    for(let i = 0; i < 10; i++) {
+        str += `\n[Col id="c${i+1}"]`;
+    }
+    return str;
+}
+
+function bindPageGroupMacro(){
+    document.querySelector("#page-group-macro").onclick = function(){
+        editor.insert("[PageGroup]\n[Page]\n\n[Submit]\n[PageEnd]\n[PageGroupEnd]");
+    };
+}
+
+function bindPageMacro(){
+    document.querySelector("#page-macro").onclick = function(){
+        editor.insert("[Page]\n\n[Submit]\n[PageEnd]");
+    };
+}
+
+function bindSingleChoiceMacro(){
+    document.querySelector("#sc-macro").onclick = function(){
+        editor.insert("[SingleChoice]" + generateRowsTemplate());
+    };
+}
+
+function bindMultipleChoiceMacro(){
+    document.querySelector("#mc-macro").onclick = function(){
+        editor.insert("[MultipleChoice]" + generateRowsTemplate());
+    };
+}
+
+function bindSingleMatrixMacro(){
+    document.querySelector("#sm-macro").onclick = function(){
+        editor.insert("[SingleMatrix]" + generateRowsTemplate() + generateColsTemplate());
+    };
+}
+
+function bindMultipleMatrixMacro(){
+    document.querySelector("#mm-macro").onclick = function(){
+        editor.insert("[MultipleMatrix]" + generateRowsTemplate() + generateColsTemplate());
+    };
+}
 
 

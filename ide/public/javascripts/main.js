@@ -28,4 +28,10 @@ function init(){
     bindConsoleInput();
     bindClearConsoleBtn();
     bindResizeBtn();
+    bindSingleChoiceMacro();
+    bindPageMacro();
+    bindMultipleChoiceMacro();
+    bindSingleMatrixMacro();
+    bindMultipleMatrixMacro();
+    bindPageGroupMacro();
 }
