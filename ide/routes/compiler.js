@@ -73,7 +73,7 @@ function compileCallbackGenenertor(successCallback, failCallback){
             exec(`java -jar ${jarPath} ${inputFilePath} ${outputFolderPath} ${commandIndexOffset} ${strConstsIndexOffset}`, (error, stdout, stderr) => {
                 const compileSuccessMessage = stdout.trim();
                 const compileErrorMessage = stderr.trim();
-                compileSuccessMessage === "successful" ? successCallback(res) : failCallback(res, compileErrorMessage);
+                compileSuccessMessage === "successful" && compileErrorMessage === "" ? successCallback(res) : failCallback(res, compileErrorMessage);
             });
         });
 
