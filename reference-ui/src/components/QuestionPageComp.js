@@ -3,7 +3,7 @@ import React from 'react';
 import Question from './QuestionComp';
 import {pluginManager} from "../plugins/pluginManager";
 import {extractHTMLElementAttributesFromProps} from "../util/util";
-import {pageMountedAction, pageChangedAction} from "../actions/PluginActions";
+import {pageLoadAction, pageUnloadAction} from "../actions/PluginActions";
 
 class QuestionPage extends Component {
 
@@ -13,13 +13,14 @@ class QuestionPage extends Component {
 
     componentDidUpdate(prevProps, prevState){
         if(prevProps.pageInfo.id !== this.props.pageInfo.id) {
-            const {pageGroupInfo, pageInfo, questions} = this.props;
-            pluginManager.passEventsToPlugins(new pageChangedAction(pageGroupInfo, pageInfo, questions));
+            pluginManager.passEventsToPlugins(pageUnloadAction(prevProps.pageGroupInfo, prevProps.pageInfo, prevProps.questions));
+            pluginManager.passEventsToPlugins(pageLoadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions));
         }
     }
 
     componentDidMount() {
-        pluginManager.passEventsToPlugins(new pageMountedAction())
+        const {pageGroupInfo, pageInfo, questions} = this.props;
+        pluginManager.passEventsToPlugins(pageLoadAction(pageGroupInfo, pageInfo, questions))
     }
 
     render() {
