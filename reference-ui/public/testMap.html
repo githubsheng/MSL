@@ -11,10 +11,12 @@
 <body>
 <h3>My Google Maps Demo</h3>
 <div id="map"></div>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7H_6oQ33ae7r-UPJqprgNcs13LnCDcHs">
+</script>
 <script>
-    const riseOfficeLocation = {lat: 35.6115, lng: 139.6284};
-    let map = null;
     function initMap() {
+        const riseOfficeLocation = {lat: 35.6115, lng: 139.6284};
+
         const map  = new google.maps.Map(document.getElementById('map'), {
             center: riseOfficeLocation,
             zoom: 15
@@ -50,9 +52,6 @@
             return R * c;
         }
     }
-</script>
-<script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7H_6oQ33ae7r-UPJqprgNcs13LnCDcHs&callback=initMap">
 </script>
 </body>
 </html>
