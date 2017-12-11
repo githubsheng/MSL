@@ -52,7 +52,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
         const QuestionStartRule = {
             token: "question",
-            regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix/,
+            regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix|\[Empty/,
             next: "inQuestionTag"
         };
 
