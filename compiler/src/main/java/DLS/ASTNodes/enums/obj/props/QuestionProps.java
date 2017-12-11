@@ -8,6 +8,7 @@ public enum QuestionProps {
     MULTIPLE_CHOICE("multiple-choice"),
     SINGLE_MATRIX("single-matrix"),
     MULTIPLE_MATRIX("multiple-matrix"),
+    EmptyQuestion("empty-question"),
     ROWS("rows"),
     COLS("cols"),
     TEXT("text");

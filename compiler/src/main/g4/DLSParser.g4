@@ -153,6 +153,7 @@ question
 | multipleChoiceQuestion
 | singleMatrixQuestion
 | multipleMatrixQuestion
+| emptyQuestion
 ;
 
 singleChoiceQuestion
@@ -169,6 +170,10 @@ singleMatrixQuestion
 
 multipleMatrixQuestion
 : MultipleChoiceMatrixStart attributes Close textArea rows+=row+ cols+=col+
+;
+
+emptyQuestion
+: EmptyQuestionStart attributes Close textArea
 ;
 
 row

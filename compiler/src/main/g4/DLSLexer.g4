@@ -147,6 +147,10 @@ TextArea: .*? TextAreaEnd {
         offSet = 15;
         popMode();
         pushMode(ScriptMode);
+     } else if(matched.endsWith("[Empty")) {
+        offSet = 6;
+        popMode();
+        pushMode(ScriptMode);
      } else if(matched.endsWith("${")) {
         offSet = 2;
         pushMode(ScriptMode);
@@ -164,6 +168,7 @@ TextAreaEnd
 | MultipleChoiceStart
 | SingleChoiceMatrixStart
 | MultipleChoiceMatrixStart
+| EmptyQuestionStart
 ;
 
 mode ScriptMode;
@@ -325,6 +330,11 @@ SingleChoiceMatrixStart
 
 MultipleChoiceMatrixStart
 : '[MultipleMatrix'
+-> popMode, pushMode(TextAreaMode), pushMode(TagMode)
+;
+
+EmptyQuestionStart
+: '[Empty'
 -> popMode, pushMode(TextAreaMode), pushMode(TagMode)
 ;
 

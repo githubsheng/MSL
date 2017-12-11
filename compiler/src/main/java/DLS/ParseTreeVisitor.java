@@ -366,7 +366,10 @@ class ParseTreeVisitor {
         } else if(questionCtx.multipleMatrixQuestion() != null) {
             DLSParser.MultipleMatrixQuestionContext mm = questionCtx.multipleMatrixQuestion();
             return getCommonQuestionStatements(mm.attributes(), mm.textArea(), getQuestionTypeField(mm), mm.rows, mm.cols);
-        } else {
+        } else if (questionCtx.emptyQuestion() != null) {
+            DLSParser.EmptyQuestionContext eq = questionCtx.emptyQuestion();
+            return getCommonQuestionStatements(eq.attributes(), eq.textArea(), getQuestionTypeField(eq), null, null);
+        }else {
             throw new RuntimeException("cannot generate question statements: unknown question types");
         }
     }
@@ -387,6 +390,10 @@ class ParseTreeVisitor {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.MULTIPLE_MATRIX.getName()));
     }
 
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.EmptyQuestionContext eq) {
+        return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.EmptyQuestion.getName()));
+    }
+
     private StatementNode getCommonQuestionStatements(DLSParser.AttributesContext attribs, DLSParser.TextAreaContext textArea,
                                                       ObjectLiteralNode.Field questionType, List<DLSParser.RowContext> rowCtxes,
                                                       List<DLSParser.ColContext> colCtxes) {
@@ -395,6 +402,7 @@ class ParseTreeVisitor {
         fields.add(questionType);
         fields.add(getTextField(textArea));
 
+        if(rowCtxes != null && !rowCtxes.isEmpty()) {
         /*
             here we are creating an object whose property keys are row ids, and whose property values are rows, for instance:
             {
@@ -402,7 +410,7 @@ class ParseTreeVisitor {
                 rowId2: {text: "blue", ....}
             }
          */
-        ObjectLiteralNode rows = getQuestionRowsField(rowCtxes);
+            ObjectLiteralNode rows = getQuestionRowsField(rowCtxes);
         /*
             here we are adding the above object to be a property of the question, the property name is "rows"
             {
@@ -417,8 +425,9 @@ class ParseTreeVisitor {
             when a question gets answered, some significant changes usually happen to the question object..
             see comments in reference-ui/reference/questionData for more details.
          */
-        ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field(QuestionProps.ROWS.getName(), rows);
-        fields.add(rowsField);
+            ObjectLiteralNode.Field rowsField = new ObjectLiteralNode.Field(QuestionProps.ROWS.getName(), rows);
+            fields.add(rowsField);
+        }
 
         if(colCtxes != null && !colCtxes.isEmpty()) {
             ObjectLiteralNode cols = getQuestionColumnsField(colCtxes);
