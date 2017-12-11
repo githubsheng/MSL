@@ -41,12 +41,29 @@ class Question extends PureComponent {
                 case "multiple-matrix":
                     return <RowWithColumns key={index} row={row} type="checkbox" question={question}
                                            setSelect={setSelect}/>;
+                case "empty-question":
+                    return undefined;
                 default:
                     throw new Error("question type not yet supported");
             }
-        });
+        }).filter(row => row !== undefined);
 
         const questionDivProps = extractHTMLElementAttributesFromProps(question);
+
+        let questionOptions = null;
+        if(rowComps.length > 0) {
+            questionOptions = (
+                <div className="rows">
+                    <div className="rows-left"/>
+                    <div className="rows-center">{rowComps}</div>
+                    <div className="rows-right"/>
+                </div>
+            );
+        } else {
+            questionOptions = (
+                <div className="empty-question-space"/>
+            );
+        }
 
         return (
             <div id={question.id} className="question"
@@ -55,11 +72,7 @@ class Question extends PureComponent {
                 <div className="above-question-text"/>
                 <div className="question-text">{question.text || "warning: no question text"}</div>
                 <div className="below-question-text"/>
-                <div className="rows">
-                    <div className="rows-left"/>
-                    <div className="rows-center">{rowComps}</div>
-                    <div className="rows-right"/>
-                </div>
+                {questionOptions}
             </div>
         );
     }
