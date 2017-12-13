@@ -1,6 +1,7 @@
 const prefix = "answer_";
 export const actionTypeSubmitAnswer = `${prefix}submitAnswers`;
 export const actionTypeSetSelect = `${prefix}setSelect`;
+export const actionTypeUpdateForm = `${prefix}updateForm`;
 
 export function submitAnswersAction(){
     return {
@@ -15,5 +16,14 @@ export function setSelectAction(questionId, rowId, colId, val){
         rowId,
         colId,
         val
+    }
+}
+
+export function updateFormAction(questionId, name, value) {
+    return {
+        type: actionTypeUpdateForm,
+        questionId,
+        name,
+        value
     }
 }

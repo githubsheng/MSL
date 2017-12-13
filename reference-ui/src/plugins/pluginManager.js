@@ -1,5 +1,5 @@
-import {setSelectAction, submitAnswersAction} from "../actions/AnswerActions";
-const plugins = [];
+import {setSelectAction, submitAnswersAction, updateFormAction} from "../actions/AnswerActions";
+let plugins = [];
 
 function registerPlugins(plugin, id){
     //if the plugin is not already added...add it.
@@ -39,8 +39,8 @@ function selectCol(questionId, rowId, colId) {
     window.referenceUIController.dispatch(setSelectAction(questionId, rowId, colId, true));
 }
 
-function updateForm(questionId, elemName, value) {
-    throw new Error("not implemented yet");
+function updateForm(questionId, name, value) {
+    window.referenceUIController.dispatch(updateFormAction(questionId, name, value));
 }
 
 function unselectRow(questionId, rowId) {
@@ -60,6 +60,10 @@ function submitAnswer(){
     window.referenceUIController.dispatch(submitAnswersAction())
 }
 
+function resetRegisteredPlugins(){
+    plugins = [];
+}
+
 export const pluginManager = {
     registerPlugins,
     passEventsToPlugins,
@@ -69,7 +73,8 @@ export const pluginManager = {
     unselectRow,
     unselectCol,
     accessPageVariable,
-    submitAnswer
+    submitAnswer,
+    resetRegisteredPlugins
 };
 
 window.pluginManager = pluginManager;

@@ -1,5 +1,5 @@
-JS "../temp_plugins_repo/fashion.js"
-CSS "../temp_plugins_repo/fashion.css"
+JS "../temp_msl_plugins_repo/fashion.js"
+CSS "../temp_msl_plugins_repo/fashion.css"
 
 [Page]
 [SingleChoice fashion="true"]Which one do you like best?
@@ -12,8 +12,8 @@ CSS "../temp_plugins_repo/fashion.css"
 
 
 
-JS "../temp_plugins_repo/razer.js"
-CSS "../temp_plugins_repo/razer.css"
+JS "../temp_msl_plugins_repo/razer.js"
+CSS "../temp_msl_plugins_repo/razer.css"
 
 [Page]
 
@@ -34,6 +34,29 @@ CSS "../temp_plugins_repo/razer.css"
 [Row]Some row 2
 [Col]Some column 1
 [Col]Some column 2
+[Submit]
+[PageEnd]
+
+[Page]
+[SingleChoice]Some other questions
+[Row]aaa
+[Row]bbb
+[Row]ccc
+
+[SingleChoice]Some other questions
+[Row]aaa
+[Row]bbb
+[Row]ccc
+
+[Submit]
+[PageEnd]
+
+JS "https://maps.googleapis.com/maps/api/js?key=AIzaSyC7H_6oQ33ae7r-UPJqprgNcs13LnCDcHs"
+JS "../temp_msl_plugins_repo/get-map-position.js"
+CSS "../temp_msl_plugins_repo/get-map-position.css"
+
+[Page]
+[Empty getMapPosition="true"]Where do you have lunch break?
 [Submit]
 [PageEnd]
 

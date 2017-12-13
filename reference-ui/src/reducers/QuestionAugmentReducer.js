@@ -42,6 +42,8 @@ function augmentRows(question) {
         case "single-matrix":
         case "multiple-matrix":
             return augmentMatrixQuestions(question);
+        default:
+            return question;
     }
 
     function augmentNoneMatrixQuestions(question){

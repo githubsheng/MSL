@@ -1,0 +1,18 @@
+div.question[data-getMapPosition="true"] div.empty-question-space > div.map {
+    margin: 10px 0;
+}
+
+div.question[data-getMapPosition="true"] div.empty-question-space a {
+    margin-right: 10px;
+    color: red;
+    font-weight: bold;
+}
+
+div.question[data-getMapPosition="true"] div.empty-question-space a:hover {
+    cursor: pointer;
+}
+
+div.question[data-getMapPosition="true"] div.empty-question-space span {
+    color: #2e6da4;
+    font-weight: bold;
+}

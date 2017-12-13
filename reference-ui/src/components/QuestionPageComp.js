@@ -11,9 +11,14 @@ class QuestionPage extends Component {
         return !(this.props === nextProps && this.state === nextState);
     }
 
+    componentWillUpdate(nextProps, nextState) {
+        if(this.props.pageInfo.id !== nextProps.pageInfo.id) {
+            pluginManager.passEventsToPlugins(pageUnloadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions));
+        }
+    }
+
     componentDidUpdate(prevProps, prevState){
         if(prevProps.pageInfo.id !== this.props.pageInfo.id) {
-            pluginManager.passEventsToPlugins(pageUnloadAction(prevProps.pageGroupInfo, prevProps.pageInfo, prevProps.questions));
             pluginManager.passEventsToPlugins(pageLoadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions));
         }
     }

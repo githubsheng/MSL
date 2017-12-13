@@ -1,15 +1,15 @@
-#question-page[data-fashionpage="true"] div.rows-left {
+div.question[data-fashionpage="true"] div.rows-left {
     min-width: 400px;
     height: 530px;
     position: relative;
 }
 
-#question-page[data-fashionpage="true"] .fashion-vt {
+div.question[data-fashionpage="true"] .fashion-vt {
     position: absolute;
     top: 0;
     left: 0;
 }
 
-#question-page[data-fashionpage="true"] div.rows-center {
+div.question[data-fashionpage="true"] div.rows-center {
     margin-left: 0;
 }

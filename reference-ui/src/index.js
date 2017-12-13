@@ -11,6 +11,7 @@ import mainReducer from "./reducers/MainReducer";
 import {resetSurveyAction} from "./actions/FlowActions";
 import "./styles/css/bootstrap.css";
 import "./styles/css/msl.css";
+import {pluginManager} from "./plugins/pluginManager";
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -27,9 +28,11 @@ const store = createStore(
 
 window.referenceUIController = {
     reRunSurvey: function(jsPluginImports, cssPluginImports){
+        pluginManager.resetRegisteredPlugins();
         store.dispatch(resetSurveyAction(false, jsPluginImports, cssPluginImports));
     },
     reDebugSurvey: function(jsPluginImports, cssPluginImports){
+        pluginManager.resetRegisteredPlugins();
         store.dispatch(resetSurveyAction(true, jsPluginImports, cssPluginImports));
     },
     dispatch: function(action){

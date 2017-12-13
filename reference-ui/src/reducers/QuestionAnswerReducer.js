@@ -1,7 +1,26 @@
 import {pageDataAction} from "../actions/PageActions";
-import {actionTypeSetSelect, actionTypeSubmitAnswer} from "../actions/AnswerActions";
+import {actionTypeSetSelect, actionTypeSubmitAnswer, actionTypeUpdateForm} from "../actions/AnswerActions";
 import * as R from "ramda";
 import {actionTypeEndOfSurvey, endSurveyAction} from "../actions/FlowActions";
+
+export function updateForm(state, action) {
+    if(action.type !== actionTypeUpdateForm) return state.questions;
+
+    const {questionId, name, value} = action;
+
+    const questions = state.questions;
+    const questionIndex = getQuestionIndexById(questions, questionId);
+    const question = questions.get(questionIndex);
+
+    const questionChanges = {form: {}};
+    questionChanges.form[name] = value;
+
+    const c1 = questionTimeRecordChanges(state.lastInteractionTime);
+    Object.assign(questionChanges, c1);
+
+    const newQuestion = R.mergeDeepRight(question, questionChanges);
+    return questions.set(questionIndex, newQuestion);
+}
 
 export function setSelect(state, action) {
     if(action.type !== actionTypeSetSelect) return state.questions;
