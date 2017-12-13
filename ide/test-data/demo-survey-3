@@ -1,0 +1,22 @@
+JS "https://maps.googleapis.com/maps/api/js?key=AIzaSyC7H_6oQ33ae7r-UPJqprgNcs13LnCDcHs"
+JS "../temp_msl_plugins_repo/get-map-position.js"
+CSS "../temp_msl_plugins_repo/get-map-position.css"
+
+[Page]
+[Empty getMapPosition="true"]Where do you have lunch break?
+[Submit]
+[PageEnd]
+
+[Page]
+[SingleChoice]Some other questions
+[Row]aaa
+[Row]bbb
+[Row]ccc
+
+[SingleChoice]Some other questions
+[Row]aaa
+[Row]bbb
+[Row]ccc
+
+[Submit]
+[PageEnd]
