@@ -13,19 +13,19 @@ class QuestionPage extends Component {
 
     componentWillUpdate(nextProps, nextState) {
         if(this.props.pageInfo.id !== nextProps.pageInfo.id) {
-            pluginManager.passEventsToPlugins(pageUnloadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions));
+            pluginManager.passEventsToPlugins(pageUnloadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions, this.questionPageDiv));
         }
     }
 
     componentDidUpdate(prevProps, prevState){
         if(prevProps.pageInfo.id !== this.props.pageInfo.id) {
-            pluginManager.passEventsToPlugins(pageLoadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions));
+            pluginManager.passEventsToPlugins(pageLoadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions, this.questionPageDiv));
         }
     }
 
     componentDidMount() {
         const {pageGroupInfo, pageInfo, questions} = this.props;
-        pluginManager.passEventsToPlugins(pageLoadAction(pageGroupInfo, pageInfo, questions))
+        pluginManager.passEventsToPlugins(pageLoadAction(pageGroupInfo, pageInfo, questions, this.questionPageDiv))
     }
 
     render() {
@@ -47,9 +47,8 @@ class QuestionPage extends Component {
         const pageDivProps = extractHTMLElementAttributesFromProps(pageInfo);
 
         return (
-            //todo: change the class name here, it should be question-page*, rather than page*
             //the extra structures, such as page-body-left, page-body-right are used by the plugins to cusomize the UI.
-            <div id="question-page" className="question-page" {...pageDivProps}>
+            <div id="question-page" className="question-page" {...pageDivProps} ref={(questionPageDiv) => {this.questionPageDiv = questionPageDiv;}}>
                 <div id="question-page-banner" className="banner">MSL</div>
                 <div id="question-page-header" className="header"/>
                 <div id="question-page-body" className="body">

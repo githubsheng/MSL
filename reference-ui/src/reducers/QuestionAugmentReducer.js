@@ -47,6 +47,40 @@ function augmentRows(question) {
     }
 
     function augmentNoneMatrixQuestions(question){
+        /*
+            we copy the all the rows in question.rows, augment the copies, and make the copies a direct field of question. The rows in question.rows will
+            not be augmented / changed and serve as a reference only.
+            so this is the question looks like originally:
+            {
+                rows: {
+                    rowId1: {text: "hello"},
+                    rowId2: {text: "world"}
+                }
+            },
+            this is how it looks like after we change it.
+            {
+                rows: {
+                    rowId1: {text: "hello"},
+                    rowId2: {text: "world"}
+                },
+                rowId1: {
+                    id: "rowId1",
+                    text: "hello",
+                    selected: false
+                },
+                rowId2: {
+                    id: "rowId1",
+                    text: "world",
+                    selected: false
+                }
+            }
+            after the change, we can now do:
+            question.rowId1.text
+            as opposed to
+            question.rows.rowId1.text
+
+            also, questions.rows only serve as a reference, when we assign answer data, we only modify question.rowId1, rather than question.rows.rowId1.
+         */
         const newRows = {};
         //we collects all row ids into this array so that it is easier to loop over row ids later, and whenever we render the rows, we will
         //use the orders in this array.
@@ -98,9 +132,3 @@ function augmentRows(question) {
         return Object.assign({}, question, newRows, {rowIds}, {colIds});
     }
 }
-
-// function directAccessToRows(question) {
-//     return Object.assign({}, question, question.rows);
-// }
-
-

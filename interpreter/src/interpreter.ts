@@ -89,14 +89,28 @@ abstract class AbstractInterpreterState implements InterpreterState {
         this.vm = interpreter;
     }
 
-    //todo: add doc for this
-    _getUnresolvedQuestionDataPromise(){
+    /**
+     * here we would return a promise, and keep the resolve function by assigning it to vm.toResolveNextQuestionData
+     * a typical use case is when we are in debug mode, reference ui requests for the next page, and vm tries to evaluates the next page,
+     * in the middle of it, vm hits a breakpoint. And this point, vm stops, and has no idea when it can resume evaluating the page.
+     * so vm will return a promise (of next page) to reference ui. vm also keep the resolve function as vm.toResolveNextQuestionData.
+     * later when user resume execution (by clicking resume debugging or step over) and when the page is finally evaluated, we call vm.toResolveNextQuestionData
+     * to resolve the promise we returned previously.
+     * @returns {Promise<VMResponse>} promise of next page.
+     * @private
+     */
+    _getUnresolvedQuestionDataPromise(): Promise<VMResponse>{
         return new Promise((resolve, reject) => {
             this.vm.toResolveNextQuestionData = resolve;
         });
     }
 
-    //todo: and this...
+    /**
+     * returns a resolved promise of next page
+     * @param vmResponse
+     * @returns {Promise<VMResponse>}
+     * @private
+     */
     _getResolvedQuestionDataPromise(vmResponse: VMResponse){
         return Promise.resolve(vmResponse);
     }
@@ -393,7 +407,12 @@ export class Interpreter {
     builtInFunctions: Map<string, Function>;
     isWaitingForAnswer: boolean;
     toResolveNextQuestionData: Function;
-    //todo: documentation to explain how we use token
+    /*
+        this token is only useful when we embed the reference ui in the ide. a vm may be restarted many times, so imagine we run the vm for the first time,
+        stops and receives a promise, and we register a callback to execute when the promise is resolved. then we restart the vm and run it the second time,
+        now the promise in the first run finally resolves, in this case, we don't want to invoke the callback. this token is used to differentiate different
+        runs. Every time we rerun the vm we would generate a different token.
+     */
     token: string;
     output: (content: string) => void;
     //we use this call back to tell ide that we have stopped at a break point so that the ide can highlight the corresponding line.
@@ -750,10 +769,9 @@ export class Interpreter {
     }
 
     public execute(comm: Command): any {
-        //todo: big giant switch case...
         switch (comm.name) {
             case "await":
-                //todo: this command is not useful, remove it from compiler
+                //this is not useful anymore...
                 return;
             case "cmp_eq":
                 return this.cmpEq(comm);

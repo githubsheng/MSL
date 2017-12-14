@@ -5,9 +5,11 @@ import {
 import {List} from "../../node_modules/immutable/dist/immutable";
 import {pageDataAction} from "../actions/PageActions";
 
-//todo: for default state we need to display a welcome page..., we add a separate field to mark the welcome page status...
-//todo: each status should have a token generated when we restart, everything response from vm should carry that token
-//todo: if a response is not with current token, that response is a response of a request sent in the previous cycle.(before we restart)
+/*
+    for default state we need to display a welcome page..., we add a separate field to mark the welcome page status...
+    each status should have a token generated when we restart, everything response from vm should carry that token
+    if a response is not with current token, that response is a response of a request sent in the previous cycle.(before we restart)
+ */
 export const defaultState = {
     //see comments in mainReducer
     isLocked: false,

@@ -10,11 +10,6 @@ import {pageGroupInfoReducer} from "./pageGroupInfoReducer";
 import {pageInfoReducer} from "./pageInfoReducer";
 import {pluginManager} from "../plugins/pluginManager";
 
-//todo: here, add a reset action, and a reset reducer. when reset action is received, reset the status to default status (with a new token)
-//todo: add a start answering action (action sent when user click on the start button on welcome page), a corresponding reducer, that reducer would call vm's restart function.
-//todo: that is, everything will be initiated from UI. the vm is like backend server, only reacts when called by ui.
-//todo: add a welcome page component
-//todo: add a end page component.
 const mainReducer = (state = defaultState, action) => {
     /*
         senario: user clicks submit, UI send the answer data to vm, vm hit a break point, it returns a question data promise
