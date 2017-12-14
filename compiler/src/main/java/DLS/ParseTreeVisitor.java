@@ -5,6 +5,7 @@ import DLS.ASTNodes.enums.attributes.PageGroupAttribute;
 import DLS.ASTNodes.enums.built.in.fields.AnswerFields;
 import DLS.ASTNodes.enums.built.in.funcNames.BuiltInFuncNames;
 import DLS.ASTNodes.enums.built.in.specialObjNames.BuiltInSpecObjNames;
+import DLS.ASTNodes.enums.obj.props.OptionProps;
 import DLS.ASTNodes.enums.obj.props.QuestionProps;
 import DLS.ASTNodes.plugin.CssPluginNode;
 import DLS.ASTNodes.plugin.JsPluginNode;
@@ -498,6 +499,7 @@ class ParseTreeVisitor {
 
         List<ObjectLiteralNode.Field> rowLiteralsAsFields = rows.stream().map(rc -> {
             ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
+
             Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeRowIdCtx = getIdAttribCtx(rc.attributes());
             Optional<String> maybeRowId = maybeRowIdCtx.map(strValAttr -> strValAttr.String().getText())
                     .map(util::removeDoubleQuotes);
@@ -512,9 +514,36 @@ class ParseTreeVisitor {
                 throw new RuntimeException("duplicated row id");
             }
 
-
             String referenceName = maybeRowId.orElse(generateRandomIdentifierName());
             rowIds.add(referenceName);
+
+            //if the row has use={row1}, then we ignore all other row settings (except for id) and just replace the current row with row1
+            Optional<ObjectLiteralNode.Field> maybeUseRowObjField = rowLiteral.getFieldByName(RowAttributes.USE.getName());
+            if(maybeUseRowObjField.isPresent()) {
+                ObjectLiteralNode.Field useRowObjField = maybeUseRowObjField.get();
+                ExpressionNode useRowObj = useRowObjField.getValue();
+                return new ObjectLiteralNode.Field(referenceName, useRowObj);
+//                if(!(useRowObj instanceof ObjectLiteralNode)) {
+//                    //todo: refactoring
+//                    System.err.println("line " + rc.getStart().getLine()
+//                            + ":" + rc.getStart().getCharPositionInLine()
+//                            + " You must use a row object in [Row use={rowObj}]");
+//                    throw new RuntimeException("invalid expression");
+//                } else {
+//                    ObjectLiteralNode replacedWith = (ObjectLiteralNode)useRowObj;
+//                    if(!replacedWith.getFieldByName(OptionProps.TYPE.getName()).isPresent()) {
+//                        //todo: refactoring..duplicate code
+//                        System.err.println("line " + rc.getStart().getLine()
+//                                + ":" + rc.getStart().getCharPositionInLine()
+//                                + " You must use a row object in [Row use={rowObj}]");
+//                        throw new RuntimeException("invalid expression");
+//                    }
+//                    //by returning the rowObj we effectively replace the current row with `replacedWith`
+//
+//                    return new ObjectLiteralNode.Field(referenceName, replacedWith);
+//                }
+            }
+
             return new ObjectLiteralNode.Field(referenceName, rowLiteral);
         }).collect(Collectors.toList());
         return new ObjectLiteralNode(rowLiteralsAsFields);
@@ -679,6 +708,8 @@ class ParseTreeVisitor {
     private ExpressionNode visitColumnLiteralExpression(DLSParser.ColumnLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.colLiteral().attributes(), colImplicitValues);
         fields.add(getTextField(ctx.colLiteral().scriptTextArea()));
+        //we use type: "col" to mark this object as a col object.
+        fields.add(new ObjectLiteralNode.Field(OptionProps.TYPE.getName(), new StringNode("col")));
         return new ObjectLiteralNode(fields);
     }
 
@@ -686,6 +717,8 @@ class ParseTreeVisitor {
     private ExpressionNode visitRowLiteralExpression(DLSParser.RowLiteralExpressionContext ctx) {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.rowLiteral().attributes(), rowImplicitValues);
         fields.add(getTextField(ctx.rowLiteral().scriptTextArea()));
+        //we use type: "row" to mark this object as a row object.
+        fields.add(new ObjectLiteralNode.Field(OptionProps.TYPE.getName(), new StringNode("row")));
         return new ObjectLiteralNode(fields);
     }
 

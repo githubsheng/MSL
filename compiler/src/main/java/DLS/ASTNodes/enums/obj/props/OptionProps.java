@@ -2,7 +2,7 @@ package DLS.ASTNodes.enums.obj.props;
 
 //all the attributes defined in package DLS.ASTNodes.enums.attributes will also become properties
 public enum OptionProps {
-    TEXT("text");
+    TEXT("text"), TYPE("type");
     private String name;
     OptionProps(String name) {
         this.name = name;

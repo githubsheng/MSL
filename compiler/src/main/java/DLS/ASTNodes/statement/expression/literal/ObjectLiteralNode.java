@@ -3,6 +3,7 @@ package DLS.ASTNodes.statement.expression.literal;
 import DLS.ASTNodes.statement.expression.ExpressionNode;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ObjectLiteralNode extends ExpressionNode {
 
@@ -14,6 +15,10 @@ public class ObjectLiteralNode extends ExpressionNode {
 
     public List<Field> getFields() {
         return fields;
+    }
+
+    public Optional<Field> getFieldByName(String name){
+        return fields.stream().filter(f -> f.getName().equals(name)).findAny();
     }
 
     public static class Field {
