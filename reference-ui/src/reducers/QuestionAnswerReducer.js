@@ -15,7 +15,7 @@ export function updateForm(state, action) {
     const questionChanges = {form: {}};
     questionChanges.form[name] = value;
 
-    const c1 = questionTimeRecordChanges(state.lastInteractionTime);
+    const c1 = questionTimeRecordChanges(question, state.lastInteractionTime);
     Object.assign(questionChanges, c1);
 
     const newQuestion = R.mergeDeepRight(question, questionChanges);
@@ -55,7 +55,7 @@ export function setSelect(state, action) {
         }
     }
 
-    const c1 = questionTimeRecordChanges(state.lastInteractionTime);
+    const c1 = questionTimeRecordChanges(question, state.lastInteractionTime);
     const c2 = questionTotalClickChanges(question.totalClicks);
     Object.assign(questionChanges, c1, c2);
 
@@ -82,7 +82,7 @@ export function setSelect(state, action) {
  //the last question user interacted with, we called it lastQuestion
  question.duration = question.duration + (question.answeredWhen - lastQuestion.answeredWhen)
 
- //if question is the first question user interacts with, ie, there is lastQuestion, then
+ //if question is the first question user interacts with, ie, there is no lastQuestion, then
  question.duration = question.duration + (question.answeredWhen - pageDisplayedWhen)
 
  the above equations can be summarized to be:
@@ -113,11 +113,11 @@ export function setSelect(state, action) {
  //so the time it takes to review question 1 is time 4 - time 3
  question1.duration = question1.duration + (time 4 - time 3)
  */
-function questionTimeRecordChanges(lastInteractionTime) {
+function questionTimeRecordChanges(question, lastInteractionTime) {
     const now = new Date();
     return {
         answeredWhen: now,
-        duration: now.getTime() - lastInteractionTime.getTime()
+        duration: question.duration + (now.getTime() - lastInteractionTime.getTime())
     };
 }
 
@@ -151,7 +151,7 @@ export function submitAnswersReducer(state, action) {
 }
 
 function sendAnswerToInterpreter(questionsWithAnswers) {
-    window.interpreter.submitAnswer(questionsWithAnswers);
+    return window.interpreter.submitAnswer(questionsWithAnswers);
 }
 
 // let fakeAnswerCount = 0;

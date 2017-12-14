@@ -35,11 +35,10 @@ const mainReducer = (state = defaultState, action) => {
 
     submitAnswersReducer(state, action);
     const isLocked = isLockedReducer(state, action);
-    const lastInteractionTime = lastInteractionTimeReducer(state, action);
     const pageInfo = pageInfoReducer(state, action);
     const pageGroupInfo = pageGroupInfoReducer(state, action);
     const questions = questionsReducer(state, action, pageInfo, pageGroupInfo);
-
+    const lastInteractionTime = lastInteractionTimeReducer(state, action);
 
     return {
         pageInfo,
