@@ -15,4 +15,5 @@ compiler/src/main/resources/input.txt
 compiler/stringConstants.txt
 interpreter/test/main.html
 ide/compiler
-ide/public/javacripts/reference_ui
+ide/public/javascripts/reference_ui
+ide/npm-debug.log
