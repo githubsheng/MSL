@@ -313,6 +313,37 @@ class ParseTreeVisitor {
             this "page attribute object" from local variable space and pass it along with the question objects.
          */
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.attributes(), pageImplicitValues);
+        //find the show / hide attribute, if show is false, or hide is true, then we return immediately, and do not try to execute the logic in the page.
+        //this will also cause the vm to continue to evaluate next page.
+        Optional<ObjectLiteralNode.Field> maybeShowHideField = fields
+                .stream()
+                .filter(field -> field.getName().equals("show") || field.getName().equals("hide"))
+                .findFirst();
+
+        if(maybeShowHideField.isPresent()) {
+            ObjectLiteralNode.Field f = maybeShowHideField.get();
+            if(f.getName().equals("show")) {
+                EqualsNode eq1 = new EqualsNode(f.getValue(), new StringNode("false"));
+                IfElseNode if1 = new IfElseNode(eq1, new ReturnNode());
+
+                EqualsNode eq2 = new EqualsNode(f.getValue(), new BooleanNode(false));
+                IfElseNode if2 = new IfElseNode(eq2, new ReturnNode());
+
+                pageFuncBodyStatNodes.add(if1);
+                pageFuncBodyStatNodes.add(if2);
+            } else {
+                //must be hide attribute
+                EqualsNode eq1 = new EqualsNode(f.getValue(), new StringNode("true"));
+                IfElseNode if1 = new IfElseNode(eq1, new ReturnNode());
+
+                EqualsNode eq2 = new EqualsNode(f.getValue(), new BooleanNode(true));
+                IfElseNode if2 = new IfElseNode(eq2, new ReturnNode());
+
+                pageFuncBodyStatNodes.add(if1);
+                pageFuncBodyStatNodes.add(if2);
+            }
+        }
+
         if(!maybeId.isPresent()) fields.add(new ObjectLiteralNode.Field("id", new StringNode(pageId)));
         pageFuncBodyStatNodes.add(new DefNode(BuiltInSpecObjNames.PagePropObject.getName(), new ObjectLiteralNode(fields)));
 

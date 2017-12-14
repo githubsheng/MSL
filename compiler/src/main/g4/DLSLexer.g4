@@ -38,8 +38,6 @@ TagModeWS
 : WS
 -> skip;
 
-//todo: should allow undercore between two characters
-//todo: for instance: q2.row1_col1.isSelected
 Name: NameStartChar NameChar*;
 fragment NameStartChar: [a-zA-Z];
 fragment NameChar: [a-zA-Z0-9];
