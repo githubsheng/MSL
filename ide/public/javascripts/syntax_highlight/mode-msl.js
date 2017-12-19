@@ -11,7 +11,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
         const buildInMethods = (
             "List|randomize|rotate|get|has|indexOf|add|addFirst|addLast|addAllFirst|addAllLast|" +
-            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|rank|print|->"
+            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|deselect|rank|print|->"
         );
 
         const buildInProperties = "selected|duration|answeredWhen|";
@@ -52,7 +52,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
         const QuestionStartRule = {
             token: "question",
-            regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix/,
+            regex: /\[SingleChoice|\[SingleMatrix|\[MultipleChoice|\[MultipleMatrix|\[Empty/,
             next: "inQuestionTag"
         };
 
@@ -86,6 +86,31 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
             next: "pageAndPageGroupStart"
         };
 
+        const PreScriptRowTagRule = {
+            token: "question_row",
+            regex: /\[Row/,
+            next: 'preScriptRowTag'
+        };
+
+        const PreScriptColTagRule = {
+            token: "question_col",
+            regex: /\[Col/,
+            next: 'preScriptColTag'
+        };
+
+        const PostScriptRowTagRule = {
+            token: "question_row",
+            regex: /\[Row/,
+            next: 'postScriptRowTag'
+        };
+
+        const PostScriptColTagRule = {
+            token: "question_col",
+            regex: /\[Col/,
+            next: 'postScriptColTag'
+        };
+
+
         this.$rules = {
             "start": startRules,
 
@@ -113,6 +138,8 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
                 StringRule,
                 BooleanRule,
                 DotRule,
+                PreScriptRowTagRule,
+                PreScriptColTagRule,
                 KeyWordMapperRule,
                 QuestionStartRule,
                 /*
@@ -164,7 +191,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
                 submitButtonRule,
                 PageEndRule],
 
-            "inPostQuestionScript": [StringRule, BooleanRule, DotRule, KeyWordMapperRule, PageEndRule],
+            "inPostQuestionScript": [StringRule, BooleanRule, DotRule, PostScriptRowTagRule, PostScriptColTagRule, KeyWordMapperRule, PageEndRule],
 
             "inRowTag": [StringRule, EqualSignRule, {
                 token: "question_row",
@@ -176,6 +203,54 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
                 token: "question_col",
                 regex: /]/,
                 next: "inQuestionBody"
+            }],
+
+            "preScriptRowTag": [StringRule, EqualSignRule, {
+                token: "question_row",
+                regex: /]/,
+                next: "preScriptRowEndTag"
+            }],
+
+            "preScriptColTag": [StringRule, EqualSignRule, {
+                token: "question_col",
+                regex: /]/,
+                next: "preScriptColEndTag"
+            }],
+
+            "preScriptRowEndTag": [{
+                token: "question_row",
+                regex: /\[End]/,
+                next: "inPreQuestionScript"
+            }],
+
+            "preScriptColEndTag": [{
+                token: "question_col",
+                regex: /\[End]/,
+                next: "inPreQuestionScript"
+            }],
+
+            "postScriptRowTag": [StringRule, EqualSignRule, {
+                token: "question_row",
+                regex: /]/,
+                next: "postScriptRowEndTag"
+            }],
+
+            "postScriptColTag": [StringRule, EqualSignRule, {
+                token: "question_col",
+                regex: /]/,
+                next: "postScriptColEndTag"
+            }],
+
+            "postScriptRowEndTag": [{
+                token: "question_row",
+                regex: /\[End]/,
+                next: "inPostQuestionScript"
+            }],
+
+            "postScriptColEndTag": [{
+                token: "question_col",
+                regex: /\[End]/,
+                next: "inPostQuestionScript"
             }]
 
         };

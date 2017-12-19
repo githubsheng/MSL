@@ -19,7 +19,7 @@ setTimeout(function(){
                 answerSetSelect(action);
                 break;
             default:
-                //nothing
+            //nothing
         }
 
         function questionLoad(action) {

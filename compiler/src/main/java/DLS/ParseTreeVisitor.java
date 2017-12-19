@@ -498,53 +498,59 @@ class ParseTreeVisitor {
         Set<String> rowIds = new HashSet<>();
 
         List<ObjectLiteralNode.Field> rowLiteralsAsFields = rows.stream().map(rc -> {
-            ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
+            if(rc.RowStart() != null) {
+                ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
 
-            Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeRowIdCtx = getIdAttribCtx(rc.attributes());
-            Optional<String> maybeRowId = maybeRowIdCtx.map(strValAttr -> strValAttr.String().getText())
-                    .map(util::removeDoubleQuotes);
+                Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeRowIdCtx = getIdAttribCtx(rc.attributes());
+                Optional<String> maybeRowId = maybeRowIdCtx.map(strValAttr -> strValAttr.String().getText())
+                        .map(util::removeDoubleQuotes);
 
-            if(maybeRowId.isPresent() && rowIds.contains(maybeRowId.get())) {
-                DLSParser.AttributeWithAssignedStringValueContext rowIdCtx = maybeRowIdCtx.get();
-                System.err.println("line " + rowIdCtx.getStart().getLine()
-                        + ":" + rowIdCtx.getStart().getCharPositionInLine()
-                        + " duplicated row id: " + maybeRowId.get()
-                        + ". All rows inside the same question must have different ids"
-                );
-                throw new RuntimeException("duplicated row id");
+                if(maybeRowId.isPresent() && rowIds.contains(maybeRowId.get())) {
+                    DLSParser.AttributeWithAssignedStringValueContext rowIdCtx = maybeRowIdCtx.get();
+                    System.err.println("line " + rowIdCtx.getStart().getLine()
+                            + ":" + rowIdCtx.getStart().getCharPositionInLine()
+                            + " duplicated row id: " + maybeRowId.get()
+                            + ". All rows inside the same question must have different ids"
+                    );
+                    throw new RuntimeException("duplicated row id");
+                }
+
+                String referenceName = maybeRowId.orElse(generateRandomIdentifierName());
+                rowLiteral.addField(new ObjectLiteralNode.Field(OptionProps.ID.getName(), new StringNode(referenceName)));
+
+                rowIds.add(referenceName);
+
+                //if the row has use={row1}, then we ignore all other row settings (except for id) and just replace the current row with row1
+                Optional<ObjectLiteralNode.Field> maybeUseRowObjField = rowLiteral.getFieldByName(RowAttributes.USE.getName());
+                if(maybeUseRowObjField.isPresent()) {
+                    ObjectLiteralNode.Field useRowObjField = maybeUseRowObjField.get();
+                    ExpressionNode useRowObj = useRowObjField.getValue();
+                    return new ObjectLiteralNode.Field(referenceName, useRowObj);
+                }
+                return new ObjectLiteralNode.Field(referenceName, rowLiteral);
+            } else if(rc.RowsStart() != null) {
+                //we ignore the ids in [Rows]
+                String referenceName = generateRandomIdentifierName();
+                //we can use getRowObjectLiteralFromRowTag to gather the fields as well..although the name is not the best here.
+                ObjectLiteralNode rowsLiteral = getRowObjectLiteralFromRowTag(rc);
+                Optional<ObjectLiteralNode.Field> maybeUseRowLists = rowsLiteral.getFieldByName(RowAttributes.USE.getName());
+                if(maybeUseRowLists.isPresent()) {
+                    ObjectLiteralNode.Field useRowList = maybeUseRowLists.get();
+                    ExpressionNode useRowObj = useRowList.getValue();
+                    return new ObjectLiteralNode.Field(referenceName, useRowObj);
+                } else {
+                    //for [Rows], user must specify an use attribute.
+                    System.err.println("line " + rc.getStart().getLine()
+                            + ":" + rc.getStart().getCharPositionInLine()
+                            + " must specify an use attribute: use = {listOfRows}"
+                    );
+                    throw new RuntimeException("invalid rows tag");
+                }
+
+                return null;
+            } else {
+                throw new RuntimeException("unsupport row type");
             }
-
-            String referenceName = maybeRowId.orElse(generateRandomIdentifierName());
-            rowIds.add(referenceName);
-
-            //if the row has use={row1}, then we ignore all other row settings (except for id) and just replace the current row with row1
-            Optional<ObjectLiteralNode.Field> maybeUseRowObjField = rowLiteral.getFieldByName(RowAttributes.USE.getName());
-            if(maybeUseRowObjField.isPresent()) {
-                ObjectLiteralNode.Field useRowObjField = maybeUseRowObjField.get();
-                ExpressionNode useRowObj = useRowObjField.getValue();
-                return new ObjectLiteralNode.Field(referenceName, useRowObj);
-//                if(!(useRowObj instanceof ObjectLiteralNode)) {
-//                    //todo: refactoring
-//                    System.err.println("line " + rc.getStart().getLine()
-//                            + ":" + rc.getStart().getCharPositionInLine()
-//                            + " You must use a row object in [Row use={rowObj}]");
-//                    throw new RuntimeException("invalid expression");
-//                } else {
-//                    ObjectLiteralNode replacedWith = (ObjectLiteralNode)useRowObj;
-//                    if(!replacedWith.getFieldByName(OptionProps.TYPE.getName()).isPresent()) {
-//                        //todo: refactoring..duplicate code
-//                        System.err.println("line " + rc.getStart().getLine()
-//                                + ":" + rc.getStart().getCharPositionInLine()
-//                                + " You must use a row object in [Row use={rowObj}]");
-//                        throw new RuntimeException("invalid expression");
-//                    }
-//                    //by returning the rowObj we effectively replace the current row with `replacedWith`
-//
-//                    return new ObjectLiteralNode.Field(referenceName, replacedWith);
-//                }
-            }
-
-            return new ObjectLiteralNode.Field(referenceName, rowLiteral);
         }).collect(Collectors.toList());
         return new ObjectLiteralNode(rowLiteralsAsFields);
     }
@@ -571,6 +577,7 @@ class ParseTreeVisitor {
             }
             
             String referenceName = maybeColId.orElse(generateRandomIdentifierName());
+            colLiteral.addField(new ObjectLiteralNode.Field(OptionProps.ID.getName(), new StringNode(referenceName)));
             colIds.add(referenceName);
             return new ObjectLiteralNode.Field(referenceName, colLiteral);
         }).collect(Collectors.toList());

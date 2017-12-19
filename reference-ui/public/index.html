@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="theme-color" content="#000000">
@@ -22,24 +22,174 @@
     -->
     <title>React App</title>
     <script>
-      window.isDev = true;
+        class List {
+            constructor(elements){
+                this._elements = elements;
+            }
+        }
+
+        window.isDev = true;
+        let token;
+        function fakeData1(_token) {
+            token = _token;
+            return new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    const questions = [
+                        {
+                            id: "q1",
+                            type: "single-choice",
+                            text: "Which cloth do you like best?",
+                            fashion: "true",
+                            rows: {
+                                row1: {
+                                    id: "row1",
+                                    text: "Cloth A",
+                                    videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1Pm-q-cBNS.mp4"
+                                },
+                                row2: {
+                                    id: "row2",
+                                    text: "Cloth B",
+                                    videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1V21HzqzpS.mp4"
+                                },
+                                row3: {
+                                    id: "row3",
+                                    text: "Cloth B",
+                                    videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1bwNA23dvS.mp4"
+                                }
+                            }
+                        }
+                    ];
+                    resolve({
+                        pageInfo: {
+                            id: "p1"
+                        },
+                        pageGroupInfo: {
+                            id: "g1"
+                        },
+                        questions,
+                        token: token
+                    });
+                }, 100);
+            });
+        }
+
+        let fakeAnswerCount = 0;
+        function fakeData2(questions) {
+            fakeAnswerCount++;
+            if (fakeAnswerCount > 4) {
+                return Promise.resolve({
+                    pageInfo: {
+                        attrib1: "evaluated attrib1"
+                    },
+                    questions: [],
+                    token
+                })
+            }
+            return new Promise(function (resolve, reject) {
+
+                const listOfRows = new List([{
+                    id: "row1",
+                    text: "xx"
+                }, {
+                    id: "row2",
+                    text: "yy"
+                }]);
+
+                setTimeout(function () {
+                    const questions = [
+                        {
+                            id: "q1",
+                            type: "single-choice",
+                            text: "q1 text" + Date.now(),
+                            rows: {
+                                anyId: listOfRows,
+                                row3: {
+                                    id: "row3",
+                                    text: " aa"
+                                },
+                                row4: {
+                                    id: "row4",
+                                    text: " bb"
+                                }
+                            }
+                        },
+                        {
+                            id: "q2",
+                            type: "multiple-choice",
+                            text: "q2 text",
+                            rows: {
+                                row1: {
+                                    id: "row1",
+                                    text: " aa"
+                                },
+                                row2: {
+                                    id: "row2",
+                                    text: " bb"
+                                }
+                            }
+                        },
+                        {
+                            id: "q3",
+                            type: "multiple-matrix",
+                            text: "q3 text",
+                            rotateCol: true,
+                            rows: {
+                                row1: {
+                                    id: "row1",
+                                    text: " aa"
+                                },
+                                row2: {
+                                    id: "row2",
+                                    text: " bb"
+                                }
+                            },
+                            cols: {
+                                col1: {
+                                    id: "col1",
+                                    text: " col1"
+                                },
+                                col2: {
+                                    id: "col2",
+                                    text: " col2"
+                                }
+                            }
+                        }
+                    ];
+
+                    resolve({
+                        pageInfo: {
+                            randomize: "true"
+                        },
+                        pageGroupInfo: {},
+                        questions,
+                        token
+                    });
+                }, 100);
+            });
+        }
+
+        window.interpreter = {
+            restartDebug: fakeData1,
+            restartRun: fakeData1,
+            submitAnswer: fakeData2
+        }
     </script>
-  </head>
-  <body>
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+</head>
+<body>
+<noscript>
+    You need to enable JavaScript to run this app.
+</noscript>
+<div id="root"></div>
+<!--
+  This HTML file is a template.
+  If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+  You can add webfonts, meta tags, or analytics to this file.
+  The build step will place the bundled scripts into the <body> tag.
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-    <script src="testJsPlugin.js"></script>
-  </body>
+  To begin the development, run `npm start` or `yarn start`.
+  To create a production bundle, use `npm run build` or `yarn build`.
+-->
+<script src="testJsPlugin.js"></script>
+</body>
 </html>

@@ -9,14 +9,14 @@ export function augmentQuestions(state, action, pageInfo, pageGroupInfo) {
 
     const questions = List(_questions);
 
-    if(action.type === actionTypePageData) {
+    if (action.type === actionTypePageData) {
         return questions.map(augmentQuestion);
     }
     return questions;
 }
 
 //this reducer augment a vm passed in question. see reference/questionData for more information.
-function augmentQuestion(question){
+function augmentQuestion(question) {
     question = augmentWithStatsFields(question);
     // question = directAccessToRows(question);
     question = augmentRows(question);
@@ -46,74 +46,85 @@ function augmentRows(question) {
             return question;
     }
 
-    function augmentNoneMatrixQuestions(question){
-        /*
-            we copy the all the rows in question.rows, augment the copies, and make the copies a direct field of question. The rows in question.rows will
-            not be augmented / changed and serve as a reference only.
-            so this is the question looks like originally:
-            {
-                rows: {
-                    rowId1: {text: "hello"},
-                    rowId2: {text: "world"}
-                }
-            },
-            this is how it looks like after we change it.
-            {
-                rows: {
-                    rowId1: {text: "hello"},
-                    rowId2: {text: "world"}
-                },
-                rowId1: {
-                    id: "rowId1",
-                    text: "hello",
-                    selected: false
-                },
-                rowId2: {
-                    id: "rowId1",
-                    text: "world",
-                    selected: false
-                }
-            }
-            after the change, we can now do:
-            question.rowId1.text
-            as opposed to
-            question.rows.rowId1.text
+    function reduceOptionFieldToArrayOfOptionObj(ret, kv) {
+        const [key, value] = kv;
+        //List is not visible here because of the way it packas the code, so we checks id to
+        //determine whether value is a list or row object (row object must have an id)
+        if (!value.id) {
+            //value is an list of row objects.
+            return ret.concat(value._elements);
+        } else {
+            //value is an row object.
+            return ret.concat([value]);
+        }
+    }
 
-            also, questions.rows only serve as a reference, when we assign answer data, we only modify question.rowId1, rather than question.rows.rowId1.
+    function augmentNoneMatrixQuestions(question) {
+        /*
+         we copy the all the rows in question.rows, augment the copies, and make the copies a direct field of question. The rows in question.rows will
+         not be augmented / changed and serve as a reference only.
+         so this is the question looks like originally:
+         {
+         rows: {
+         rowId1: {text: "hello"},
+         rowId2: {text: "world"}
+         }
+         },
+         this is how it looks like after we change it.
+         {
+         rows: {
+         rowId1: {text: "hello"},
+         rowId2: {text: "world"}
+         },
+         rowId1: {
+         id: "rowId1",
+         text: "hello",
+         selected: false
+         },
+         rowId2: {
+         id: "rowId1",
+         text: "world",
+         selected: false
+         }
+         }
+         after the change, we can now do:
+         question.rowId1.text
+         as opposed to
+         question.rows.rowId1.text
+
+         also, questions.rows only serve as a reference, when we assign answer data, we only modify question.rowId1, rather than question.rows.rowId1.
          */
         const newRows = {};
         //we collects all row ids into this array so that it is easier to loop over row ids later, and whenever we render the rows, we will
         //use the orders in this array.
         const rowIds = [];
-        Object.entries(question.rows).map(kv => {
-            const [rowId, row] = kv;
-            rowIds.push(rowId);
-            newRows[rowId] = Object.assign({}, row, {id: rowId, selected: false});
-        });
+        const rows = Object.entries(question.rows).reduce(reduceOptionFieldToArrayOfOptionObj, []);
+        rows.map(row => {
+                rowIds.push(row.id);
+                newRows[row.id] = Object.assign({}, row, {selected: false});
+            });
         if (isPropertyValueTrue(question.randomize)) shuffle(rowIds);
         if (isPropertyValueTrue(question.rotate)) rotate(rowIds);
         return Object.assign({}, question, newRows, {rowIds});
     }
 
-    function augmentMatrixQuestions(question){
-        const rowKVs = Object.entries(question.rows);
-        const colKVs = Object.entries(question.cols);
+    function augmentMatrixQuestions(question) {
+        const rows = Object.entries(question.rows).reduce(reduceOptionFieldToArrayOfOptionObj, []);
+        const cols = Object.entries(question.cols).reduce(reduceOptionFieldToArrayOfOptionObj, []);
 
         const newRows = {};
         //we collects all row ids into this array so that it is easier to loop over row ids later, and whenever we render the rows, we will
         //use the orders in this array.
         const rowIds = [];
 
-        rowKVs.forEach(rowKV => {
-            const [rowId, row] = rowKV;
-            rowIds.push(rowId);
-            const newRow = Object.assign({}, row, {id: rowId});
-            colKVs.forEach(colKV => {
-                const [colId, col] = colKV;
-                newRow[colId] = Object.assign({}, col, {id: colId, selected: false});
+        rows.forEach(row => {
+            rowIds.push(row.id);
+            const newRow = Object.assign({}, row);
+            cols.forEach(col => {
+                newRow[col.id] = Object.assign({}, col, {selected: false});
             });
 
-            newRows[rowId] = newRow;
+            newRows[row.id] = newRow;
         });
 
         if (isPropertyValueTrue(question.randomize)) shuffle(rowIds);
@@ -121,13 +132,12 @@ function augmentRows(question) {
 
         //same for colIds, like rowIds
         const colIds = [];
-        colKVs.forEach(colKV => {
-            const [colId] = colKV;
-            colIds.push(colId);
+        cols.forEach(col => {
+            colIds.push(col.id);
         });
 
-        if(isPropertyValueTrue(question.randomizeCol)) shuffle(colIds);
-        if(isPropertyValueTrue(question.rotateCol)) rotate(colIds);
+        if (isPropertyValueTrue(question.randomizeCol)) shuffle(colIds);
+        if (isPropertyValueTrue(question.rotateCol)) rotate(colIds);
 
         return Object.assign({}, question, newRows, {rowIds}, {colIds});
     }

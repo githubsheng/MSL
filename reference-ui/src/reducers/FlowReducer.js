@@ -69,49 +69,9 @@ function endSurvey(state, action) {
 }
 
 function restartDebug(token){
-    return window.isDev? fakeData(token) : window.interpreter.restartDebug(token);
+    return window.interpreter.restartDebug(token);
 }
 
 function restartRun(token){
-    return window.isDev? fakeData(token) : window.interpreter.restartRun(token);
-}
-
-function fakeData(token){
-    //see sendAnswerToInterpreter in QuestionAnswerReducer
-    return new Promise(function (resolve, reject) {
-        setTimeout(function () {
-            const questions = [
-                {
-                    id: "q1",
-                    type: "single-choice",
-                    text: "Which cloth do you like best?",
-                    fashion: "true",
-                    rows: {
-                        row1: {
-                            text: "Cloth A",
-                            videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1Pm-q-cBNS.mp4"
-                        },
-                        row2: {
-                            text: "Cloth B",
-                            videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1V21HzqzpS.mp4"
-                        },
-                        row3: {
-                            text: "Cloth B",
-                            videoSrc: "https://images-fe.ssl-images-amazon.com/images/I/A1bwNA23dvS.mp4"
-                        }
-                    }
-                }
-            ];
-            resolve({
-                pageInfo: {
-                    id: "p1"
-                },
-                pageGroupInfo: {
-                    id: "g1"
-                },
-                questions,
-                token: token
-            });
-        }, 100);
-    });
+    return window.interpreter.restartRun(token);
 }
