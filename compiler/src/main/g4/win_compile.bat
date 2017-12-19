@@ -13,4 +13,5 @@ cp ../java/DLS/generated/*.tokens .
 javac ../java/DLS/generated/*.java
 
 rem classpath is set in system environments in control panel
-rem java org.antlr.v4.gui.TestRig DLS.generated.DLS file -gui input.txt
+java org.antlr.v4.gui.TestRig DLS.generated.DLS file -gui input.txt
+rem java org.antlr.v4.gui.TestRig DLS.generated.DLSLexer tokens -tokens input.txt

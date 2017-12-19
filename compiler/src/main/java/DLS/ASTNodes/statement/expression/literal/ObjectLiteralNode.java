@@ -21,6 +21,10 @@ public class ObjectLiteralNode extends ExpressionNode {
         return fields.stream().filter(f -> f.getName().equals(name)).findAny();
     }
 
+    public void addField(Field field) {
+        this.fields.add(field);
+    }
+
     public static class Field {
         private final String name;
         private final ExpressionNode value;

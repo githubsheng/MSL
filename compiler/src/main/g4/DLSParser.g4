@@ -179,10 +179,12 @@ emptyQuestion
 
 row
 : RowStart attributes Close textArea
+| RowsStart attributes Close textArea //here textArea following [Rows] or [Cols] is used to match the line breaks. we will ignore the text area later when we walk the parse tree.
 ;
 
 col
 : ColStart attributes Close textArea
+| ColsStart attributes Close textArea
 ;
 
 textArea: (TextArea | ('${' expression '}'))+;

@@ -113,6 +113,8 @@ Close
 
 RowStart: '[Row';
 ColStart: '[Col';
+RowsStart: '[Rows';
+ColsStart: '[Cols';
 
 mode TextAreaMode;
 
@@ -124,6 +126,12 @@ TextArea: .*? TextAreaEnd {
         pushMode(TagMode);
      } else if (matched.endsWith("[Col")) {
         offSet = 4;
+        pushMode(TagMode);
+     } else if (matched.endsWith("[Rows")) {
+        offSet = 5;
+        pushMode(TagMode);
+     } else if (matched.endsWith("[Cols")) {
+        offSet = 5;
         pushMode(TagMode);
      } else if(matched.endsWith("[Submit")) {
         offSet = 7;
@@ -158,8 +166,10 @@ TextArea: .*? TextAreaEnd {
 };
 
 TextAreaEnd
-: '[Row'
-| '[Col'
+: RowStart
+| ColStart
+| RowsStart
+| ColsStart
 | '[Submit'
 | '${'
 | SingleChoiceStart
