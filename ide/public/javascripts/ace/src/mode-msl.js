@@ -11,7 +11,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
         const buildInMethods = (
             "List|randomize|rotate|get|has|indexOf|add|addFirst|addLast|addAllFirst|addAllLast|" +
-            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|rank|print|->"
+            "set|addAt|removeFirst|removeLast|remove|removeAt|clear|select|deselect|rank|print|->"
         );
 
         const buildInProperties = "selected|duration|answeredWhen|";

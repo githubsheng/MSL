@@ -126,6 +126,7 @@ possibility: Percentage Colon NewLine? statements;
 builtInCommandStatement
 : Terminate                                     #TerminateCommand
 | Select expression                             #SelectCommand
+| Deselect expression                           #DeselectCommand
 | Rank rankOrders                               #RankCommand
 | Print expression                              #PrintCommand
 ;

@@ -1083,18 +1083,26 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> visitBuiltInCommandStatement(DLSParser.BuiltInCommandStatementContext ctx) {
-        if(ctx instanceof DLSParser.TerminateCommandContext) {
+        if (ctx instanceof DLSParser.TerminateCommandContext) {
             EndSurveyNode end = new EndSurveyNode();
-            if(needsTokenAssociation)end.setToken(ctx.getStart());
+            if (needsTokenAssociation) end.setToken(ctx.getStart());
             return Collections.singletonList(end);
         } else if (ctx instanceof DLSParser.SelectCommandContext) {
-            DLSParser.SelectCommandContext scc = (DLSParser.SelectCommandContext)ctx;
+            DLSParser.SelectCommandContext scc = (DLSParser.SelectCommandContext) ctx;
             ExpressionNode left = visitExpression(scc.expression());
             DotNode answerIsSelected = new DotNode(left, AnswerFields.IsSelected.getName());
             AssignNode setAnswerToBeSelected = new AssignNode(answerIsSelected, new BooleanNode(true));
             ExpressionStatementNode select = new ExpressionStatementNode(setAnswerToBeSelected);
-            if(needsTokenAssociation)select.setToken(ctx.getStart());
+            if (needsTokenAssociation) select.setToken(ctx.getStart());
             return Collections.singletonList(select);
+        } else if (ctx instanceof DLSParser.DeselectCommandContext) {
+            DLSParser.DeselectCommandContext dsc = (DLSParser.DeselectCommandContext) ctx;
+            ExpressionNode left = visitExpression(dsc.expression());
+            DotNode answerIsSelected = new DotNode(left, AnswerFields.IsSelected.getName());
+            AssignNode setAnswerToBeDeSelected = new AssignNode(answerIsSelected, new BooleanNode(false));
+            ExpressionStatementNode deselect = new ExpressionStatementNode(setAnswerToBeDeSelected);
+            if (needsTokenAssociation) deselect.setToken(ctx.getStart());
+            return Collections.singletonList(deselect);
         } else if (ctx instanceof DLSParser.RankCommandContext) {
             DLSParser.RankCommandContext rcc = (DLSParser.RankCommandContext)ctx;
             List<DLSParser.ExpressionContext> ecs = rcc.rankOrders().expression();

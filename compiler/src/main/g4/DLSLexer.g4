@@ -236,6 +236,7 @@ NewLine
 //built in commands
 Terminate: 'terminate';
 Select: 'select';
+Deselect: 'deselect';
 Rank: 'rank';
 Print: 'print';
 
