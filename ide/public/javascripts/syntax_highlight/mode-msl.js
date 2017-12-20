@@ -27,6 +27,13 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
             regex: '".*?"'
         };
 
+        const inTagExpressionStartRule = {
+            token: "gray",
+            regex: /{/,
+            //see https://stackoverflow.com/questions/22765435/recursive-blocks-in-ace-editor/22766243#22766243
+            push: "inTagExpression"
+        };
+
         //in tag
         const EqualSignRule = {
             token: "gray",
@@ -67,6 +74,10 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
             token: "gray",
             regex: /\[Page/,
             next: "inPageTag"
+        }, {
+            token: "gray",
+            regex: /\[EmptyPage]/,
+            next: "inPostQuestionScript"
         }];
 
         const startRules = [{
@@ -82,7 +93,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
         const PageEndRule = {
             token: "gray",
-            regex: /\[PageEnd]/,
+            regex: /\[PageEnd]|\[EmptyPageEnd]/,
             next: "pageAndPageGroupStart"
         };
 
@@ -116,7 +127,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
             "pageAndPageGroupStart": PageAndPageGroupStartRules,
 
-            "inPageGroupTag": [StringRule, EqualSignRule, {
+            "inPageGroupTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "gray",
                 regex: /]/,
                 next: "inPrePageScript"
@@ -128,11 +139,23 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
                 next: "inPageTag"
             }],
 
-            "inPageTag": [StringRule, EqualSignRule, {
+            "inPageTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "gray",
                 regex: /]/,
                 next: "inPreQuestionScript"
             }],
+
+            "inTagExpression": [
+                StringRule,
+                BooleanRule,
+                DotRule,
+                KeyWordMapperRule, {
+                    token: "gray",
+                    regex: /}/,
+                    //https://stackoverflow.com/questions/22765435/recursive-blocks-in-ace-editor/22766243#22766243
+                    next: "pop"
+                }
+            ],
 
             "inPreQuestionScript": [
                 StringRule,
@@ -159,7 +182,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
                 PageEndRule
             ],
 
-            "inQuestionTag": [StringRule, EqualSignRule, {
+            "inQuestionTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "question",
                 regex: /]/,
                 next: "inQuestionBody"
@@ -168,11 +191,11 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
             "inQuestionBody": [{
                 token: "question_row",
-                regex: /\[Row/,
+                regex: /\[Row(s)?/,
                 next: "inRowTag"
             }, {
                 token: "question_col",
-                regex: /\[Col/,
+                regex: /\[Col(s)?/,
                 next: "inColTag"
             }, QuestionStartRule,
                 /*
@@ -193,25 +216,25 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
             "inPostQuestionScript": [StringRule, BooleanRule, DotRule, PostScriptRowTagRule, PostScriptColTagRule, KeyWordMapperRule, PageEndRule],
 
-            "inRowTag": [StringRule, EqualSignRule, {
+            "inRowTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "question_row",
                 regex: /]/,
                 next: "inQuestionBody"
             }],
 
-            "inColTag": [StringRule, EqualSignRule, {
+            "inColTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "question_col",
                 regex: /]/,
                 next: "inQuestionBody"
             }],
 
-            "preScriptRowTag": [StringRule, EqualSignRule, {
+            "preScriptRowTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "question_row",
                 regex: /]/,
                 next: "preScriptRowEndTag"
             }],
 
-            "preScriptColTag": [StringRule, EqualSignRule, {
+            "preScriptColTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "question_col",
                 regex: /]/,
                 next: "preScriptColEndTag"
@@ -229,13 +252,13 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
                 next: "inPreQuestionScript"
             }],
 
-            "postScriptRowTag": [StringRule, EqualSignRule, {
+            "postScriptRowTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "question_row",
                 regex: /]/,
                 next: "postScriptRowEndTag"
             }],
 
-            "postScriptColTag": [StringRule, EqualSignRule, {
+            "postScriptColTag": [StringRule, EqualSignRule, inTagExpressionStartRule, {
                 token: "question_col",
                 regex: /]/,
                 next: "postScriptColEndTag"
