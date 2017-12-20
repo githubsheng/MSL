@@ -17,3 +17,4 @@ interpreter/test/main.html
 ide/compiler
 ide/public/javascripts/reference_ui
 ide/npm-debug.log
+ide/public/css/reference_ui/
