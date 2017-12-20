@@ -97,9 +97,9 @@ class ParseTreeVisitor {
     //todo: here i need to add another entry point.... visitConsoleInput? to make use of all the methods i have coded here.
 
     List<StatementNode> visitFile(DLSParser.FileContext ctx) {
-        if(ctx.Temp() == null) {
+        if (ctx.Temp() == null) {
             List<StatementNode> rets = new ArrayList<>();
-            List<StatementNode> plugins =  ctx.pluginImport()
+            List<StatementNode> plugins = ctx.pluginImport()
                     .stream()
                     .map(this::getImportsNode)
                     .collect(Collectors.toList());
@@ -117,7 +117,8 @@ class ParseTreeVisitor {
         } else {
             List<DLSParser.StatementContext> rootStatements = ctx.statement();
             boolean returnStatementInRootStatements = rootStatements.stream().anyMatch(DLSParser.ReturnStatementContext.class::isInstance);
-            if(returnStatementInRootStatements) throw new RuntimeException("illegal statement: cannot evaluate return directly..");
+            if (returnStatementInRootStatements)
+                throw new RuntimeException("illegal statement: cannot evaluate return directly..");
             return rootStatements.stream()
                     .map(this::getStatementNodes)
                     .flatMap(List::stream)
@@ -126,7 +127,7 @@ class ParseTreeVisitor {
     }
 
     private StatementNode getImportsNode(DLSParser.PluginImportContext ctx) {
-        if(ctx.ImportJS() != null) {
+        if (ctx.ImportJS() != null) {
             return new JsPluginNode(util.removeDoubleQuotes(ctx.ImportUrl().getText()));
         } else {
             return new CssPluginNode(util.removeDoubleQuotes(ctx.ImportUrl().getText()));
@@ -259,7 +260,8 @@ class ParseTreeVisitor {
         ExpressionNode expNode = visitExpression(ac.expression());
         if (expNode instanceof AssignNode) throw new RuntimeException("attribute expression cannot be an assignment");
         //user cannot define objects. So objects must be either row literals or col literals.
-        if (expNode instanceof ObjectLiteralNode) throw new RuntimeException("attribute expression cannot be row / column literal");
+        if (expNode instanceof ObjectLiteralNode)
+            throw new RuntimeException("attribute expression cannot be row / column literal");
 
         IdentifierNode identifier = convertAttributeNameToIdentifier(ac.Name().getText());
         DefNode def = new DefNode(identifier, expNode);
@@ -291,7 +293,7 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> visitPage(DLSParser.PageContext ctx) {
-        if(ctx.PageStart() != null) {
+        if (ctx.PageStart() != null) {
             return visitNormalPage(ctx);
         } else if (ctx.EmptyPageStart() != null) {
             return visitEmptyPage(ctx);
@@ -347,9 +349,9 @@ class ParseTreeVisitor {
                 .filter(field -> field.getName().equals("show") || field.getName().equals("hide"))
                 .findFirst();
 
-        if(maybeShowHideField.isPresent()) {
+        if (maybeShowHideField.isPresent()) {
             ObjectLiteralNode.Field f = maybeShowHideField.get();
-            if(f.getName().equals("show")) {
+            if (f.getName().equals("show")) {
                 EqualsNode eq1 = new EqualsNode(f.getValue(), new StringNode("false"));
                 IfElseNode if1 = new IfElseNode(eq1, new ReturnNode());
 
@@ -371,7 +373,7 @@ class ParseTreeVisitor {
             }
         }
 
-        if(!maybeId.isPresent()) fields.add(new ObjectLiteralNode.Field("id", new StringNode(pageId)));
+        if (!maybeId.isPresent()) fields.add(new ObjectLiteralNode.Field("id", new StringNode(pageId)));
         pageFuncBodyStatNodes.add(new DefNode(BuiltInSpecObjNames.PagePropObject.getName(), new ObjectLiteralNode(fields)));
 
         DLSParser.ScriptContext preScript = ctx.script(0);
@@ -422,34 +424,34 @@ class ParseTreeVisitor {
         } else if (questionCtx.singleMatrixQuestion() != null) {
             DLSParser.SingleMatrixQuestionContext sm = questionCtx.singleMatrixQuestion();
             return getCommonQuestionStatements(sm.attributes(), sm.textArea(), getQuestionTypeField(sm), sm.rows, sm.cols);
-        } else if(questionCtx.multipleMatrixQuestion() != null) {
+        } else if (questionCtx.multipleMatrixQuestion() != null) {
             DLSParser.MultipleMatrixQuestionContext mm = questionCtx.multipleMatrixQuestion();
             return getCommonQuestionStatements(mm.attributes(), mm.textArea(), getQuestionTypeField(mm), mm.rows, mm.cols);
         } else if (questionCtx.emptyQuestion() != null) {
             DLSParser.EmptyQuestionContext eq = questionCtx.emptyQuestion();
             return getCommonQuestionStatements(eq.attributes(), eq.textArea(), getQuestionTypeField(eq), null, null);
-        }else {
+        } else {
             throw new RuntimeException("cannot generate question statements: unknown question types");
         }
     }
 
-    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleChoiceQuestionContext sc) {
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused") DLSParser.SingleChoiceQuestionContext sc) {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.SINGLE_CHOICE.getName()));
     }
 
-    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.MultipleChoiceQuestionContext mc) {
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused") DLSParser.MultipleChoiceQuestionContext mc) {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.MULTIPLE_CHOICE.getName()));
     }
 
-    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.SingleMatrixQuestionContext smc) {
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused") DLSParser.SingleMatrixQuestionContext smc) {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.SINGLE_MATRIX.getName()));
     }
 
-    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.MultipleMatrixQuestionContext mm) {
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused") DLSParser.MultipleMatrixQuestionContext mm) {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.MULTIPLE_MATRIX.getName()));
     }
 
-    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused")DLSParser.EmptyQuestionContext eq) {
+    private ObjectLiteralNode.Field getQuestionTypeField(@SuppressWarnings("unused") DLSParser.EmptyQuestionContext eq) {
         return new ObjectLiteralNode.Field(QuestionProps.TYPE.getName(), new StringNode(QuestionProps.EmptyQuestion.getName()));
     }
 
@@ -461,7 +463,7 @@ class ParseTreeVisitor {
         fields.add(questionType);
         fields.add(getTextField(textArea));
 
-        if(rowCtxes != null && !rowCtxes.isEmpty()) {
+        if (rowCtxes != null && !rowCtxes.isEmpty()) {
         /*
             here we are creating an object whose property keys are row ids, and whose property values are rows, for instance:
             {
@@ -488,7 +490,7 @@ class ParseTreeVisitor {
             fields.add(rowsField);
         }
 
-        if(colCtxes != null && !colCtxes.isEmpty()) {
+        if (colCtxes != null && !colCtxes.isEmpty()) {
             ObjectLiteralNode cols = getQuestionColumnsField(colCtxes);
             ObjectLiteralNode.Field colsField = new ObjectLiteralNode.Field(QuestionProps.COLS.getName(), cols);
             fields.add(colsField);
@@ -500,7 +502,7 @@ class ParseTreeVisitor {
                 .map(TerminalNode::getText)
                 .map(util::removeDoubleQuotes);
 
-        if(maybeId.isPresent() && questionIds.contains(maybeId.get())) {
+        if (maybeId.isPresent() && questionIds.contains(maybeId.get())) {
             //ctx must exists then
             DLSParser.AttributeWithAssignedStringValueContext idCtx = maybeIdContext.get();
             System.err.println("line " + idCtx.getStart().getLine()
@@ -525,14 +527,14 @@ class ParseTreeVisitor {
         Set<String> rowIds = new HashSet<>();
 
         List<ObjectLiteralNode.Field> rowLiteralsAsFields = rows.stream().map(rc -> {
-            if(rc.RowStart() != null) {
+            if (rc.RowStart() != null) {
                 ObjectLiteralNode rowLiteral = getRowObjectLiteralFromRowTag(rc);
 
                 Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeRowIdCtx = getIdAttribCtx(rc.attributes());
                 Optional<String> maybeRowId = maybeRowIdCtx.map(strValAttr -> strValAttr.String().getText())
                         .map(util::removeDoubleQuotes);
 
-                if(maybeRowId.isPresent() && rowIds.contains(maybeRowId.get())) {
+                if (maybeRowId.isPresent() && rowIds.contains(maybeRowId.get())) {
                     DLSParser.AttributeWithAssignedStringValueContext rowIdCtx = maybeRowIdCtx.get();
                     System.err.println("line " + rowIdCtx.getStart().getLine()
                             + ":" + rowIdCtx.getStart().getCharPositionInLine()
@@ -549,19 +551,19 @@ class ParseTreeVisitor {
 
                 //if the row has use={row1}, then we ignore all other row settings (except for id) and just replace the current row with row1
                 Optional<ObjectLiteralNode.Field> maybeUseRowObjField = rowLiteral.getFieldByName(RowAttributes.USE.getName());
-                if(maybeUseRowObjField.isPresent()) {
+                if (maybeUseRowObjField.isPresent()) {
                     ObjectLiteralNode.Field useRowObjField = maybeUseRowObjField.get();
                     ExpressionNode useRowObj = useRowObjField.getValue();
                     return new ObjectLiteralNode.Field(referenceName, useRowObj);
                 }
                 return new ObjectLiteralNode.Field(referenceName, rowLiteral);
-            } else if(rc.RowsStart() != null) {
+            } else if (rc.RowsStart() != null) {
                 //we ignore the ids in [Rows]
                 String referenceName = generateRandomIdentifierName();
                 //we can use getRowObjectLiteralFromRowTag to gather the fields as well..although the name is not the best here.
                 ObjectLiteralNode rowsLiteral = getRowObjectLiteralFromRowTag(rc);
                 Optional<ObjectLiteralNode.Field> maybeUseRowLists = rowsLiteral.getFieldByName(RowAttributes.USE.getName());
-                if(maybeUseRowLists.isPresent()) {
+                if (maybeUseRowLists.isPresent()) {
                     ObjectLiteralNode.Field useRowList = maybeUseRowLists.get();
                     ExpressionNode useRowObj = useRowList.getValue();
                     return new ObjectLiteralNode.Field(referenceName, useRowObj);
@@ -574,7 +576,7 @@ class ParseTreeVisitor {
                     throw new RuntimeException("invalid rows tag");
                 }
             } else {
-                throw new RuntimeException("unsupport row type");
+                throw new RuntimeException("unsupported row type");
             }
         }).collect(Collectors.toList());
         return new ObjectLiteralNode(rowLiteralsAsFields);
@@ -585,26 +587,56 @@ class ParseTreeVisitor {
 
 
         List<ObjectLiteralNode.Field> colLiteralsAsFields = cols.stream().map(cc -> {
-            ObjectLiteralNode colLiteral = getColObjectLiteralFromColTag(cc);
+            if (cc.ColStart() != null) {
+                ObjectLiteralNode colLiteral = getColObjectLiteralFromColTag(cc);
 
-            Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeColIdCtx = getIdAttribCtx(cc.attributes());
-            Optional<String> maybeColId = maybeColIdCtx.map(strValAttr -> strValAttr.String().getText())
-                    .map(util::removeDoubleQuotes);
+                Optional<DLSParser.AttributeWithAssignedStringValueContext> maybeColIdCtx = getIdAttribCtx(cc.attributes());
+                Optional<String> maybeColId = maybeColIdCtx.map(strValAttr -> strValAttr.String().getText())
+                        .map(util::removeDoubleQuotes);
 
-            if(maybeColId.isPresent() && colIds.contains(maybeColId.get())) {
-                DLSParser.AttributeWithAssignedStringValueContext colIdCtx = maybeColIdCtx.get();
-                System.err.println("line " + colIdCtx.getStart().getLine()
-                        + ":" + colIdCtx.getStart().getCharPositionInLine()
-                        + " duplicated col id: " + maybeColId.get()
-                        + ". All cols inside the same question must have different ids"
-                );
-                throw new RuntimeException("duplicated col id");
+                if (maybeColId.isPresent() && colIds.contains(maybeColId.get())) {
+                    DLSParser.AttributeWithAssignedStringValueContext colIdCtx = maybeColIdCtx.get();
+                    System.err.println("line " + colIdCtx.getStart().getLine()
+                            + ":" + colIdCtx.getStart().getCharPositionInLine()
+                            + " duplicated col id: " + maybeColId.get()
+                            + ". All cols inside the same question must have different ids"
+                    );
+                    throw new RuntimeException("duplicated col id");
+                }
+
+                String referenceName = maybeColId.orElse(generateRandomIdentifierName());
+                colLiteral.addField(new ObjectLiteralNode.Field(OptionProps.ID.getName(), new StringNode(referenceName)));
+                colIds.add(referenceName);
+
+                //if the col has use={row1}, then we ignore all other col settings (except for id) and just replace the current row with row1
+                Optional<ObjectLiteralNode.Field> maybeUseColObjField = colLiteral.getFieldByName(ColAttributes.USE.getName());
+                if (maybeUseColObjField.isPresent()) {
+                    ObjectLiteralNode.Field useRowObjField = maybeUseColObjField.get();
+                    ExpressionNode useColObj = useRowObjField.getValue();
+                    return new ObjectLiteralNode.Field(referenceName, useColObj);
+                }
+                return new ObjectLiteralNode.Field(referenceName, colLiteral);
+            } else if (cc.ColsStart() != null) {
+                //we ignore the ids in [Rows]
+                String referenceName = generateRandomIdentifierName();
+                //we can use getRowObjectLiteralFromRowTag to gather the fields as well..although the name is not the best here.
+                ObjectLiteralNode colsLiteral = getColObjectLiteralFromColTag(cc);
+                Optional<ObjectLiteralNode.Field> maybeUseColLists = colsLiteral.getFieldByName(RowAttributes.USE.getName());
+                if (maybeUseColLists.isPresent()) {
+                    ObjectLiteralNode.Field useColList = maybeUseColLists.get();
+                    ExpressionNode useColsObj = useColList.getValue();
+                    return new ObjectLiteralNode.Field(referenceName, useColsObj);
+                } else {
+                    //for [Rows], user must specify an use attribute.
+                    System.err.println("line " + cc.getStart().getLine()
+                            + ":" + cc.getStart().getCharPositionInLine()
+                            + " must specify an use attribute: use = {listOfCols}"
+                    );
+                    throw new RuntimeException("invalid cols tag");
+                }
+            } else {
+                throw new RuntimeException("unsupported col type");
             }
-            
-            String referenceName = maybeColId.orElse(generateRandomIdentifierName());
-            colLiteral.addField(new ObjectLiteralNode.Field(OptionProps.ID.getName(), new StringNode(referenceName)));
-            colIds.add(referenceName);
-            return new ObjectLiteralNode.Field(referenceName, colLiteral);
         }).collect(Collectors.toList());
         return new ObjectLiteralNode(colLiteralsAsFields);
 
@@ -625,12 +657,12 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> getStatementNodes(DLSParser.StatementContext ctx) {
-        if(ctx.emptyStatement() != null) return Collections.emptyList();
+        if (ctx.emptyStatement() != null) return Collections.emptyList();
         //try get single statement node
         Node node = tryGetSingleStatementNode(ctx);
-        if(node != null) return Collections.singletonList((StatementNode)node);
+        if (node != null) return Collections.singletonList((StatementNode) node);
         List<StatementNode> nodes = tryGetMultipleStatementNodes(ctx);
-        if(nodes != null) return nodes;
+        if (nodes != null) return nodes;
         //try get multiple statement node
         throw new RuntimeException("unsupported statement type");
     }
@@ -640,6 +672,7 @@ class ParseTreeVisitor {
      * tries to get a single statement node from the provided statement context.
      * The statement context can also result in multiple statement nodes. so this method
      * should be followed by a call of `tryGetMultipleStatementNodes`.
+     *
      * @param ctx statement context
      * @return a single statement node
      */
@@ -656,6 +689,7 @@ class ParseTreeVisitor {
     /**
      * this is supposed to be used only by `getStatementNodes` methods.
      * see `tryGetSingleStatementNode` for more details
+     *
      * @param ctx statement context
      * @return a list of statement nodes.
      */
@@ -676,16 +710,16 @@ class ParseTreeVisitor {
     private StatementNode visitVariableStatement(DLSParser.VariableStatementContext ctx) {
         IdentifierNode name = new IdentifierNode(ctx.Identifier().getText());
         ExpressionNode initializer = null;
-        if(ctx.initialiser() != null) initializer = visitExpression(ctx.initialiser().expression());
+        if (ctx.initialiser() != null) initializer = visitExpression(ctx.initialiser().expression());
         boolean isGlobal = ctx.Global() != null;
         DefNode ret = new DefNode(isGlobal, name, initializer);
-        if(needsTokenAssociation)ret.setToken(ctx.getStart());
+        if (needsTokenAssociation) ret.setToken(ctx.getStart());
         return ret;
     }
 
     private StatementNode visitExpressionStatement(DLSParser.ExpressionStatementContext ctx) {
         ExpressionStatementNode est = new ExpressionStatementNode(visitExpression(ctx.expression()));
-        if(needsTokenAssociation) est.setToken(ctx.getStart());
+        if (needsTokenAssociation) est.setToken(ctx.getStart());
         return est;
     }
 
@@ -722,7 +756,7 @@ class ParseTreeVisitor {
             //must be instance ParenthesizedExpression
             return visitParenthesizedExpression((DLSParser.ParenthesizedExpressionContext) ctx);
         } else if (ctx instanceof DLSParser.ClockExpressionContext) {
-            return visitClockExpression((DLSParser.ClockExpressionContext)ctx);
+            return visitClockExpression((DLSParser.ClockExpressionContext) ctx);
         }
         throw new RuntimeException("unsupported expression");
     }
@@ -731,7 +765,7 @@ class ParseTreeVisitor {
         IdentifierNode funcNameIdentifier = new IdentifierNode(BuiltInFuncNames.CLOCK.getFuncName());
         return new CallNode(funcNameIdentifier);
     }
-    
+
     private ExpressionNode visitParenthesizedExpression(DLSParser.ParenthesizedExpressionContext ctx) {
         return visitExpression(ctx.expression());
     }
@@ -742,7 +776,14 @@ class ParseTreeVisitor {
         fields.add(getTextField(ctx.colLiteral().scriptTextArea()));
         //we use type: "col" to mark this object as a col object.
         fields.add(new ObjectLiteralNode.Field(OptionProps.TYPE.getName(), new StringNode("col")));
-        return new ObjectLiteralNode(fields);
+        ObjectLiteralNode colObjLiteral = new ObjectLiteralNode(fields);
+        //if the row does not already have an id, then we give it an generated id.
+        String ID = OptionProps.ID.getName();
+        if (!colObjLiteral.getFieldByName(ID).isPresent()) {
+            StringNode randomIdValue = new StringNode(this.generateRandomIdentifierName());
+            colObjLiteral.addField(new ObjectLiteralNode.Field(ID, randomIdValue));
+        }
+        return colObjLiteral;
     }
 
 
@@ -751,7 +792,14 @@ class ParseTreeVisitor {
         fields.add(getTextField(ctx.rowLiteral().scriptTextArea()));
         //we use type: "row" to mark this object as a row object.
         fields.add(new ObjectLiteralNode.Field(OptionProps.TYPE.getName(), new StringNode("row")));
-        return new ObjectLiteralNode(fields);
+        ObjectLiteralNode rowObjLiteral = new ObjectLiteralNode(fields);
+        //if the row does not already have an id, then we give it an generated id.
+        String ID = OptionProps.ID.getName();
+        if (!rowObjLiteral.getFieldByName(ID).isPresent()) {
+            StringNode randomIdValue = new StringNode(this.generateRandomIdentifierName());
+            rowObjLiteral.addField(new ObjectLiteralNode.Field(ID, randomIdValue));
+        }
+        return rowObjLiteral;
     }
 
     private List<ObjectLiteralNode.Field> getObjectLiteralFieldsFromAttributes(DLSParser.AttributesContext ac, Map<String, String> implicitValues) {
@@ -775,7 +823,7 @@ class ParseTreeVisitor {
         }).collect(Collectors.toList());
     }
 
-    
+
     private ExpressionNode visitAdditiveExpression(DLSParser.AdditiveExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
@@ -823,7 +871,7 @@ class ParseTreeVisitor {
             String str = lctx.getText();
             return new StringNode(util.removeDoubleQuotes(str));
         } else if (lctx instanceof DLSParser.HoursLiteralContext) {
-            DLSParser.HoursLiteralContext hcx = (DLSParser.HoursLiteralContext)lctx;
+            DLSParser.HoursLiteralContext hcx = (DLSParser.HoursLiteralContext) lctx;
             int hours = hcx.Hours() != null ? removeLastCharacter(hcx.Hours().getText()) : 0;
             int minutes = hcx.Minutes() != null ? removeLastCharacter(hcx.Minutes().getText()) : 0;
             int seconds = hcx.Seconds() != null ? removeLastCharacter(hcx.Seconds().getText()) : 0;
@@ -832,13 +880,13 @@ class ParseTreeVisitor {
                     + seconds * 1000;
             return new NumberNode(totalMilliseconds);
         } else if (lctx instanceof DLSParser.MinutesLiteralContext) {
-            DLSParser.MinutesLiteralContext mcx = (DLSParser.MinutesLiteralContext)lctx;
+            DLSParser.MinutesLiteralContext mcx = (DLSParser.MinutesLiteralContext) lctx;
             int minutes = mcx.Minutes() != null ? removeLastCharacter(mcx.Minutes().getText()) : 0;
             int seconds = mcx.Seconds() != null ? removeLastCharacter(mcx.Seconds().getText()) : 0;
             int totalMilliseconds = minutes * 60 * 1000 + seconds * 1000;
             return new NumberNode(totalMilliseconds);
         } else if (lctx instanceof DLSParser.SecondsLiteralContext) {
-            DLSParser.SecondsLiteralContext mcx = (DLSParser.SecondsLiteralContext)lctx;
+            DLSParser.SecondsLiteralContext mcx = (DLSParser.SecondsLiteralContext) lctx;
             int seconds = removeLastCharacter(mcx.Seconds().getText());
             int totalMilliseconds = seconds * 1000;
             return new NumberNode(totalMilliseconds);
@@ -856,18 +904,19 @@ class ParseTreeVisitor {
 
     /**
      * does the following conversion:
-     | 12am -> 0
-     | [1-9]am -> 1 ~ 9
-     | 10am -> 10
-     | 11am -> 11
-     | 12pm -> 12
-     | [1-9]pm -> 13 ~ 21
-     | 10pm -> 22
-     | 11pm -> 23
+     * | 12am -> 0
+     * | [1-9]am -> 1 ~ 9
+     * | 10am -> 10
+     * | 11am -> 11
+     * | 12pm -> 12
+     * | [1-9]pm -> 13 ~ 21
+     * | 10pm -> 22
+     * | 11pm -> 23
+     *
      * @param t the clock string (1am, 2am, 3pm....)
      * @return
      */
-    private NumberNode convertClockUnitStringToNumber(String t){
+    private NumberNode convertClockUnitStringToNumber(String t) {
         int c;
         switch (t) {
             case "12am":
@@ -924,32 +973,32 @@ class ParseTreeVisitor {
         return new DotNode(left, right);
     }
 
-    
+
     private ExpressionNode visitAssignmentExpression(DLSParser.AssignmentExpressionContext ctx) {
         ExpressionNode target = visitExpression(ctx.expression(0));
         ExpressionNode value = visitExpression(ctx.expression(1));
         return new AssignNode(target, value);
     }
 
-    
+
     private ExpressionNode visitEqualityExpression(DLSParser.EqualityExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
-        if(ctx.Equals() != null) {
+        if (ctx.Equals() != null) {
             return new EqualsNode(left, right);
         } else {
             return new NotEqualsNode(left, right);
         }
     }
 
-    
+
     private ExpressionNode visitMultiplicativeExpression(DLSParser.MultiplicativeExpressionContext ctx) {
         ExpressionNode left = visitExpression(ctx.expression(0));
         ExpressionNode right = visitExpression(ctx.expression(1));
         return new MultiplyNode(left, right);
     }
 
-    
+
     private ExpressionNode visitCallExpression(DLSParser.CallExpressionContext ctx) {
         DLSParser.ExpressionContext e = ctx.expression();
         List<ExpressionNode> args;
@@ -970,7 +1019,7 @@ class ParseTreeVisitor {
         }
     }
 
-    
+
     private StatementNode visitIfStatement(DLSParser.IfStatementContext ctx) {
         List<IfElseNode.Branch> branches = new ArrayList<>();
         createBranchFromNoEndingIfStatement(ctx.noEndingIfStatement(), branches);
@@ -982,7 +1031,7 @@ class ParseTreeVisitor {
         ExpressionNode condition = visitExpression(ctx.expression());
         List<StatementNode> statements = createListOfStatementNodes(ctx.statements());
         IfElseNode.Branch branch = new IfElseNode.Branch(condition, statements);
-        if(needsTokenAssociation) branch.setToken(ctx.expression().getStart());
+        if (needsTokenAssociation) branch.setToken(ctx.expression().getStart());
         branches.add(branch);
 
         if (ctx.elseStatement() == null) return;
@@ -1013,7 +1062,7 @@ class ParseTreeVisitor {
                 .collect(Collectors.toList());
     }
 
-    
+
     private StatementNode visitFunctionDeclaration(DLSParser.FunctionDeclarationContext ctx) {
         String functionName = ctx.Identifier().getText();
         IdentifierNode funcIdentifier = new IdentifierNode(functionName);
@@ -1027,25 +1076,25 @@ class ParseTreeVisitor {
                 .map(StatementNode.class::cast)
                 .collect(Collectors.toList());
         //if the last statement in the function body is not return statement, we add one.
-        if(!(funcBodyStatNodes.get(funcBodyStatNodes.size() - 1) instanceof ReturnNode))
+        if (!(funcBodyStatNodes.get(funcBodyStatNodes.size() - 1) instanceof ReturnNode))
             funcBodyStatNodes.add(new ReturnNode());
         FuncDefNode ret = new FuncDefNode(funcIdentifier, argNames, funcBodyStatNodes);
-        if(needsTokenAssociation) ret.setToken(ctx.getStart());
+        if (needsTokenAssociation) ret.setToken(ctx.getStart());
         return ret;
     }
 
-    
+
     private StatementNode visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
         Optional<ExpressionNode> maybeRetVal = Optional.ofNullable(ctx.expression()).map(this::visitExpression);
         ReturnNode ret = new ReturnNode(maybeRetVal.orElse(null));
-        if(needsTokenAssociation)ret.setToken(ctx.getStart());
+        if (needsTokenAssociation) ret.setToken(ctx.getStart());
         return ret;
     }
 
-    
+
     private StatementNode visitListOperationStatement(DLSParser.ListOperationStatementContext ctx) {
         ListOptNode.ListOptType optType;
-        if(ctx.Each() != null) {
+        if (ctx.Each() != null) {
             optType = ListOptNode.ListOptType.LOOP;
 //        we will support map and filter later
 //        } else if (ctx.Map() != null) {
@@ -1061,7 +1110,7 @@ class ParseTreeVisitor {
         List<StatementNode> statements = getStatementNodes(ctx.statements());
         ListOptNode ret = new ListOptNode(optType, identifier, statements);
         //we want to be able to stop at the first line of a map/reduce/filter so that we do not even need to get into the statements inside to stop.
-        if(needsTokenAssociation)ret.setToken(ctx.getStart());
+        if (needsTokenAssociation) ret.setToken(ctx.getStart());
         return ret;
     }
 
@@ -1088,7 +1137,7 @@ class ParseTreeVisitor {
 
         List<IfElseNode.Branch> branches = new LinkedList<>();
         int i = 0;
-        for(DLSParser.PossibilityContext possibility : ctx.possibility()) {
+        for (DLSParser.PossibilityContext possibility : ctx.possibility()) {
             int p = getPercentageVal(possibility.Percentage().getText());
             //inclusive
             int lowBound = i + 1;
@@ -1108,7 +1157,7 @@ class ParseTreeVisitor {
             branches.add(new IfElseNode.Branch(t3, branchStatements));
         }
 
-        IfElseNode ifElseNode =  new IfElseNode(branches);
+        IfElseNode ifElseNode = new IfElseNode(branches);
         statements.add(ifElseNode);
 
         return statements;
@@ -1136,11 +1185,11 @@ class ParseTreeVisitor {
             if (needsTokenAssociation) deselect.setToken(ctx.getStart());
             return Collections.singletonList(deselect);
         } else if (ctx instanceof DLSParser.RankCommandContext) {
-            DLSParser.RankCommandContext rcc = (DLSParser.RankCommandContext)ctx;
+            DLSParser.RankCommandContext rcc = (DLSParser.RankCommandContext) ctx;
             List<DLSParser.ExpressionContext> ecs = rcc.rankOrders().expression();
             int rank = 1;
             List<StatementNode> statementNodes = new LinkedList<>();
-            for(DLSParser.ExpressionContext ec : ecs) {
+            for (DLSParser.ExpressionContext ec : ecs) {
                 ExpressionNode left = visitExpression(ec);
                 DotNode answerRank = new DotNode(left, AnswerFields.Rank.getName());
                 AssignNode setAnswerRank = new AssignNode(answerRank, new NumberNode(rank++));
@@ -1158,15 +1207,15 @@ class ParseTreeVisitor {
                 second generated statement, by the time we stop we have already set the rank of the first row1. But
                 from user point of view, when he stop the command, the entire commands has not been executed yet.
              */
-            if(needsTokenAssociation)
+            if (needsTokenAssociation)
                 //parser syntax gurantee that there will at least be one statement here.
-                ((ExpressionStatementNode)statementNodes.get(0)).setToken(ctx.getStart());
+                ((ExpressionStatementNode) statementNodes.get(0)).setToken(ctx.getStart());
             return statementNodes;
         } else if (ctx instanceof DLSParser.PrintCommandContext) {
             ExpressionNode exp = visitExpression(((DLSParser.PrintCommandContext) ctx).expression());
             CallNode callBuiltInPrintFunction = new CallNode(BuiltInFuncNames.PRINT.getFuncName(), exp);
             ExpressionStatementNode statementNode = new ExpressionStatementNode(callBuiltInPrintFunction);
-            if(needsTokenAssociation) statementNode.setToken(ctx.getStart());
+            if (needsTokenAssociation) statementNode.setToken(ctx.getStart());
             return Collections.singletonList(statementNode);
         }
         throw new RuntimeException("unsupported built in command");
@@ -1243,14 +1292,14 @@ class ParseTreeVisitor {
 
     private ObjectLiteralNode.Field getTextField(List<OrderedExpressionNode> orderedExpressionNodes) {
         orderedExpressionNodes.sort(Comparator.comparingInt(o -> o.order));
-        if(orderedExpressionNodes.size() == 1) {
+        if (orderedExpressionNodes.size() == 1) {
             return new ObjectLiteralNode.Field("text", orderedExpressionNodes.get(0).exp);
-        } else if(orderedExpressionNodes.size() == 2) {
+        } else if (orderedExpressionNodes.size() == 2) {
             AddNode add = new AddNode(orderedExpressionNodes.get(0).exp, orderedExpressionNodes.get(1).exp);
             return new ObjectLiteralNode.Field("text", add);
         } else {
             AddNode add = new AddNode(orderedExpressionNodes.get(0).exp, orderedExpressionNodes.get(1).exp);
-            for(int i = 2; i < orderedExpressionNodes.size(); i++) {
+            for (int i = 2; i < orderedExpressionNodes.size(); i++) {
                 add = new AddNode(add, orderedExpressionNodes.get(i).exp);
             }
             return new ObjectLiteralNode.Field("text", add);
