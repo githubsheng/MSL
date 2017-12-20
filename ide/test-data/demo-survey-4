@@ -1,0 +1,47 @@
+[EmptyPage]
+def v1 = [Row]Rakuten[End]
+def v2 = [Row]Taobao[End]
+def v3 = [Row]Ebay[End]
+def v4 = [Row]Amazon[End]
+
+def global onlineVendors = List(v1, v2, v3, v4)
+
+def v5 = [Row]7-11[End]
+def v6 = [Row]Family Mart[End]
+def v7 = [Row]Aeon[End]
+
+def global normalVendors = List(v5, v6, v7)
+[EmptyPageEnd]
+
+[Page]
+[MultipleChoice id="q1"]Do you buy things from the following places?
+[Rows use={normalVendors}]
+[Rows use={onlineVendors}]
+[Row]Big camera
+[Submit]
+[PageEnd]
+
+[Page]
+[MultipleChoice id="q2"]Do you like the following places?
+[Rows use={normalVendors}]
+[Rows use={onlineVendors}]
+[Row]Big camera
+[Submit]
+[PageEnd]
+
+[Page]
+
+def r1 = [Col]Good[End]
+def r2 = [Col]Normal[End]
+def r3 = [Col]Bad[End]
+
+[SingleMatrix id="q3"]How do you rate the following online places?
+[Rows use={onlineVendors}]
+[Cols use={List(r1, r2, r3)}]
+
+[SingleMatrix id="q4"]How do you rate the following offline places?
+[Rows use={normalVendors}]
+[Row]Big camera
+[Cols use={List(r1, r2, r3)}]
+[Submit]
+[PageEnd]
