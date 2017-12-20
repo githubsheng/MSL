@@ -90,26 +90,31 @@ function bindPageMacro(){
 
 function bindSingleChoiceMacro(){
     document.querySelector("#sc-macro").onclick = function(){
-        editor.insert("[SingleChoice]" + generateRowsTemplate());
+        editor.insert("[SingleChoice id=\"qId\"]" + generateRowsTemplate());
     };
 }
 
 function bindMultipleChoiceMacro(){
     document.querySelector("#mc-macro").onclick = function(){
-        editor.insert("[MultipleChoice]" + generateRowsTemplate());
+        editor.insert("[MultipleChoice id=\"qId\"]" + generateRowsTemplate());
     };
 }
 
 function bindSingleMatrixMacro(){
     document.querySelector("#sm-macro").onclick = function(){
-        editor.insert("[SingleMatrix]" + generateRowsTemplate() + generateColsTemplate());
+        editor.insert("[SingleMatrix id=\"qId\"]" + generateRowsTemplate() + generateColsTemplate());
     };
 }
 
 function bindMultipleMatrixMacro(){
     document.querySelector("#mm-macro").onclick = function(){
-        editor.insert("[MultipleMatrix]" + generateRowsTemplate() + generateColsTemplate());
+        editor.insert("[MultipleMatrix id=\"qId\"]" + generateRowsTemplate() + generateColsTemplate());
     };
 }
 
+function bindEmptyPageMacro(){
+    document.querySelector("#empty-page-macro").onclick = function(){
+        editor.insert("[EmptyPage]\n\n[EmptyPageEnd]");
+    }
+}
 

@@ -34,4 +34,5 @@ function init(){
     bindSingleMatrixMacro();
     bindMultipleMatrixMacro();
     bindPageGroupMacro();
+    bindEmptyPageMacro();
 }
