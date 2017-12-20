@@ -67,6 +67,10 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
             token: "gray",
             regex: /\[Page/,
             next: "inPageTag"
+        }, {
+            token: "gray",
+            regex: /\[EmptyPage]/,
+            next: "inPostQuestionScript"
         }];
 
         const startRules = [{
@@ -82,7 +86,7 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
         const PageEndRule = {
             token: "gray",
-            regex: /\[PageEnd]/,
+            regex: /\[PageEnd]|\[EmptyPageEnd]/,
             next: "pageAndPageGroupStart"
         };
 
