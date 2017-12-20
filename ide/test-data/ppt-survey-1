@@ -6,7 +6,7 @@
 [PageEnd]
 
 [Page]
-[SingleChoice hide={q1.yes.selected}]あなたは何匹の犬を飼っていますか？
+[SingleChoice show={q1.yes.selected}]あなたは何匹の犬を飼っていますか？
 [Row]0
 [Row]1
 [Row]2
