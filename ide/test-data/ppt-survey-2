@@ -1,0 +1,30 @@
+[Page]
+[SingleChoice id="q1"]Are you good at math?
+[Row id="yes"]Yes
+[Row id="no"]No
+[Submit]
+[PageEnd]
+
+[Page]
+[SingleChoice id="q2"]What is the value of 66 * 3 / 2
+[Row id="r1"]99
+[Row id="r2"]78
+[Row id="r3"]94
+
+[SingleChoice id="q3"]What is the value of 2 * 2 * ( 3 + 7 )
+[Row id="r1"]22
+[Row id="r2"]40
+[Row id="r3"]39
+[Submit]
+[PageEnd]
+
+[Page]
+[SingleChoice id="q4"]Why are you good at math?
+[Row id="r1"]Because I am smart
+[Row id="r2"]Because I am handsome
+[Row id="r3"]Because I don't work
+[Submit]
+[PageEnd]
+
+
+
