@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class Main {
@@ -84,8 +85,7 @@ public class Main {
 
         PrintWriter out = null;
         try {
-            FileWriter fw = new FileWriter(commandsStrFileName, false);
-            BufferedWriter bw = new BufferedWriter(fw);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(commandsStrFileName, false), StandardCharsets.UTF_8));
             out = new PrintWriter(bw);
             for (String cmdStr : ret.commands) out.println(cmdStr);
         } catch (IOException e) {
@@ -97,8 +97,7 @@ public class Main {
         }
 
         try {
-            FileWriter fw = new FileWriter(stringConstantsFileName, false);
-            BufferedWriter bw = new BufferedWriter(fw);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(stringConstantsFileName, false), StandardCharsets.UTF_8));
             out = new PrintWriter(bw);
             for (String strConst : ret.stringConstants) out.println(strConst);
         } catch (IOException e) {
@@ -110,8 +109,7 @@ public class Main {
         }
 
         try {
-            FileWriter fw = new FileWriter(pluginImportsFileName, false);
-            BufferedWriter bw = new BufferedWriter(fw);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pluginImportsFileName, false), StandardCharsets.UTF_8));
             out = new PrintWriter(bw);
             for (String pi : ret.pluginImports) out.println(pi);
         } catch (IOException e) {
