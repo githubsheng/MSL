@@ -546,8 +546,6 @@ class ParseTreeVisitor {
                     );
                     throw new RuntimeException("invalid rows tag");
                 }
-
-                return null;
             } else {
                 throw new RuntimeException("unsupport row type");
             }
