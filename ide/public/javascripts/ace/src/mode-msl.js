@@ -168,11 +168,11 @@ define("ace/mode/msl_highlight_rules", ["require", "exports", "module", "ace/lib
 
             "inQuestionBody": [{
                 token: "question_row",
-                regex: /\[Row/,
+                regex: /\[Row(s)?/,
                 next: "inRowTag"
             }, {
                 token: "question_col",
-                regex: /\[Col/,
+                regex: /\[Col(s)?/,
                 next: "inColTag"
             }, QuestionStartRule,
                 /*
