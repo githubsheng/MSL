@@ -1,0 +1,20 @@
+[Page]
+[SingleChoice id="q1"]犬がいますか？
+[Row id="yes"]はい
+[Row id="no"]いいえ
+[Submit]
+[PageEnd]
+
+[Page]
+[SingleChoice hide={q1.yes.selected}]あなたは何匹の犬を飼っていますか？
+[Row]0
+[Row]1
+[Row]2
+[Row]3
+
+[MultipleChoice]趣味は何？
+[Row]お金を稼ぐ
+[Row]お金をかける
+[Row]他人のお金をかける
+[Submit]
+[PageEnd]
