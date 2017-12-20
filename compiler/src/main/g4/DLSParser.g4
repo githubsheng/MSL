@@ -21,6 +21,7 @@ pageGroup
 
 page
 : (PageStart|ScriptPageStart) attributes Close script question+ SubmitButton script PageEnd
+| EmptyPageStart script EmptyPageEnd
 ;
 
 attributes

@@ -26,6 +26,10 @@ PageStart
 -> pushMode(ScriptMode), pushMode(TagMode)
 ;
 
+EmptyPageStart
+: '[EmptyPage]'
+-> pushMode(ScriptMode)
+;
 
 WS
 : [ \t\n\r]+
@@ -359,6 +363,11 @@ ScriptPageStart
 
 PageEnd
 : '[PageEnd]'
+-> popMode
+;
+
+EmptyPageEnd
+: '[EmptyPageEnd]'
 -> popMode
 ;
 

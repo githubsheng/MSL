@@ -80,6 +80,8 @@ class ParseTreeVisitor {
         //page implicit attribute values
         pageImplicitValues.put(PageAttributes.RANDOMIZE.getName(), "true");
         pageImplicitValues.put(PageAttributes.ROTATE.getName(), "true");
+        pageImplicitValues.put(PageAttributes.HIDE.getName(), "true");
+        pageImplicitValues.put(PageAttributes.SHOW.getName(), "true");
     }
 
     private int randomIdentifierNameCounter = 1;
@@ -156,10 +158,6 @@ class ParseTreeVisitor {
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.attributes(), pageGroupImplicitValues);
         String specialPageGroupPropObjName = BuiltInSpecObjNames.PageGroupPropObject.getName();
         pageGroupFuncBodyStatNodes.add(new DefNode(specialPageGroupPropObjName, new ObjectLiteralNode(fields)));
-
-//
-//        List<StatementNode> attribStats = getAttributeStatements(ctx.attributes(), pageGroupImplicitValues);
-//        pageGroupFuncBodyStatNodes.addAll(attribStats);
 
         pageGroupFuncBodyStatNodes.addAll(getScriptStatements(ctx.script()));
 
@@ -293,6 +291,34 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> visitPage(DLSParser.PageContext ctx) {
+        if(ctx.PageStart() != null) {
+            return visitNormalPage(ctx);
+        } else if (ctx.EmptyPageStart() != null) {
+            return visitEmptyPage(ctx);
+        }
+        throw new RuntimeException("unsupported page type");
+    }
+
+    private List<StatementNode> visitEmptyPage(DLSParser.PageContext ctx) {
+        String pageId = this.generateRandomIdentifierName("page");
+        List<StatementNode> pageFuncBodyStatNodes = new ArrayList<>();
+
+        pageFuncBodyStatNodes.addAll(getScriptStatements(ctx.script(0)));
+        pageFuncBodyStatNodes.add(new ReturnNode());
+
+        IdentifierNode funcNameNode = new IdentifierNode(pageId);
+
+        FuncDefNode pageFuncDef = new FuncDefNode(funcNameNode, pageFuncBodyStatNodes);
+        CallNode pageFuncCall = new CallNode(funcNameNode);
+
+        List<StatementNode> statements = new LinkedList<>();
+        statements.add(pageFuncDef);
+        statements.add(new ExpressionStatementNode(pageFuncCall));
+
+        return statements;
+    }
+
+    private List<StatementNode> visitNormalPage(DLSParser.PageContext ctx) {
         //todo: question identifier should be its id attribute if there is
         //todo: id attributes can only be stringConstants
         //todo: verify the expressions....
@@ -373,6 +399,7 @@ class ParseTreeVisitor {
         pageFuncBodyStatNodes.add(new ReturnNode());
 
 
+        //define the page function and call it
         IdentifierNode funcNameNode = new IdentifierNode(pageId);
 
         FuncDefNode pageFuncDef = new FuncDefNode(funcNameNode, pageFuncBodyStatNodes);

@@ -2,7 +2,7 @@ package DLS.ASTNodes.enums.attributes;
 
 public enum PageAttributes {
 
-    ID("id"), HIDE("hide"), RANDOMIZE("randomize"), ROTATE("rotate");
+    ID("id"), HIDE("hide"), SHOW("show"), RANDOMIZE("randomize"), ROTATE("rotate");
 
     private final String name;
     private final String attribIdentifierName;
