@@ -76,6 +76,7 @@ class ParseTreeVisitor {
         //page group implicit attribute values
         pageGroupImplicitValues.put(PageGroupAttribute.RANDOMIZE.getName(), "true");
         pageGroupImplicitValues.put(PageGroupAttribute.ROTATE.getName(), "true");
+        //todo:
 
         //page implicit attribute values
         pageImplicitValues.put(PageAttributes.RANDOMIZE.getName(), "true");

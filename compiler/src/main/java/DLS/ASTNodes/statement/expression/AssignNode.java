@@ -8,8 +8,10 @@ public class AssignNode extends ExpressionNode {
     public AssignNode(ExpressionNode target, ExpressionNode value) {
         this.target = target;
         this.value = value;
+        //todo:
         if(!(this.target instanceof DotNode)
                 && !(this.target instanceof IdentifierNode))
+
             throw new RuntimeException("");
     }
 
