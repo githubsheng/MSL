@@ -2,6 +2,16 @@
  * Created by wangsheng on 14/10/17.
  */
 
+var answer = {
+    id: "q1",
+    row1: {
+        selected: true,
+    }
+
+
+}
+
+
 export class Command {
     lineNumber: number;
     name: string;
