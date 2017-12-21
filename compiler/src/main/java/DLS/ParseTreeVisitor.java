@@ -76,7 +76,8 @@ class ParseTreeVisitor {
         //page group implicit attribute values
         pageGroupImplicitValues.put(PageGroupAttribute.RANDOMIZE.getName(), "true");
         pageGroupImplicitValues.put(PageGroupAttribute.ROTATE.getName(), "true");
-        //todo:
+        pageGroupImplicitValues.put(PageGroupAttribute.HIDE.getName(), "true");
+        pageGroupImplicitValues.put(PageGroupAttribute.SHOW.getName(), "true");
 
         //page implicit attribute values
         pageImplicitValues.put(PageAttributes.RANDOMIZE.getName(), "true");
@@ -158,6 +159,9 @@ class ParseTreeVisitor {
             this "page attribute object" from local variable space and pass it along with the question objects.
          */
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.attributes(), pageGroupImplicitValues);
+
+        pageGroupFuncBodyStatNodes.addAll(generateStatementsNodesForPageOrPageGroupShowHideProperties(fields));
+
         String specialPageGroupPropObjName = BuiltInSpecObjNames.PageGroupPropObject.getName();
         pageGroupFuncBodyStatNodes.add(new DefNode(specialPageGroupPropObjName, new ObjectLiteralNode(fields)));
 
@@ -294,7 +298,7 @@ class ParseTreeVisitor {
     }
 
     private List<StatementNode> visitPage(DLSParser.PageContext ctx) {
-        if (ctx.PageStart() != null) {
+        if (ctx.PageStart() != null || ctx.ScriptPageStart() != null) {
             return visitNormalPage(ctx);
         } else if (ctx.EmptyPageStart() != null) {
             return visitEmptyPage(ctx);
@@ -321,6 +325,44 @@ class ParseTreeVisitor {
         return statements;
     }
 
+    //checks a list of fields, and generates skip statements if show field evaluates to true or hide field evaluates to false
+    private List<StatementNode> generateStatementsNodesForPageOrPageGroupShowHideProperties(List<ObjectLiteralNode.Field> fields) {
+        List<StatementNode> statements = new LinkedList<>();
+
+        //find the show / hide attribute, if show is false, or hide is true, then we return immediately, and do not try to execute the logic in the page.
+        //this will also cause the vm to continue to evaluate next page.
+        Optional<ObjectLiteralNode.Field> maybeShowHideField = fields
+                .stream()
+                .filter(field -> field.getName().equals("show") || field.getName().equals("hide"))
+                .findFirst();
+
+        if (maybeShowHideField.isPresent()) {
+            ObjectLiteralNode.Field f = maybeShowHideField.get();
+            if (f.getName().equals("show")) {
+                EqualsNode eq1 = new EqualsNode(f.getValue(), new StringNode("false"));
+                IfElseNode if1 = new IfElseNode(eq1, new ReturnNode());
+
+                EqualsNode eq2 = new EqualsNode(f.getValue(), new BooleanNode(false));
+                IfElseNode if2 = new IfElseNode(eq2, new ReturnNode());
+
+                statements.add(if1);
+                statements.add(if2);
+            } else {
+                //must be hide attribute
+                EqualsNode eq1 = new EqualsNode(f.getValue(), new StringNode("true"));
+                IfElseNode if1 = new IfElseNode(eq1, new ReturnNode());
+
+                EqualsNode eq2 = new EqualsNode(f.getValue(), new BooleanNode(true));
+                IfElseNode if2 = new IfElseNode(eq2, new ReturnNode());
+
+                statements.add(if1);
+                statements.add(if2);
+            }
+        }
+
+        return statements;
+    }
+
     private List<StatementNode> visitNormalPage(DLSParser.PageContext ctx) {
         //todo: question identifier should be its id attribute if there is
         //todo: id attributes can only be stringConstants
@@ -343,36 +385,8 @@ class ParseTreeVisitor {
             this "page attribute object" from local variable space and pass it along with the question objects.
          */
         List<ObjectLiteralNode.Field> fields = getObjectLiteralFieldsFromAttributes(ctx.attributes(), pageImplicitValues);
-        //find the show / hide attribute, if show is false, or hide is true, then we return immediately, and do not try to execute the logic in the page.
-        //this will also cause the vm to continue to evaluate next page.
-        Optional<ObjectLiteralNode.Field> maybeShowHideField = fields
-                .stream()
-                .filter(field -> field.getName().equals("show") || field.getName().equals("hide"))
-                .findFirst();
 
-        if (maybeShowHideField.isPresent()) {
-            ObjectLiteralNode.Field f = maybeShowHideField.get();
-            if (f.getName().equals("show")) {
-                EqualsNode eq1 = new EqualsNode(f.getValue(), new StringNode("false"));
-                IfElseNode if1 = new IfElseNode(eq1, new ReturnNode());
-
-                EqualsNode eq2 = new EqualsNode(f.getValue(), new BooleanNode(false));
-                IfElseNode if2 = new IfElseNode(eq2, new ReturnNode());
-
-                pageFuncBodyStatNodes.add(if1);
-                pageFuncBodyStatNodes.add(if2);
-            } else {
-                //must be hide attribute
-                EqualsNode eq1 = new EqualsNode(f.getValue(), new StringNode("true"));
-                IfElseNode if1 = new IfElseNode(eq1, new ReturnNode());
-
-                EqualsNode eq2 = new EqualsNode(f.getValue(), new BooleanNode(true));
-                IfElseNode if2 = new IfElseNode(eq2, new ReturnNode());
-
-                pageFuncBodyStatNodes.add(if1);
-                pageFuncBodyStatNodes.add(if2);
-            }
-        }
+        pageFuncBodyStatNodes.addAll(generateStatementsNodesForPageOrPageGroupShowHideProperties(fields));
 
         if (!maybeId.isPresent()) fields.add(new ObjectLiteralNode.Field("id", new StringNode(pageId)));
         pageFuncBodyStatNodes.add(new DefNode(BuiltInSpecObjNames.PagePropObject.getName(), new ObjectLiteralNode(fields)));
@@ -1086,8 +1100,10 @@ class ParseTreeVisitor {
 
 
     private StatementNode visitReturnStatement(DLSParser.ReturnStatementContext ctx) {
-        Optional<ExpressionNode> maybeRetVal = Optional.ofNullable(ctx.expression()).map(this::visitExpression);
-        ReturnNode ret = new ReturnNode(maybeRetVal.orElse(null));
+        Optional<ReturnNode> maybeRetNode = Optional.ofNullable(ctx.expression())
+                .map(this::visitExpression)
+                .map(ReturnNode::new);
+        ReturnNode ret = maybeRetNode.orElse(new ReturnNode());
         if (needsTokenAssociation) ret.setToken(ctx.getStart());
         return ret;
     }
