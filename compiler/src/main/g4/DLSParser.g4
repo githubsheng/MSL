@@ -14,7 +14,6 @@ element
 | pageGroup
 ;
 
-//todo: allow script to be inside page group
 pageGroup
 : PageGroupStart attributes Close script page+ PageGroupEnd
 ;
