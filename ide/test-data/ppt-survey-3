@@ -1,0 +1,84 @@
+[Page]
+def greeting
+if clock < 11am then
+    greeting = "Good morning!"
+else if clock < 5pm then
+    greeting = "Good afternoon!"
+else
+    greeting = "Good evening!"
+end
+[SingleChoice id="q1"]${greeting}Are you good at math?
+[Row id="yes"]Yes
+[Row id="no"]No
+[Submit]
+def global isGood = false
+if q1.yes.selected then
+    isGood = true
+    print "user is good at math"
+else
+    isGood = false
+    print "user is bad at math"
+end
+[PageEnd]
+
+[PageGroup show={isGood} randomize]
+[Page]
+def showNum
+chance
+50%: showNum = "x"
+50%: showNum = "2"
+end
+[SingleChoice id="q2" show={showNum == "2"}]What is the value of 66 * 3 / 2
+[Row id="r1"]78
+[Row id="correct"]99
+[Row id="r3"]94
+
+[SingleChoice id="qX" show={showNum == "x"}]What is the value of 44 * 2
+[Row id="correct"]88
+[Row id="r2"]99
+[Row id="r3"]77
+[Submit]
+[PageEnd]
+
+[Page]
+[SingleChoice id="q3"]What is the value of 2 * 2 * ( 3 + 7 )
+[Row id="r1"]22
+[Row id="correct"]40
+[Row id="r3"]39
+[Submit]
+[PageEnd]
+[PageGroupEnd]
+
+[EmptyPage]
+if isGood == false then
+    return
+end
+
+if q2.duration + qX.duration + q3.duration < 2s then
+    print "user is answering too fast"
+    terminate
+end
+
+if q2.correct.selected == false and q3.correct.selected == false and qX.correct.selected == false then
+    isGood = false
+end
+[EmptyPageEnd]
+
+[Page show={isGood}]
+[SingleChoice id="q6"]Why are you good at math?
+[Row id="r1"]Because I am smart
+[Row id="r2"]Because I am handsome
+[Row id="r3"]Because I work
+[Submit]
+[PageEnd]
+
+
+
+
+[Page hide={isGood}]
+[SingleChoice id="q7"]Why are you bad at math?
+[Row id="r1"]Because I am not smart
+[Row id="r2"]Because I am not handsome
+[Row id="r3"]Because I don't work
+[Submit]
+[PageEnd]
