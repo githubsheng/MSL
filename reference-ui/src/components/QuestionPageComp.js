@@ -21,6 +21,7 @@ class QuestionPage extends Component {
         if(prevProps.pageInfo.id !== this.props.pageInfo.id) {
             pluginManager.passEventsToPlugins(pageLoadAction(this.props.pageGroupInfo, this.props.pageInfo, this.props.questions, this.questionPageDiv));
         }
+        console.log(Date.now())
     }
 
     componentDidMount() {

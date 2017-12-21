@@ -18,6 +18,7 @@ function mapDispatchToProps(dispatch) {
     }
 
     function submitAnswersHandler() {
+        console.log(Date.now());
         dispatch(submitAnswersAction())
     }
 
