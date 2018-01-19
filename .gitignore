@@ -14,7 +14,5 @@ compiler/src/main/g4/input.txt
 compiler/src/main/resources/input.txt
 compiler/stringConstants.txt
 interpreter/test/main.html
-ide/compiler
-ide/public/javascripts/reference_ui
 ide/npm-debug.log
-ide/public/css/reference_ui/
+
