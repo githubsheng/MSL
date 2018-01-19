@@ -73,8 +73,6 @@ end
 [PageEnd]
 
 
-
-
 [Page hide={isGood}]
 [SingleChoice id="q7"]Why are you bad at math?
 [Row id="r1"]Because I am not smart
