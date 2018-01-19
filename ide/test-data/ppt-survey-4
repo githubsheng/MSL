@@ -1,0 +1,15 @@
+[Page]
+function makeRows()
+    return List(
+        [Row]Hello[End],
+        [Row]World[End]
+    )
+end
+[SingleChoice id="q1"]Demonstrates how to make function calls
+[Rows use={makeRows()}]
+[Row]extra row
+
+[MultipleChoice id="q2"]The vm actually supports closure, although i guess it is not very useful...
+[Rows use={makeRows()}]
+[Submit]
+[PageEnd]
