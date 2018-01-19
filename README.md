@@ -68,3 +68,13 @@ or make general purpose plugin (to change background, font size, or add a banner
 * `MSL/compiler/src/main/java/DLS/ParseTreeVisitor.java` (no docs though, it converts parse tree into abstract syntax tree)
 * `MSL/compiler/src/main/java/DLS/CommandGenerator/Generator.java` (no docs though, generate commands based on abstract syntax tree)
 * `MSL/interpreter/src/interpreter.ts` (with extensive comments, it execute the commands)
+
+# Commonly asked questions
+* Q: How come the syntax has this ugly `end` statement everywhere
+* A: After talking with some friends in BU, I realize people don't like `{ } && || !`. It scares them. So I use `and or end` instead, at least they read better. 
+
+* Q: Why not an existing language like JS?
+* A: Well, thats my first plan as well, but then it is very difficult to ensure security. If you allow people to write JS, two cases can happen: 1. they are experts and they can do very tricky and harmful things, like read the cookie, jump to another page. 2. they are beginners and they make very naive but bad code, like inifinite loops and so on. Also, it is very difficult to add syntax sugar, like `select q1.r1` (to programmatically change user's answer) or `rank r1->r2->r3` (to change the rankings in a ranking questions. Finally, it is very difficult to build debuggers.
+
+* Q: Whats next?
+* A: So many things requires attention. To name some most important ones: docs, test cases, bug fixes, more features, built in support for multi languages and so on.
