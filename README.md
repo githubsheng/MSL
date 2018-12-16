@@ -1,5 +1,10 @@
-# MSL, a scripting language 
+# MSL, a scripting language for online surveys
 MSL is a scripting language to make surveys. Its like php for making web pages.
+
+This repo contains the code for
+`compiler`, `vm`, and an web based `ide`.
+
+# How to use it?
 
 To create a basic survey, you can simply input a short simple script like this
 ![2](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/1.png)
