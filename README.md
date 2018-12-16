@@ -1,18 +1,47 @@
-# MSL
-a scripting language to make surveys. Its like php for making web pages.
+# MSL, a scripting language 
+MSL is a scripting language to make surveys. Its like php for making web pages.
 
-You input something like this
-![source](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/basic-syntax.png)
+To create a basic survey, you can simply input a short simple script like this
+![2](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/1.png)
 
-![source2](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/basic-syntax-2.png)
+And you get a working web page like this
 
-![source3](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/debugger.png)
+![2](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/2.png)
+
+But the power of MSL is that you can incorporate very complex business logic into your survey and make the survey adjust itself based on time, location, user's answers, user's behaviors and even other random factors. This is what it looks like when you implant the logic into the survey
+
+![3](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/3.png)
+
+You can even define functions and reuse them
+
+![5](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/5.png)
+
+This is how it looks, given the above input
+
+![6](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/6.png)
+
+MSL is very flexible, not only in terms of business logic, but also appearance. It has many predefined styles which you can easily override. It even allows custom JS plugin. In this following example, we introduced a JS plugin and a custom stylesheet to change the appearance of the survey. You can watch the following link to see how it runs in action: https://www.youtube.com/watch?v=SO2FmCfGekA&t=125s
+
+Input:
+
+![7](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/7.png)
+
+Output:
+
+![8](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/8.png)
+
+MSL also features a web based IDE, provides:
+
+1. Syntax highlight
+2. Syntax checking. It gives you compile error message
+3. A debugger. You can set break points, pause and inspect the code.
+4. A console, which you can use to evaluate expressions.
+
+To see how the above features in action, checkout the following video links :)
 
 https://www.youtube.com/watch?v=zXFadtfXpOs
 
 https://www.youtube.com/watch?v=qYwCDNgTRn4
-
-https://www.youtube.com/watch?v=SO2FmCfGekA&t=125s
 
 # Project structure
 Clone the repository. The repository contains 4 parts:
