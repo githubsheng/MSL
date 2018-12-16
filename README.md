@@ -35,7 +35,7 @@ Output:
 
 ![8](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/8.png)
 
-MSL also features a web based IDE, provides:
+MSL also features a web based IDE and provides:
 
 1. Syntax highlight
 2. Syntax checking. It gives you compile error message
