@@ -1,6 +1,19 @@
 # MSL
 a scripting language to make surveys. Its like php for making web pages.
 
+You input something like this
+![source](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/basic-syntax.png)
+
+![source2](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/basic-syntax-2.png)
+
+![source3](https://raw.githubusercontent.com/githubsheng/githubsheng.github.io/master/WSMSL/debugger.png)
+
+https://www.youtube.com/watch?v=zXFadtfXpOs
+
+https://www.youtube.com/watch?v=qYwCDNgTRn4
+
+https://www.youtube.com/watch?v=SO2FmCfGekA&t=125s
+
 # Project structure
 Clone the repository. The repository contains 4 parts:
 compiler
