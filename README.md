@@ -2,7 +2,7 @@
 MSL is a scripting language to make surveys. Its like php for making web pages.
 
 This repo contains the code for
-`compiler`, `vm`, and an web based `ide`.
+`compiler`, `vm`, and a web based `ide`.
 
 # How to use it?
 
